@@ -1,0 +1,160 @@
+#!/usr/bin/env python
+
+import subprocess
+import shutil
+import argparse
+import os
+import sys
+import time
+from pymongo import MongoClient
+
+try:
+   import gnupg
+except ImportError:
+   pass
+
+
+def main():
+
+   note = Note()
+   note.null()
+
+
+class Note(object):
+
+   def __init__(self):
+      self.initDB()
+
+      self.homeDir = os.path.expanduser('~')
+      templateNoteName = '.noteTemplate'
+      self.templateNote = os.path.join(self.homeDir, templateNoteName)
+      self.editor = os.getenv('EDITOR')
+      self.tmpNote = None
+
+      self.commands = dict()
+      self.commands['add'] = self.newNote
+      self.commands['search'] = self.search
+      self.commands['tag search'] = self.tagSearch
+
+      self.parseOpts()
+
+      try:
+         self.commands[self.command](self.commandArgs)
+      except KeyError:
+         print "{0} does not exist".format(self.command)
+         sys.exit(0)
+
+   def search(self, term, resultLimit=50):
+      client = MongoClient()
+      noteDB = client['note']
+
+      projection = {"noteText": 1, "timestamp": 1, "_id": 0}
+      searchResults = noteDB.command("text", "notes", search=term[0], project=projection, limit=resultLimit)
+
+      for result in searchResults['results']:
+         noteText = result['obj']['noteText']
+         timestamp = time.localtime(result['obj']['timestamp'])
+         noteDate = time.strftime("%a, %b %d", timestamp)
+         print "{0}: {1}".format(noteDate, noteText)
+      return
+
+   def tagSearch(self):
+
+      #db.notes.find({"tags": {$regex:searchTerm, $options:"i"}})
+
+      return
+
+   def null(self):
+      return
+
+   def initDB(self):
+      client = MongoClient()
+
+      adminDB = client['admin']
+
+      textSearchEnabled = adminDB.command({"getParameter": 1, "textSearchEnabled": 1})['textSearchEnabled']
+
+      if not textSearchEnabled:
+         adminDB.command({"setParameter": 1, "textSearchEnabled": "true"})
+
+      noteDB = client['note']
+      if 'notes' not in noteDB.collection_names():
+         noteDB.notes.create_index([("noteText", "text"), ("tags", "text")], weights={"tags": 10, "noteText": 5})
+
+   def newNote(self, null=""):
+
+      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
+      shutil.copyfile(self.templateNote, self.tmpNote)
+
+      if self.editor == "/usr/bin/vim":
+         subprocess.call([self.editor, "+3", "-c", "startinsert", self.tmpNote])
+      else:
+         subprocess.call([self.editor, self.tmpNote])
+
+      self.processNote()
+
+      self.addNoteToDB()
+
+      return
+
+   def processNote(self):
+
+      try:
+         with open(self.tmpNote) as fd:
+            lines = fd.read()
+      except IOError:
+         print("Config file doesn't exist, exiting")
+         sys.exit(-1)
+
+      noteText = lines[lines.index('NOTE') + 4: lines.index('TAGS')]
+      noteText = noteText.split('\n')
+      noteText = filter(lambda x: x != '', noteText)
+      noteText = map(lambda x: x.rstrip(), noteText)
+      noteText = '\n'.join(noteText)
+      self.noteText = noteText
+
+      tags = lines[lines.index('TAGS') + 4: -1]
+      tags = tags.split(',')
+      tags = filter(lambda x: x != '', tags)
+      tags = map(lambda x: x.rstrip(), tags)
+      tags = map(lambda x: x.lstrip(), tags)
+      self.tags = tags
+
+      return
+
+   def addNoteToDB(self):
+
+      client = MongoClient()
+
+      db = client['note']
+      collection = db['notes']
+
+      post = {"noteText": self.noteText,
+              "tags": self.tags,
+              "timestamp": time.time()}
+
+      collection.insert(post)
+
+   def parseOpts(self):
+      parser = argparse.ArgumentParser(description="note")
+
+      defaultConfigPath = os.path.expanduser('~/.note.json')
+      parser.add_argument('--configFile', type=str, help='Path to config file',
+                          default=defaultConfigPath)
+
+      commandHelp = 'note: eligible commands are: {0}'.format(', '.join(self.commands.keys()))
+      parser.add_argument('command', metavar='cmd', type=str, nargs='+',
+                          help=commandHelp)
+
+      args = parser.parse_args()
+
+      self.configFile = args.configFile
+      self.command = args.command[0]
+
+      self.commandArgs = args.command[1:]
+
+      return
+
+
+if __name__ == '__main__':
+   main()
