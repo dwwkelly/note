@@ -51,16 +51,57 @@ class Note(object):
       projection = {"noteText": 1, "timestamp": 1, "_id": 0}
       searchResults = noteDB.command("text", "notes", search=term[0], project=projection, limit=resultLimit)
 
+      results = []
       for result in searchResults['results']:
          noteText = result['obj']['noteText']
          timestamp = time.localtime(result['obj']['timestamp'])
          noteDate = time.strftime("%a, %b %d", timestamp)
-         print "{0}: {1}".format(noteDate, noteText)
+         results.append( "{0}: {1}".format(noteDate, noteText))
+
+      try:
+         import pydoc
+         pydoc.pager('\n'.join(results))
+      except ImportError:
+         print '\n'.join(results)
+
       return
 
-   def tagSearch(self):
+   def todo(self):
+      self.tmpTodo = os.path.join(self.homeDir, '.todo.TMP')
+      shutil.copyfile(self.templateNote, self.tmpNote)
 
-      #db.notes.find({"tags": {$regex:searchTerm, $options:"i"}})
+      if self.editor == "/usr/bin/vim":
+         subprocess.call([self.editor, "+3", "-c", "startinsert", self.tmpNote])
+      else:
+         subprocess.call([self.editor, self.tmpNote])
+
+      self.processTodo()
+      self.addTodoToDB()
+
+   def processTodo(self):
+      try:
+         with open(self.tmpNote) as fd:
+            lines = fd.read()
+      except IOError:
+         print("Config file doesn't exist, exiting")
+         sys.exit(-1)
+
+      todoText = lines[lines.index('TODO') + 4: lines.index('DATE')]
+      todoText = noteText.split('\n')
+      todoText = filter(lambda x: x != '', todoText)
+      todoText = map(lambda x: x.rstrip(), todoText)
+      todoText = '\n'.join(todoText)
+      self.todoText = todoText
+
+      date = lines[lines.index('DATE') + 4: -1]
+      date = date.strip()
+      self.date = date
+
+      return
+
+      return
+
+   def addTodoToDB(self):
 
       return
 
