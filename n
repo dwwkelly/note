@@ -71,6 +71,12 @@ class Note(object):
 
       self.parseOpts()
 
+      # These are undocumented shortcuts
+      self.commands['a'] = self.newNote
+      self.commands['s'] = self.search
+      self.commands['t'] = self.todo
+      self.commands['b'] = self.backup
+
       try:
          self.commands[self.command](self.commandArgs)
       except KeyError:
