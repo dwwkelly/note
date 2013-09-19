@@ -8,7 +8,10 @@ __todo__ = '''
 -add support for mongolab backups
 -add support for dropbox/box backups
 -fine tune search
--test todo system'''
+-test todo system
+-add system for handling contact (email, phone, address, etc)
+-add ability to edit note/todo/contact
+'''
 
 import subprocess
 import shutil
