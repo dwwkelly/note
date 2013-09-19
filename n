@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+__author__ = "Devin Kelly"
+__email__ = "dwwkelly@gmail.com"
+__version__ = 0.1
+
 import subprocess
 import shutil
 import argparse
@@ -12,6 +16,28 @@ try:
    import gnupg
 except ImportError:
    pass
+
+
+RS = "\033[0m"     # reset
+HC = "\033[1m"     # hicolor
+UL = "\033[4m"     # underline
+INV = "\033[7m"    # invert foreground and background
+FBLK = "\033[30m"
+FRED = "\033[31m"
+FGRN = "\033[32m"
+FYEL = "\033[33m"
+FBLE = "\033[34m"
+FMAG = "\033[35m"
+FCYN = "\033[36m"
+FWHT = "\033[37m"
+BBLK = "\033[40m"
+BRED = "\033[41m"
+BGRN = "\033[42m"
+BYEL = "\033[43m"
+BBLE = "\033[44m"
+BMAG = "\033[45m"
+BCYN = "\033[46m"
+BWHT = "\033[47m"
 
 
 def main():
@@ -34,7 +60,8 @@ class Note(object):
       self.commands = dict()
       self.commands['add'] = self.newNote
       self.commands['search'] = self.search
-      self.commands['tag search'] = self.tagSearch
+      self.commands['todo'] = self.todo
+      self.commands['backup'] = self.backup
 
       self.parseOpts()
 
@@ -56,13 +83,15 @@ class Note(object):
          noteText = result['obj']['noteText']
          timestamp = time.localtime(result['obj']['timestamp'])
          noteDate = time.strftime("%a, %b %d", timestamp)
-         results.append( "{0}: {1}".format(noteDate, noteText))
+         results.append( "{4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC))
 
-      try:
-         import pydoc
-         pydoc.pager('\n'.join(results))
-      except ImportError:
-         print '\n'.join(results)
+      # Not sure if I want this in a pager or not
+      #try:
+      #   import pydoc
+      #   pydoc.pager('\n'.join(results))
+      #except ImportError:
+      #   print '\n'.join(results)
+      print '\n'.join(results)
 
       return
 
@@ -87,7 +116,7 @@ class Note(object):
          sys.exit(-1)
 
       todoText = lines[lines.index('TODO') + 4: lines.index('DATE')]
-      todoText = noteText.split('\n')
+      todoText = todoText.split('\n')
       todoText = filter(lambda x: x != '', todoText)
       todoText = map(lambda x: x.rstrip(), todoText)
       todoText = '\n'.join(todoText)
@@ -193,6 +222,18 @@ class Note(object):
       self.command = args.command[0]
 
       self.commandArgs = args.command[1:]
+
+      return
+
+   def backup(self):
+
+      return
+
+   def encrypt(self):
+
+      return
+
+   def checkGPGKeys(self):
 
       return
 
