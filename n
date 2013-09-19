@@ -3,6 +3,12 @@
 __author__ = "Devin Kelly"
 __email__ = "dwwkelly@gmail.com"
 __version__ = 0.1
+__todo__ = '''
+-complete encrpytion implementation
+-add support for mongolab backups
+-add support for dropbox/box backups
+-fine tune search
+-test todo system'''
 
 import subprocess
 import shutil
@@ -225,7 +231,9 @@ class Note(object):
 
       return
 
-   def backup(self):
+   def backup(self, dst):
+
+      self.initGPG()
 
       return
 
@@ -233,7 +241,28 @@ class Note(object):
 
       return
 
-   def checkGPGKeys(self):
+   def initGPG(self):
+      try:
+         self.gpg = gnupg.GPG()
+      except NameError:
+         self.gpg = None
+         return
+
+      private_keys = self.gpg.list_keys(True)
+      usable_keys = []
+      for key in private_keys:
+         if time.time() < key['expires']:
+            usable_keys.append(key)
+
+      print "Select key:"
+      counter = 1
+      for key in usable_keys:
+         print "[{0}] Fingerprint: {1}, Key Length: {2}, UIDs: {3}".format(counter, key['fingerprint'], key['length'], key['uids'])
+         counter = counter + 1
+
+      data = int(sys.stdin.readline())
+
+      self.key = usable_keys[data - 1]
 
       return
 
