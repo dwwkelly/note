@@ -175,7 +175,7 @@ class Note(object):
       self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       shutil.copyfile(self.templateNote, self.tmpNote)
 
-      self.startEdit(3)
+      self.startEditor(3)
 
       self.processNote()
       self.addNoteToDB()
