@@ -13,6 +13,8 @@ __todo__ = '''
 -add ability to edit note/todo/contact
 -add ability to delete note/todo/contact
 -add ability to change todo state
+-make install command that copies template files to home
+-import contacts from google
 '''
 
 import subprocess
@@ -83,6 +85,7 @@ class Note(object):
       self.commands['s'] = self.search
       self.commands['t'] = self.todo
       self.commands['b'] = self.backup
+      self.commands['c'] = self.newContact
 
       try:
          self.commands[self.command](self.commandArgs)
@@ -220,9 +223,9 @@ class Note(object):
 
       collection.insert(post)
 
-   def newContact(self):
-      self.tmpContact = os.path.join(self.homeDir, '.contact.TMP')
-      shutil.copyfile(self.templateContact, self.tmpContact)
+   def newContact(self, null=None):
+      self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
+      shutil.copyfile(self.templateContact, self.tmpNote)
 
       self.startEditor(2)
       self.processContact()
@@ -232,22 +235,43 @@ class Note(object):
 
    def processContact(self):
 
-      with open(self.tmpContact) as fd:
+      with open(self.tmpNote) as fd:
          contactText = fd.read(8192)
 
       contactInfo = {}
       idx = []
       lines = contactText.split('\n')
-      for i in len(lines):
+      for i in range(len(lines)):
          if lines[i].isupper():
             idx.append(i)
 
-      ## FIXME -- complete this function, use indicies to find NAME, ADDRESS, etc
-      ## then record name, address, etc into dict
+      for i in range(len(idx)):
+         start = idx[i] + 1
+         try:
+            end = idx[i + 1]
+         except:
+            end = len(lines) - 1
+         key = lines[idx[i]].lower()
+         info = lines[start:end]
+         info = [x for x in info if x != '']
+         if info:
+            contactInfo[key] = '\n'.join(info)
+
+      self.contactInfo = contactInfo
 
       return
 
    def addContactToDB(self):
+
+      client = MongoClient()
+
+      db = client['note']
+      collection = db['contacts']
+
+      post = {"contact": self.contactInfo,
+              "timestamp": time.time()}
+
+      collection.insert(post)
 
       return
 
