@@ -11,6 +11,8 @@ __todo__ = '''
 -test todo system
 -add system for handling contact (email, phone, address, etc)
 -add ability to edit note/todo/contact
+-add ability to delete note/todo/contact
+-add ability to change todo state
 '''
 
 import subprocess
@@ -63,6 +65,8 @@ class Note(object):
       self.homeDir = os.path.expanduser('~')
       templateNoteName = '.noteTemplate'
       self.templateNote = os.path.join(self.homeDir, templateNoteName)
+      templateContactName = '.contactTemplate'
+      self.templateContact = os.path.join(self.homeDir, templateContactName)
       self.editor = os.getenv('EDITOR')
       self.tmpNote = None
 
@@ -171,13 +175,9 @@ class Note(object):
       self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       shutil.copyfile(self.templateNote, self.tmpNote)
 
-      if self.editor == "/usr/bin/vim":
-         subprocess.call([self.editor, "+3", "-c", "startinsert", self.tmpNote])
-      else:
-         subprocess.call([self.editor, self.tmpNote])
+      self.startEdit(3)
 
       self.processNote()
-
       self.addNoteToDB()
 
       return
@@ -219,6 +219,44 @@ class Note(object):
               "timestamp": time.time()}
 
       collection.insert(post)
+
+   def newContact(self):
+      self.tmpContact = os.path.join(self.homeDir, '.contact.TMP')
+      shutil.copyfile(self.templateContact, self.tmpContact)
+
+      self.startEditor(2)
+      self.processContact()
+      self.addContactToDB()
+
+      return
+
+   def processContact(self):
+
+      with open(self.tmpContact) as fd:
+         contactText = fd.read(8192)
+
+      contactInfo = {}
+      idx = []
+      lines = contactText.split('\n')
+      for i in len(lines):
+         if lines[i].isupper():
+            idx.append(i)
+
+      ## FIXME -- complete this function, use indicies to find NAME, ADDRESS, etc
+      ## then record name, address, etc into dict
+
+      return
+
+   def addContactToDB(self):
+
+      return
+
+   def startEditor(self, startingLine=1):
+      if self.editor == "/usr/bin/vim":
+         subprocess.call([self.editor, "+{0}".format(startingLine),
+                          "-c", "startinsert", self.tmpNote])
+      else:
+         subprocess.call([self.editor, self.tmpNote])
 
    def parseOpts(self):
       parser = argparse.ArgumentParser(description="note")
