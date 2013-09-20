@@ -9,12 +9,16 @@ __todo__ = '''
 -add support for dropbox/box backups
 -fine tune search
 -test todo system
--add system for handling contact (email, phone, address, etc)
 -add ability to edit note/todo/contact
--add ability to delete note/todo/contact
 -add ability to change todo state
 -make install command that copies template files to home
 -import contacts from google
+-add a verify command that checks IDs collection against other collections for consistency
+'''
+
+__added_features__ = '''
+-add ability to delete note/todo/contact
+-add system for handling contact (email, phone, address, etc)
 '''
 
 import subprocess
@@ -75,17 +79,24 @@ class Note(object):
       self.commands = dict()
       self.commands['add'] = self.newNote
       self.commands['search'] = self.search
-      self.commands['todo'] = self.todo
+      self.commands['todo'] = self.newTodo
       self.commands['backup'] = self.backup
+      self.commands['contact'] = self.newContact
+      self.commands['showDone'] = self.showDone
+      self.commands['showUndone'] = self.showUndone
+      self.commands['delete'] = self.delete
 
       self.parseOpts()
 
       # These are undocumented shortcuts
       self.commands['a'] = self.newNote
       self.commands['s'] = self.search
-      self.commands['t'] = self.todo
+      self.commands['t'] = self.newTodo
       self.commands['b'] = self.backup
       self.commands['c'] = self.newContact
+      self.commands['d'] = self.showDone
+      self.commands['u'] = self.showUndone
+      self.commands['D'] = self.delete
 
       try:
          self.commands[self.command](self.commandArgs)
@@ -93,39 +104,94 @@ class Note(object):
          print "{0} does not exist".format(self.command)
          sys.exit(0)
 
+   def delete(self, ID):
+      ID = int(ID[0])
+      client = MongoClient()
+      noteDB = client['note']
+
+      # Find document with ID
+      colls = ['notes', 'todo', 'contacts']
+      for coll in colls:
+         noteDB[coll].remove({"ID": ID})
+
+      unusedIDs = noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+      unusedIDs.append(ID)
+      noteDB['IDs'].update({"unusedIDs": {"$exists": True}}, {"unusedIDs": unusedIDs})
+
+      return
+
    def search(self, term, resultLimit=50):
       client = MongoClient()
       noteDB = client['note']
 
-      projection = {"noteText": 1, "timestamp": 1, "_id": 0}
+      projection = {"ID": 1, "noteText": 1, "timestamp": 1, "_id": 0}
       searchResults = noteDB.command("text", "notes", search=term[0], project=projection, limit=resultLimit)
 
       results = []
       for result in searchResults['results']:
          noteText = result['obj']['noteText']
+         ID = int(result['obj']['ID'])
          timestamp = time.localtime(result['obj']['timestamp'])
          noteDate = time.strftime("%a, %b %d", timestamp)
-         results.append( "{4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC))
+         results.append( "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID))
 
-      # Not sure if I want this in a pager or not
-      #try:
-      #   import pydoc
-      #   pydoc.pager('\n'.join(results))
-      #except ImportError:
-      #   print '\n'.join(results)
-      print '\n'.join(results)
+      self.printResults(results)
 
       return
 
-   def todo(self):
-      self.tmpTodo = os.path.join(self.homeDir, '.todo.TMP')
-      shutil.copyfile(self.templateNote, self.tmpNote)
+   def showDone(self, null=None):
+      client = MongoClient()
+      noteDB = client['note']
+      #projection = {"todo": 1, "done": 1, "_id": 0}
+      searchResults = noteDB['todo'].find({"done": True})
 
-      if self.editor == "/usr/bin/vim":
-         subprocess.call([self.editor, "+3", "-c", "startinsert", self.tmpNote])
+      results = []
+      for result in searchResults:
+         text = result['todo']
+         timestamp = time.localtime(result['timestamp'])
+         date = time.strftime("%a, %b %d", timestamp)
+         results.append( "{4}{2}{0}:{3} {1}".format(date, text, FRED, RS, HC))
+
+      self.printResults(results)
+
+      return
+
+   def showUndone(self, null=None):
+      client = MongoClient()
+      noteDB = client['note']
+      #projection = {"todo": 1, "done": 1, "_id": 0}
+      searchResults = noteDB['todo'].find({"done": False})
+
+      results = []
+      for result in searchResults:
+         text = result['todo']
+         timestamp = time.localtime(result['timestamp'])
+         date = time.strftime("%a, %b %d", timestamp)
+         results.append( "{4}{2}{0}:{3} {1}".format(date, text, FRED, RS, HC))
+
+      self.printResults(results)
+
+      return
+
+   def printResults(self, results):
+      # Not sure if I want this in a pager or not
+      pager = False
+      if pager:
+         try:
+            import pydoc
+            pydoc.pager('\n'.join(results))
+         except ImportError:
+            print '\n'.join(results)
       else:
-         subprocess.call([self.editor, self.tmpNote])
+         print '\n'.join(results)
 
+      return
+
+   def newTodo(self, null=None):
+      self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
+      self.tmpTodo = os.path.join(self.homeDir, '.todoTemplate')
+      shutil.copyfile(self.tmpTodo, self.tmpNote)
+      self.startEditor(2)
       self.processTodo()
       self.addTodoToDB()
 
@@ -137,12 +203,23 @@ class Note(object):
          print("Config file doesn't exist, exiting")
          sys.exit(-1)
 
-      todoText = lines[lines.index('TODO') + 4: lines.index('DATE')]
+      todoText = lines[lines.index('TODO') + 4: lines.index('DONE')]
       todoText = todoText.split('\n')
       todoText = filter(lambda x: x != '', todoText)
       todoText = map(lambda x: x.rstrip(), todoText)
       todoText = '\n'.join(todoText)
       self.todoText = todoText
+
+      done = lines[lines.index('DONE') + 4: lines.index('DATE')]
+      doneText = done.split('\n')
+      doneText = filter(lambda x: x != '', doneText)
+      doneText = map(lambda x: x.rstrip(), doneText)
+      doneText = '\n'.join(doneText)
+      doneText = doneText.lower()
+      if ('t' in doneText or 'true' in doneText) and ('f' not in doneText or 'false' not in doneText):
+         self.done = True
+      else:
+         self.done = False
 
       date = lines[lines.index('DATE') + 4: -1]
       date = date.strip()
@@ -150,9 +227,15 @@ class Note(object):
 
       return
 
-      return
-
    def addTodoToDB(self):
+      client = MongoClient()
+      db = client['note']
+      collection = db['todo']
+
+      post = {"todo": self.todoText,
+              "done": self.done,
+              "timestamp": time.time()}
+      collection.insert(post)
 
       return
 
@@ -161,9 +244,7 @@ class Note(object):
 
    def initDB(self):
       client = MongoClient()
-
       adminDB = client['admin']
-
       textSearchEnabled = adminDB.command({"getParameter": 1, "textSearchEnabled": 1})['textSearchEnabled']
 
       if not textSearchEnabled:
@@ -174,12 +255,9 @@ class Note(object):
          noteDB.notes.create_index([("noteText", "text"), ("tags", "text")], weights={"tags": 10, "noteText": 5})
 
    def newNote(self, null=""):
-
       self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       shutil.copyfile(self.templateNote, self.tmpNote)
-
       self.startEditor(3)
-
       self.processNote()
       self.addNoteToDB()
 
@@ -211,22 +289,20 @@ class Note(object):
       return
 
    def addNoteToDB(self):
-
       client = MongoClient()
-
       db = client['note']
       collection = db['notes']
 
       post = {"noteText": self.noteText,
               "tags": self.tags,
-              "timestamp": time.time()}
+              "timestamp": time.time(),
+              "ID": self.getID()}
 
       collection.insert(post)
 
    def newContact(self, null=None):
       self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
       shutil.copyfile(self.templateContact, self.tmpNote)
-
       self.startEditor(2)
       self.processContact()
       self.addContactToDB()
@@ -261,22 +337,40 @@ class Note(object):
 
       return
 
-   def addContactToDB(self):
-
+   def getID(self):
       client = MongoClient()
+      db = client['note']
 
+      unusedIDs = db['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+      if not unusedIDs:
+         ID = db['IDs'].find_one({"currentMax": {"$exists": True}})['currentMax'] + 1
+         db['IDs'].update({"currentMax": ID - 1}, {"currentMax": ID})
+      else:
+         unusedIDs = db['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+         ID = min(unusedIDs)
+         unusedIDs.remove(ID)
+         db['IDs'].update({"unusedIDs": {"$exists": True}},
+                          {"$set": {"unusedIDs": unusedIDs}})
+
+      return ID
+
+   def addContactToDB(self):
+      client = MongoClient()
       db = client['note']
       collection = db['contacts']
 
+      ID = self.getID()
+
       post = {"contact": self.contactInfo,
-              "timestamp": time.time()}
+              "timestamp": time.time(),
+              "ID": ID}
 
       collection.insert(post)
 
       return
 
    def startEditor(self, startingLine=1):
-      if self.editor == "/usr/bin/vim":
+      if self.editor == "/usr/bin/vim" or self.editor == '/usr/local/bin/vim':
          subprocess.call([self.editor, "+{0}".format(startingLine),
                           "-c", "startinsert", self.tmpNote])
       else:
