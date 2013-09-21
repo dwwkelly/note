@@ -255,8 +255,11 @@ class Note(object):
       if 'notes' not in noteDB.collection_names():
          noteDB.notes.create_index([("noteText", "text"), ("tags", "text")], weights={"tags": 10, "noteText": 5})
 
-      noteDB['IDs'].insert({"currentMax": 0})
-      noteDB['IDs'].insert({"unusedIDs": []})
+      if noteDB.IDs.find({"currentMax": {"$exists": True}}).count() == 0:
+         noteDB['IDs'].insert({"currentMax": 0})
+
+      if noteDB.IDs.find({"unusedIDs": {"$exists": True}}).count() == 0:
+         noteDB['IDs'].insert({"unusedIDs": []})
 
    def newNote(self, null=""):
       self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
@@ -346,6 +349,7 @@ class Note(object):
       db = client['note']
 
       unusedIDs = db['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+
       if not unusedIDs:
          ID = db['IDs'].find_one({"currentMax": {"$exists": True}})['currentMax'] + 1
          db['IDs'].update({"currentMax": ID - 1}, {"currentMax": ID})
