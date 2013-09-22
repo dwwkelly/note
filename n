@@ -12,7 +12,7 @@ __todo__ = '''
 -add ability to edit note/todo/contact
 -add ability to change todo state
 -make install command that copies template files to home
--import contacts from google
+-import contacts from google - https://developers.google.com/google-apps/contacts/v3/
 -add a verify command that checks IDs collection against other collections for consistency
 -switch to a SQL database?
 '''
@@ -28,10 +28,16 @@ import argparse
 import os
 import sys
 import time
+import subprocess as SP
 from pymongo import MongoClient
 
 try:
    import gnupg
+except ImportError:
+   pass
+
+try:
+   import dropbox
 except ImportError:
    pass
 
@@ -67,6 +73,9 @@ def main():
 class Note(object):
 
    def __init__(self):
+
+      self.dbName = 'note'
+
       self.initDB()
 
       self.homeDir = os.path.expanduser('~')
@@ -86,6 +95,7 @@ class Note(object):
       self.commands['showDone'] = self.showDone
       self.commands['showUndone'] = self.showUndone
       self.commands['delete'] = self.delete
+      self.commands['backup'] = self.backup
 
       self.parseOpts()
 
@@ -98,6 +108,7 @@ class Note(object):
       self.commands['d'] = self.showDone
       self.commands['u'] = self.showUndone
       self.commands['D'] = self.delete
+      self.commands['b'] = self.backup
 
       try:
          self.commands[self.command](self.commandArgs)
@@ -108,7 +119,7 @@ class Note(object):
    def delete(self, ID):
       ID = int(ID[0])
       client = MongoClient()
-      noteDB = client['note']
+      noteDB = client[self.dbName]
 
       # Find document with ID
       colls = ['notes', 'todo', 'contacts']
@@ -123,7 +134,7 @@ class Note(object):
 
    def search(self, term, resultLimit=50):
       client = MongoClient()
-      noteDB = client['note']
+      noteDB = client[self.dbName]
 
       projection = {"ID": 1, "noteText": 1, "timestamp": 1, "_id": 0}
       searchResults = noteDB.command("text", "notes", search=term[0], project=projection, limit=resultLimit)
@@ -142,7 +153,7 @@ class Note(object):
 
    def showDone(self, null=None):
       client = MongoClient()
-      noteDB = client['note']
+      noteDB = client[self.dbName]
       #projection = {"todo": 1, "done": 1, "_id": 0}
       searchResults = noteDB['todo'].find({"done": True})
 
@@ -159,7 +170,7 @@ class Note(object):
 
    def showUndone(self, null=None):
       client = MongoClient()
-      noteDB = client['note']
+      noteDB = client[self.dbName]
       #projection = {"todo": 1, "done": 1, "_id": 0}
       searchResults = noteDB['todo'].find({"done": False})
 
@@ -407,6 +418,27 @@ class Note(object):
    def backup(self, dst):
 
       self.initGPG()
+      gpg = gnupg.GPG()
+
+      if not dst:
+         dst = '/tmp'
+      else:
+         dst = dst[0]
+
+      backupZip = os.path.join(dst, 'note_backup.zip')
+      backupGPG = os.path.join(dst, 'note_backup.gpg')
+
+      with open(os.devnull) as devnull:
+         SP.call(['mongodump', '--db', self.dbName, '--out', dst], stdout=devnull, stderr=devnull)
+         SP.call(['zip', '-r', os.path.join(dst, backupZip), os.path.join(dst, self.dbName)], stdout=devnull, stderr=devnull)
+
+      stream = open(backupZip, "rb")
+      gpg.encrypt_file(stream, [self.key['fingerprint']], output=backupGPG)
+
+      SP.call(['rm', '-rf', os.path.join(dst, 'note_backup.zip')])
+      SP.call(['rm', '-rf', os.path.join(dst, self.dbName)])
+
+      print "Encrypted Backup: {0}".format(backupGPG)
 
       return
 
@@ -438,6 +470,21 @@ class Note(object):
       self.key = usable_keys[data - 1]
 
       return
+
+   def pushToDropbox(self):
+
+      app_key = ''
+      app_secret = ''
+      code = ""
+
+      flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
+
+      access_token, user_id = flow.finish(code)
+      client = dropbox.client.DropboxClient(access_token)
+
+      f = open(self.mongoBackup)
+      response = client.put_file('/note-backup.gpg', f)
+      print "uploaded:", response
 
 
 if __name__ == '__main__':
