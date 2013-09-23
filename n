@@ -418,7 +418,6 @@ class Note(object):
    def backup(self, dst):
 
       self.initGPG()
-      gpg = gnupg.GPG()
 
       if not dst:
          dst = '/tmp'
@@ -432,13 +431,17 @@ class Note(object):
          SP.call(['mongodump', '--db', self.dbName, '--out', dst], stdout=devnull, stderr=devnull)
          SP.call(['zip', '-r', os.path.join(dst, backupZip), os.path.join(dst, self.dbName)], stdout=devnull, stderr=devnull)
 
-      stream = open(backupZip, "rb")
-      gpg.encrypt_file(stream, [self.key['fingerprint']], output=backupGPG)
+      if self.key is not None:
+         stream = open(backupZip, "rb")
+         self.gpg.encrypt_file(stream, [self.key['fingerprint']], output=backupGPG)
+         SP.call(['rm', '-rf', os.path.join(dst, 'note_backup.zip')])
+         print "Encrypted Backup: {0}".format(backupGPG)
+      else:
+         print "Backup: {0}".format(backupZip)
 
-      SP.call(['rm', '-rf', os.path.join(dst, 'note_backup.zip')])
+
       SP.call(['rm', '-rf', os.path.join(dst, self.dbName)])
 
-      print "Encrypted Backup: {0}".format(backupGPG)
 
       return
 
@@ -451,6 +454,7 @@ class Note(object):
          self.gpg = gnupg.GPG()
       except NameError:
          self.gpg = None
+         self.key = None
          return
 
       private_keys = self.gpg.list_keys(True)
@@ -460,14 +464,17 @@ class Note(object):
             usable_keys.append(key)
 
       print "Select key:"
-      counter = 1
+      counter = 0
       for key in usable_keys:
          print "[{0}] Fingerprint: {1}, Key Length: {2}, UIDs: {3}".format(counter, key['fingerprint'], key['length'], key['uids'])
          counter = counter + 1
 
       data = int(sys.stdin.readline())
 
-      self.key = usable_keys[data - 1]
+      if data == 0:
+         self.key = None
+      else:
+         self.key = usable_keys[data - 1]
 
       return
 
