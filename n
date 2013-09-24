@@ -4,22 +4,25 @@ __author__ = "Devin Kelly"
 __email__ = "dwwkelly@gmail.com"
 __version__ = 0.1
 __todo__ = '''
--complete encrpytion implementation
+-add ability to edit note/todo/contact
 -add support for mongolab backups
 -add support for dropbox/box backups
--fine tune search
 -test todo system
--add ability to edit note/todo/contact
 -add ability to change todo state
 -make install command that copies template files to home
 -import contacts from google - https://developers.google.com/google-apps/contacts/v3/
 -add a verify command that checks IDs collection against other collections for consistency
 -switch to a SQL database?
+-possibly rewrite code to take utilize inheritance
+-when editing a note, should the timestamp be the original, the newest or a list of all edits?
+-make a note info command which shows note, tags and all other metadata
 '''
 
 __added_features__ = '''
 -add ability to delete note/todo/contact
 -add system for handling contact (email, phone, address, etc)
+-complete encrpytion implementation
+-fine tune search
 '''
 
 import subprocess
@@ -78,6 +81,11 @@ class Note(object):
 
       self.initDB()
 
+      self.noteTemplate = "NOTE\n\n\nTAGS\n\n"
+      self.noteEditTemplate = "NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
+      self.contactTemplate = "NAME\n\nAFFILIATION\n\nEMAIL\n\nMOBILE PHONE\n\nHOME PHONE\n\nWORK PHONE\n\nADDRESS"
+      self.todoTemplate = "TODO\n\nDONE\n\nDATE"
+
       self.homeDir = os.path.expanduser('~')
       templateNoteName = '.noteTemplate'
       self.templateNote = os.path.join(self.homeDir, templateNoteName)
@@ -96,6 +104,7 @@ class Note(object):
       self.commands['showUndone'] = self.showUndone
       self.commands['delete'] = self.delete
       self.commands['backup'] = self.backup
+      self.commands['edit'] = self.edit
 
       self.parseOpts()
 
@@ -109,6 +118,7 @@ class Note(object):
       self.commands['u'] = self.showUndone
       self.commands['D'] = self.delete
       self.commands['b'] = self.backup
+      self.commands['e'] = self.edit
 
       try:
          self.commands[self.command](self.commandArgs)
@@ -117,7 +127,10 @@ class Note(object):
          sys.exit(0)
 
    def delete(self, ID):
-      ID = int(ID[0])
+      try:
+         ID = int(ID[0])
+      except TypeError:
+         pass
       client = MongoClient()
       noteDB = client[self.dbName]
 
@@ -199,6 +212,26 @@ class Note(object):
 
       return
 
+   def edit(self, ID):
+
+      ID = int(ID[0])
+
+      # Setup DB
+      cli = MongoClient()
+      noteDB = cli[self.dbName]
+      collections = noteDB.collection_names()
+      editMethods = {'notes': self.editNote, 'todos': self.editTodo, 'contact': self.editContact}
+
+      # Find the note with the right ID
+      for coll in collections:
+         if noteDB[coll].find({'ID': ID}).count():
+            editMethods[coll](ID)
+            break
+      else:
+         print "Could not find ID, verify database"
+
+      return
+
    def newTodo(self, null=None):
       self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
       self.tmpTodo = os.path.join(self.homeDir, '.todoTemplate')
@@ -236,6 +269,12 @@ class Note(object):
       date = lines[lines.index('DATE') + 4: -1]
       date = date.strip()
       self.date = date
+
+      return
+
+   def editTodo(self, ID):
+
+      print "not yet implemented"
 
       return
 
@@ -306,6 +345,32 @@ class Note(object):
 
       return
 
+   def editNote(self, ID):
+
+      cli = MongoClient()
+      noteDB = cli[self.dbName]
+
+      note = noteDB['notes'].find_one({"ID": ID})
+      origNotetext = note['noteText']
+      origTags = ','.join(note['tags'])
+      try:
+         self.editTimestamps = note['editTimestamps']
+         self.editTimestamps.append(time.time())
+      except KeyError:
+         self.editTimestamps = [time.time()]
+
+      editText = self.noteEditTemplate.format(origNotetext, origTags)
+      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
+      with open(self.tmpNote, 'w') as fd:
+         fd.write(editText)
+
+      self.startEditor(3)
+      self.processNote()
+      self.delete(ID)
+      self.addNoteToDB()
+
+      return
+
    def addNoteToDB(self):
       client = MongoClient()
       db = client['note']
@@ -315,6 +380,11 @@ class Note(object):
               "tags": self.tags,
               "timestamp": time.time(),
               "ID": self.getID()}
+
+      try:
+         post['editTimestamps'] = self.editTimestamps
+      except AttributeError:
+         pass
 
       collection.insert(post)
 
@@ -355,6 +425,25 @@ class Note(object):
 
       return
 
+   def editContact(self, ID):
+
+      return
+
+   def addContactToDB(self):
+      client = MongoClient()
+      db = client['note']
+      collection = db['contacts']
+
+      ID = self.getID()
+
+      post = {"contact": self.contactInfo,
+              "timestamp": time.time(),
+              "ID": ID}
+
+      collection.insert(post)
+
+      return
+
    def getID(self):
       client = MongoClient()
       db = client['note']
@@ -372,21 +461,6 @@ class Note(object):
                           {"$set": {"unusedIDs": unusedIDs}})
 
       return ID
-
-   def addContactToDB(self):
-      client = MongoClient()
-      db = client['note']
-      collection = db['contacts']
-
-      ID = self.getID()
-
-      post = {"contact": self.contactInfo,
-              "timestamp": time.time(),
-              "ID": ID}
-
-      collection.insert(post)
-
-      return
 
    def startEditor(self, startingLine=1):
       if self.editor == "/usr/bin/vim" or self.editor == '/usr/local/bin/vim':
@@ -439,9 +513,7 @@ class Note(object):
       else:
          print "Backup: {0}".format(backupZip)
 
-
       SP.call(['rm', '-rf', os.path.join(dst, self.dbName)])
-
 
       return
 
