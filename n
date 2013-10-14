@@ -33,6 +33,7 @@ import sys
 import time
 import subprocess as SP
 from pymongo import MongoClient
+from abc import ABCMeta, abstractmethod
 
 try:
    import gnupg
@@ -69,17 +70,222 @@ BWHT = "\033[47m"
 
 def main():
 
-   note = Note()
-   note.null()
+   runner = Runner()
+   runner.null()
 
 
-class Note(object):
+class dbBaseClass:
+   __metaclass__ = ABCMeta
+
+   @abstractmethod
+   def addItem(self, itemType, itemContents):
+      pass
+
+   @abstractmethod
+   def getItem(self, itemID):
+      pass
+
+   @abstractmethod
+   def searchForItem(self, searchInfo):
+      pass
+
+   @abstractmethod
+   def deleteItem(self, itemID):
+      pass
+
+   @abstractmethod
+   def getBackup(self):
+      pass
+
+
+class mongoDB(dbBaseClass):
+
+   def __init__(self, dbName):
+
+      self.dbName = dbName
+
+      self.client = MongoClient()
+      adminDB = self.client['admin']
+      textSearchEnabled = adminDB.command({"getParameter": 1, "textSearchEnabled": 1})['textSearchEnabled']
+
+      if not textSearchEnabled:
+         adminDB.command({"setParameter": 1, "textSearchEnabled": "true"})
+
+      self.noteDB = self.client[self.dbName]
+      if 'notes' not in self.noteDB.collection_names():
+         self.noteDB.notes.create_index([("noteText", "text"), ("tags", "text")], weights={"tags": 10, "noteText": 5})
+
+      if self.noteDB.IDs.find({"currentMax": {"$exists": True}}).count() == 0:
+         self.noteDB['IDs'].insert({"currentMax": 0})
+
+      if self.noteDB.IDs.find({"unusedIDs": {"$exists": True}}).count() == 0:
+         self.noteDB['IDs'].insert({"unusedIDs": []})
+
+   def addItem(self, itemType, itemContents, itemID=None):
+      """
+         itemType really means the collection name or table name
+      """
+
+      collection = self.noteDB[itemType]
+
+      if itemID is None:
+         itemContents['timestamps'] = [time.time()]
+         itemContents["ID"] = self.getNewID()
+         collection.insert(itemContents)
+      else:
+         _id = collection.find_one({"ID": itemID})["_id"]
+         timestamps = collection.find_one({"ID": itemID})["timestamps"]
+         timestamps.append(time.time())
+         itemContents["timestamps"] = timestamps
+         itemContents["ID"] = itemID
+         collection.update({"_id": _id}, itemContents)
+
+      return
+
+   def getNewID(self):
+
+      idCollection = self.noteDB['IDs']
+      unusedIDs = idCollection.find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+
+      if not unusedIDs:
+         ID = idCollection.find_one({"currentMax": {"$exists": True}})['currentMax'] + 1
+         idCollection.update({"currentMax": ID - 1}, {"currentMax": ID})
+      else:
+         unusedIDs = idCollection.find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+         ID = min(unusedIDs)
+         unusedIDs.remove(ID)
+         idCollection.update({"unusedIDs": {"$exists": True}},
+                             {"$set": {"unusedIDs": unusedIDs}})
+
+      return ID
+
+   def getItem(self, itemID):
+
+      collections = self.noteDB.collection_names()
+      collections.remove(u'system.indexes')
+      collections.remove(u'IDs')
+
+      for coll in collections:
+         note = self.noteDB[coll].find_one({"ID": itemID})
+         if note is not None:
+            break
+
+      del note["_id"]
+      return note
+
+   def getItemType(self, itemID):
+      collections = self.noteDB.collection_names()
+      collections.remove(u'system.indexes')
+      collections.remove(u'IDs')
+
+      for coll in collections:
+         note = self.noteDB[coll].find_one({"ID": itemID})
+         if note is not None:
+            return coll
+
+   def searchForItem(self, searchInfo, resultLimit=20):
+      projection = {"ID": 1, "noteText": 1, "timestamps": 1, "_id": 0}
+      searchResults = self.noteDB.command("text", "notes", search=searchInfo, project=projection, limit=resultLimit)
+
+      return searchResults['results']
+
+      results = []
+
+      # FIXME - do this print formatting somewhere else, return in some
+      # standard format
+      for result in searchResults['results']:
+         noteText = result['obj']['noteText']
+         ID = int(result['obj']['ID'])
+         timestamp = time.localtime(result['obj']['timestamp'])
+         noteDate = time.strftime("%a, %b %d", timestamp)
+         results.append( "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID))
+
+      return results
+
+   def deleteItem(self, itemID):
+      collections = self.noteDB.collection_names()
+      collections.remove(u'system.indexes')
+      collections.remove(u'IDs')
+
+      currentMax = self.noteDB["IDs"].find_one({"currentMax": {"$exists": True}})['currentMax']
+      unusedIDs = self.noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+
+      if (itemID > currentMax) or (itemID in unusedIDs):
+         print("Item {0} does not exist".format(itemID))
+         sys.exit(1)
+
+      # Find document with ID
+      for coll in collections:
+         self.noteDB[coll].remove({"ID": itemID})
+
+      if currentMax == itemID:
+         self.noteDB['IDs'].update({"currentMax": currentMax}, {"currentMax": currentMax - 1})
+      else:
+         unusedIDs.append(itemID)
+         self.noteDB['IDs'].update({"unusedIDs": {"$exists": True}}, {"unusedIDs": unusedIDs})
+
+   def getBackup(self):
+
+      return
+
+
+def sqliteDB(dbBaseClass):
+
+   def __init__(self):
+
+      return
+
+   def addItem(self, itemType, itemContents):
+
+      return
+
+   def getItem(self, itemID):
+
+      return
+
+   def searchForItem(self, searchInfo):
+
+      return
+
+   def deleteItem(self, itemID):
+
+      return
+
+   def getBackup(self):
+
+      return
+
+
+class NoteBaseClass(object):
+
+   def __init__(self):
+
+      return
+
+   def addToDB(self):
+
+      return
+
+   def edit(self):
+
+      return
+
+   def new(self):
+
+      return
+
+   def process(self):
+
+      return
+
+
+class Runner(object):
 
    def __init__(self):
 
       self.dbName = 'note'
 
-      self.initDB()
+      self.db = mongoDB(dbName=self.dbName)
 
       self.noteTemplate = "NOTE\n\n\nTAGS\n\n"
       self.noteEditTemplate = "NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
@@ -131,32 +337,17 @@ class Note(object):
          ID = int(ID[0])
       except TypeError:
          pass
-      client = MongoClient()
-      noteDB = client[self.dbName]
 
-      # Find document with ID
-      colls = ['notes', 'todo', 'contacts']
-      for coll in colls:
-         noteDB[coll].remove({"ID": ID})
-
-      unusedIDs = noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
-      unusedIDs.append(ID)
-      noteDB['IDs'].update({"unusedIDs": {"$exists": True}}, {"unusedIDs": unusedIDs})
-
-      return
+      self.db.deleteItem(ID)
 
    def search(self, term, resultLimit=50):
-      client = MongoClient()
-      noteDB = client[self.dbName]
-
-      projection = {"ID": 1, "noteText": 1, "timestamp": 1, "_id": 0}
-      searchResults = noteDB.command("text", "notes", search=term[0], project=projection, limit=resultLimit)
-
       results = []
-      for result in searchResults['results']:
+      searchResults = self.db.searchForItem(term[0], resultLimit)
+      for result in searchResults:
          noteText = result['obj']['noteText']
          ID = int(result['obj']['ID'])
-         timestamp = time.localtime(result['obj']['timestamp'])
+         timestamps = result['obj']['timestamps']
+         timestamp = time.localtime(max(timestamps))
          noteDate = time.strftime("%a, %b %d", timestamp)
          results.append( "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID))
 
@@ -165,36 +356,10 @@ class Note(object):
       return
 
    def showDone(self, null=None):
-      client = MongoClient()
-      noteDB = client[self.dbName]
-      #projection = {"todo": 1, "done": 1, "_id": 0}
-      searchResults = noteDB['todo'].find({"done": True})
-
-      results = []
-      for result in searchResults:
-         text = result['todo']
-         timestamp = time.localtime(result['timestamp'])
-         date = time.strftime("%a, %b %d", timestamp)
-         results.append( "{4}{2}{0}:{3} {1}".format(date, text, FRED, RS, HC))
-
-      self.printResults(results)
 
       return
 
    def showUndone(self, null=None):
-      client = MongoClient()
-      noteDB = client[self.dbName]
-      #projection = {"todo": 1, "done": 1, "_id": 0}
-      searchResults = noteDB['todo'].find({"done": False})
-
-      results = []
-      for result in searchResults:
-         text = result['todo']
-         timestamp = time.localtime(result['timestamp'])
-         date = time.strftime("%a, %b %d", timestamp)
-         results.append( "{4}{2}{0}:{3} {1}".format(date, text, FRED, RS, HC))
-
-      self.printResults(results)
 
       return
 
@@ -216,21 +381,9 @@ class Note(object):
 
       ID = int(ID[0])
 
-      # Setup DB
-      cli = MongoClient()
-      noteDB = cli[self.dbName]
-      collections = noteDB.collection_names()
       editMethods = {'notes': self.editNote, 'todos': self.editTodo, 'contact': self.editContact}
-
-      # Find the note with the right ID
-      for coll in collections:
-         if noteDB[coll].find({'ID': ID}).count():
-            editMethods[coll](ID)
-            break
-      else:
-         print "Could not find ID, verify database"
-
-      return
+      itemType = self.db.getItemType(ID)
+      editMethods[itemType](ID)
 
    def newTodo(self, null=None):
       self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
@@ -278,18 +431,6 @@ class Note(object):
 
       return
 
-   def addTodoToDB(self):
-      client = MongoClient()
-      db = client['note']
-      collection = db['todo']
-
-      post = {"todo": self.todoText,
-              "done": self.done,
-              "timestamp": time.time()}
-      collection.insert(post)
-
-      return
-
    def null(self):
       return
 
@@ -316,7 +457,8 @@ class Note(object):
       shutil.copyfile(self.templateNote, self.tmpNote)
       self.startEditor(3)
       self.processNote()
-      self.addNoteToDB()
+
+      self.db.addItem("notes", {"noteText": self.noteText, "tags": self.tags})
 
       return
 
@@ -347,17 +489,9 @@ class Note(object):
 
    def editNote(self, ID):
 
-      cli = MongoClient()
-      noteDB = cli[self.dbName]
-
-      note = noteDB['notes'].find_one({"ID": ID})
-      origNotetext = note['noteText']
-      origTags = ','.join(note['tags'])
-      try:
-         self.editTimestamps = note['editTimestamps']
-         self.editTimestamps.append(time.time())
-      except KeyError:
-         self.editTimestamps = [time.time()]
+      origNote = self.db.getItem(ID)
+      origNotetext = origNote['noteText']
+      origTags = ','.join(origNote['tags'])
 
       editText = self.noteEditTemplate.format(origNotetext, origTags)
       self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
@@ -366,27 +500,9 @@ class Note(object):
 
       self.startEditor(3)
       self.processNote()
-      self.delete(ID)
-      self.addNoteToDB()
+      self.db.addItem("notes", {"noteText": self.noteText, "tags": self.tags}, ID)
 
       return
-
-   def addNoteToDB(self):
-      client = MongoClient()
-      db = client['note']
-      collection = db['notes']
-
-      post = {"noteText": self.noteText,
-              "tags": self.tags,
-              "timestamp": time.time(),
-              "ID": self.getID()}
-
-      try:
-         post['editTimestamps'] = self.editTimestamps
-      except AttributeError:
-         pass
-
-      collection.insert(post)
 
    def newContact(self, null=None):
       self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
@@ -430,37 +546,8 @@ class Note(object):
       return
 
    def addContactToDB(self):
-      client = MongoClient()
-      db = client['note']
-      collection = db['contacts']
-
-      ID = self.getID()
-
-      post = {"contact": self.contactInfo,
-              "timestamp": time.time(),
-              "ID": ID}
-
-      collection.insert(post)
 
       return
-
-   def getID(self):
-      client = MongoClient()
-      db = client['note']
-
-      unusedIDs = db['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
-
-      if not unusedIDs:
-         ID = db['IDs'].find_one({"currentMax": {"$exists": True}})['currentMax'] + 1
-         db['IDs'].update({"currentMax": ID - 1}, {"currentMax": ID})
-      else:
-         unusedIDs = db['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
-         ID = min(unusedIDs)
-         unusedIDs.remove(ID)
-         db['IDs'].update({"unusedIDs": {"$exists": True}},
-                          {"$set": {"unusedIDs": unusedIDs}})
-
-      return ID
 
    def startEditor(self, startingLine=1):
       if self.editor == "/usr/bin/vim" or self.editor == '/usr/local/bin/vim':
