@@ -101,7 +101,9 @@ class dbBaseClass:
 class mongoDB(dbBaseClass):
 
    def __init__(self, dbName):
+      """
 
+      """
       self.dbName = dbName
 
       self.client = MongoClient()
@@ -125,7 +127,6 @@ class mongoDB(dbBaseClass):
       """
          itemType really means the collection name or table name
       """
-
       collection = self.noteDB[itemType]
 
       if itemID is None:
@@ -143,7 +144,10 @@ class mongoDB(dbBaseClass):
       return
 
    def getNewID(self):
+      """
+         Get a new ID by either incrementing the currentMax ID or using an unusedID
 
+      """
       idCollection = self.noteDB['IDs']
       unusedIDs = idCollection.find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
 
@@ -160,7 +164,12 @@ class mongoDB(dbBaseClass):
       return ID
 
    def getItem(self, itemID):
+      """
+         Given an ID return the note JSON object
 
+         {u'noteText': u'note8', u'ID': 3.0, u'tags': [u'8'], u'timestamps': [1381719620.315899]}
+
+      """
       collections = self.noteDB.collection_names()
       collections.remove(u'system.indexes')
       collections.remove(u'IDs')
@@ -174,6 +183,9 @@ class mongoDB(dbBaseClass):
       return note
 
    def getItemType(self, itemID):
+      """
+         Given an itemID, return the "type" i.e. the collection it belongs to.
+      """
       collections = self.noteDB.collection_names()
       collections.remove(u'system.indexes')
       collections.remove(u'IDs')
@@ -184,25 +196,21 @@ class mongoDB(dbBaseClass):
             return coll
 
    def searchForItem(self, searchInfo, resultLimit=20):
+      """
+      Given a search term returns a list of results that match that term:
+
+         [{u'score': 5.5, u'obj': {u'noteText': u'note8', u'ID': 3.0, u'timestamps': [1381719620.315899]}}]
+
+      """
       projection = {"ID": 1, "noteText": 1, "timestamps": 1, "_id": 0}
       searchResults = self.noteDB.command("text", "notes", search=searchInfo, project=projection, limit=resultLimit)
 
       return searchResults['results']
 
-      results = []
-
-      # FIXME - do this print formatting somewhere else, return in some
-      # standard format
-      for result in searchResults['results']:
-         noteText = result['obj']['noteText']
-         ID = int(result['obj']['ID'])
-         timestamp = time.localtime(result['obj']['timestamp'])
-         noteDate = time.strftime("%a, %b %d", timestamp)
-         results.append( "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID))
-
-      return results
-
    def deleteItem(self, itemID):
+      """
+         Deletes item with ID = itemID, takes care of IDs collection
+      """
       collections = self.noteDB.collection_names()
       collections.remove(u'system.indexes')
       collections.remove(u'IDs')
@@ -257,25 +265,60 @@ def sqliteDB(dbBaseClass):
 
 
 class NoteBaseClass(object):
+   __metaclass__ = ABCMeta
 
-   def __init__(self):
-
+   @abstractmethod
+   def __init__(self, db):
       return
 
-   def addToDB(self):
-
+   @abstractmethod
+   def delete(self, ID):
       return
 
-   def edit(self):
+   @abstractmethod
+   def edit(self, ID):
+      return
 
+   @abstractmethod
+   def new(self):
+      return
+
+   @abstractmethod
+   def search(self, searchTerm):
+      return
+
+
+class Note(NoteBaseClass):
+   def __init__(self, db):
+      """
+
+      """
+      self.db = db
+      self.noteType = "notes"
+      return
+
+   def delete(self, ID):
+      """
+
+      """
+      return
+
+   def edit(self, ID):
+      """
+
+      """
       return
 
    def new(self):
+      """
 
+      """
       return
 
-   def process(self):
+   def search(self, searchTerm):
+      """
 
+      """
       return
 
 
