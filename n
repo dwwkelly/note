@@ -271,6 +271,7 @@ class NoteBaseClass(object):
 
    @abstractmethod
    def __init__(self, db):
+      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       self.homeDir = os.path.expanduser('~')
       self.editor = os.getenv('EDITOR')
       self.db = db
@@ -333,7 +334,6 @@ class Note(NoteBaseClass):
       self.noteType = "notes"
       self.noteTemplate = "NOTE\n\n\n\nTAGS\n\n\n"
       self.noteEditTemplate = "NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
-      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
 
    def processNote(self):
 
@@ -407,16 +407,110 @@ class Note(NoteBaseClass):
       self.printResults(results)
 
 
+class ToDo(NoteBaseClass):
+
+   def __init__(self, db):
+      super(Note, self).__init__(db)
+      self.noteType = "todos"
+      self.todoTemplate = "TODO\n\nDONE\n\nDATE"
+
+   def edit(self, ID):
+      return
+
+   def new(self):
+      self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
+      self.tmpTodo = os.path.join(self.homeDir, '.todoTemplate')
+      shutil.copyfile(self.tmpTodo, self.tmpNote)
+      self.startEditor(2)
+      self.processTodo()
+      self.addTodoToDB()
+      return
+
+   def processTodo(self):
+      try:
+         with open(self.tmpNote) as fd:
+            lines = fd.read()
+      except IOError:
+         print("Config file doesn't exist, exiting")
+         sys.exit(-1)
+
+      todoText = lines[lines.index('TODO') + 4: lines.index('DONE')]
+      todoText = todoText.split('\n')
+      todoText = filter(lambda x: x != '', todoText)
+      todoText = map(lambda x: x.rstrip(), todoText)
+      todoText = '\n'.join(todoText)
+      self.todoText = todoText
+
+      done = lines[lines.index('DONE') + 4: lines.index('DATE')]
+      doneText = done.split('\n')
+      doneText = filter(lambda x: x != '', doneText)
+      doneText = map(lambda x: x.rstrip(), doneText)
+      doneText = '\n'.join(doneText)
+      doneText = doneText.lower()
+      if ('t' in doneText or 'true' in doneText) and ('f' not in doneText or 'false' not in doneText):
+         self.done = True
+      else:
+         self.done = False
+
+      date = lines[lines.index('DATE') + 4: -1]
+      date = date.strip()
+      self.date = date
+
+      return
+
+
+class Contact(NoteBaseClass):
+
+   def __init__(self, db):
+      super(Note, self).__init__(db)
+      self.noteType = "contacts"
+      self.contactTemplate = "NAME\n\nAFFILIATION\n\nEMAIL\n\nMOBILE PHONE\n\nHOME PHONE\n\nWORK PHONE\n\nADDRESS"
+
+   def edit(self, ID):
+      with open(self.tmpNote) as fd:
+         contactText = fd.read(8192)
+
+      contactInfo = {}
+      idx = []
+      lines = contactText.split('\n')
+      for i in range(len(lines)):
+         if lines[i].isupper():
+            idx.append(i)
+
+      for i in range(len(idx)):
+         start = idx[i] + 1
+         try:
+            end = idx[i + 1]
+         except:
+            end = len(lines) - 1
+         key = lines[idx[i]].lower()
+         info = lines[start:end]
+         info = [x for x in info if x != '']
+         if info:
+            contactInfo[key] = '\n'.join(info)
+
+      self.contactInfo = contactInfo
+      return
+
+   def new(self):
+      self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
+      shutil.copyfile(self.templateContact, self.tmpNote)
+      self.startEditor(2)
+      self.processContact()
+      self.addContactToDB()
+
+   def processTodo(self):
+      return
+
+   def seach(self):
+      return
+
+
 class Runner(object):
 
    def __init__(self):
 
       self.dbName = 'note'
-
-      self.contactTemplate = "NAME\n\nAFFILIATION\n\nEMAIL\n\nMOBILE PHONE\n\nHOME PHONE\n\nWORK PHONE\n\nADDRESS"
-      self.todoTemplate = "TODO\n\nDONE\n\nDATE"
-      templateContactName = '.contactTemplate'
-      self.templateContact = os.path.join(self.homeDir, templateContactName)
 
       db = mongoDB(self.dbName)
       note = Note(db)
@@ -460,102 +554,12 @@ class Runner(object):
          print "{0} does not exist".format(self.command)
          sys.exit(0)
 
-   def showDone(self, null=None):
-
-      return
-
-   def showUndone(self, null=None):
-
-      return
 
    def newTodo(self, null=None):
-      self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
-      self.tmpTodo = os.path.join(self.homeDir, '.todoTemplate')
-      shutil.copyfile(self.tmpTodo, self.tmpNote)
-      self.startEditor(2)
-      self.processTodo()
-      self.addTodoToDB()
 
-   def processTodo(self):
-      try:
-         with open(self.tmpNote) as fd:
-            lines = fd.read()
-      except IOError:
-         print("Config file doesn't exist, exiting")
-         sys.exit(-1)
-
-      todoText = lines[lines.index('TODO') + 4: lines.index('DONE')]
-      todoText = todoText.split('\n')
-      todoText = filter(lambda x: x != '', todoText)
-      todoText = map(lambda x: x.rstrip(), todoText)
-      todoText = '\n'.join(todoText)
-      self.todoText = todoText
-
-      done = lines[lines.index('DONE') + 4: lines.index('DATE')]
-      doneText = done.split('\n')
-      doneText = filter(lambda x: x != '', doneText)
-      doneText = map(lambda x: x.rstrip(), doneText)
-      doneText = '\n'.join(doneText)
-      doneText = doneText.lower()
-      if ('t' in doneText or 'true' in doneText) and ('f' not in doneText or 'false' not in doneText):
-         self.done = True
-      else:
-         self.done = False
-
-      date = lines[lines.index('DATE') + 4: -1]
-      date = date.strip()
-      self.date = date
-
-      return
-
-   def editTodo(self, ID):
-
-      print "not yet implemented"
-
-      return
-
-   def newContact(self, null=None):
-      self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
-      shutil.copyfile(self.templateContact, self.tmpNote)
-      self.startEditor(2)
-      self.processContact()
-      self.addContactToDB()
-
-      return
 
    def processContact(self):
 
-      with open(self.tmpNote) as fd:
-         contactText = fd.read(8192)
-
-      contactInfo = {}
-      idx = []
-      lines = contactText.split('\n')
-      for i in range(len(lines)):
-         if lines[i].isupper():
-            idx.append(i)
-
-      for i in range(len(idx)):
-         start = idx[i] + 1
-         try:
-            end = idx[i + 1]
-         except:
-            end = len(lines) - 1
-         key = lines[idx[i]].lower()
-         info = lines[start:end]
-         info = [x for x in info if x != '']
-         if info:
-            contactInfo[key] = '\n'.join(info)
-
-      self.contactInfo = contactInfo
-
-      return
-
-   def editContact(self, ID):
-
-      return
-
-   def addContactToDB(self):
 
       return
 
