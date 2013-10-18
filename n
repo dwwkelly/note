@@ -26,7 +26,6 @@ __added_features__ = '''
 '''
 
 import subprocess
-import shutil
 import argparse
 import os
 import sys
@@ -271,8 +270,8 @@ class NoteBaseClass(object):
 
    @abstractmethod
    def __init__(self, db):
-      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       self.homeDir = os.path.expanduser('~')
+      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       self.editor = os.getenv('EDITOR')
       self.db = db
       return
@@ -374,9 +373,9 @@ class Note(NoteBaseClass):
 
       self.startEditor(3)
       self.processNote()
-      self.db.addItem("notes", {"noteText": self.noteText, "tags": self.tags}, ID)
+      self.db.addItem(self.noteType, {"noteText": self.noteText, "tags": self.tags}, ID)
 
-   def new(self, dummy):
+   def new(self, dummy=None):
       """
 
       """
@@ -410,20 +409,21 @@ class Note(NoteBaseClass):
 class ToDo(NoteBaseClass):
 
    def __init__(self, db):
-      super(Note, self).__init__(db)
+      super(ToDo, self).__init__(db)
       self.noteType = "todos"
-      self.todoTemplate = "TODO\n\nDONE\n\nDATE"
+      self.todoTemplate = "TODO\n\n\n\nDONE\n\n\n\nDATE - MM DD YY\n\n\n"
+      self.todoEditTemplate = "TODO\n\n{0}\n\nDONE\n\n{1}\n\nDATE - MM DD YY\n\n\n"
 
    def edit(self, ID):
       return
 
-   def new(self):
+   def new(self, dummy=None):
       self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
-      self.tmpTodo = os.path.join(self.homeDir, '.todoTemplate')
-      shutil.copyfile(self.tmpTodo, self.tmpNote)
+      with open(self.tmpNote, 'w') as fd:
+         fd.write(self.todoTemplate)
       self.startEditor(2)
       self.processTodo()
-      self.addTodoToDB()
+      self.db.addItem(self.noteType, {"todoText": self.todoText, "done": self.done, "date": self.date})
       return
 
    def processTodo(self):
@@ -441,30 +441,40 @@ class ToDo(NoteBaseClass):
       todoText = '\n'.join(todoText)
       self.todoText = todoText
 
-      done = lines[lines.index('DONE') + 4: lines.index('DATE')]
+      done = lines[lines.index('DONE') + 4: lines.index('DATE - MM DD YY')]
       doneText = done.split('\n')
       doneText = filter(lambda x: x != '', doneText)
       doneText = map(lambda x: x.rstrip(), doneText)
       doneText = '\n'.join(doneText)
       doneText = doneText.lower()
-      if ('t' in doneText or 'true' in doneText) and ('f' not in doneText or 'false' not in doneText):
+      if ('t' in doneText or 'true' in doneText or 'yes' in doneText) and \
+         ('f' not in doneText or 'false' not in doneText or 'no' not in doneText):
          self.done = True
       else:
          self.done = False
 
-      date = lines[lines.index('DATE') + 4: -1]
+      date = lines[lines.index('DATE - MM DD YY') + 15: -1]
       date = date.strip()
       self.date = date
 
+   def search(self, searchTerm):
+
+      return
+
+   def showDone(self, dummy=None):
+      return
+
+   def showUndone(self, dummy=None):
       return
 
 
 class Contact(NoteBaseClass):
 
    def __init__(self, db):
-      super(Note, self).__init__(db)
+      super(Contact, self).__init__(db)
       self.noteType = "contacts"
-      self.contactTemplate = "NAME\n\nAFFILIATION\n\nEMAIL\n\nMOBILE PHONE\n\nHOME PHONE\n\nWORK PHONE\n\nADDRESS"
+      self.contactTemplate = "NAME\n\n\n\nAFFILIATION\n\n\n\nEMAIL\n\n\n\nMOBILE PHONE\n\n\n\nHOME PHONE\n\n\n\nWORK PHONE\n\n\n\nADDRESS\n\n\n"
+      self.contactEditTemplate = "NAME\n\n{0}\n\nAFFILIATION\n\n{1}\n\nEMAIL\n\n{2}\n\nMOBILE PHONE\n\n{3}\n\nHOME PHONE\n\n{4}\n\nWORK PHONE\n\n{5}\n\nADDRESS\n\n\n"
 
    def edit(self, ID):
       with open(self.tmpNote) as fd:
@@ -492,17 +502,18 @@ class Contact(NoteBaseClass):
       self.contactInfo = contactInfo
       return
 
-   def new(self):
+   def new(self, dummy=None):
       self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
-      shutil.copyfile(self.templateContact, self.tmpNote)
-      self.startEditor(2)
+      with open(self.tmpNote, 'w') as fd:
+         fd.write(self.contactTemplate)
+      self.startEditor(3)
       self.processContact()
       self.addContactToDB()
 
-   def processTodo(self):
+   def processContact(self):
       return
 
-   def seach(self):
+   def search(self, searchTerm):
       return
 
 
@@ -514,6 +525,8 @@ class Runner(object):
 
       db = mongoDB(self.dbName)
       note = Note(db)
+      todo = ToDo(db)
+      contact = Contact(db)
 
       # TODO - when editing or deleting get the ID number then
       # initialize the object ie if the ID is for a todo
@@ -527,11 +540,11 @@ class Runner(object):
       self.commands['delete'] = note.delete
       self.commands['edit'] = note.edit
 
-      self.commands['todo'] = self.newTodo
+      self.commands['contact'] = contact.new
+      self.commands['todo'] = todo.new
+      self.commands['showDone'] = todo.showDone
+      self.commands['showUndone'] = todo.showUndone
       self.commands['backup'] = self.backup
-      self.commands['contact'] = self.newContact
-      self.commands['showDone'] = self.showDone
-      self.commands['showUndone'] = self.showUndone
 
       self.parseOpts()
 
@@ -541,11 +554,10 @@ class Runner(object):
       self.commands['D'] = note.delete
       self.commands['e'] = note.edit
 
-      self.commands['t'] = self.newTodo
-      self.commands['b'] = self.backup
-      self.commands['c'] = self.newContact
-      self.commands['d'] = self.showDone
-      self.commands['u'] = self.showUndone
+      self.commands['t'] = todo.new
+      self.commands['d'] = todo.showDone
+      self.commands['u'] = todo.showUndone
+      self.commands['c'] = contact.new
       self.commands['b'] = self.backup
 
       try:
@@ -554,13 +566,7 @@ class Runner(object):
          print "{0} does not exist".format(self.command)
          sys.exit(0)
 
-
-   def newTodo(self, null=None):
-
-
-   def processContact(self):
-
-
+   def null(self):
       return
 
    def parseOpts(self):
