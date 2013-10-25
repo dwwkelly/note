@@ -30,6 +30,7 @@ import argparse
 import os
 import sys
 import time
+import copy
 import subprocess as SP
 from pymongo import MongoClient
 from abc import ABCMeta, abstractmethod
@@ -201,10 +202,23 @@ class mongoDB(dbBaseClass):
          [{u'score': 5.5, u'obj': {u'noteText': u'note8', u'ID': 3.0, u'timestamps': [1381719620.315899]}}]
 
       """
-      projection = {"ID": 1, "noteText": 1, "timestamps": 1, "_id": 0}
-      searchResults = self.noteDB.command("text", "notes", search=searchInfo, project=projection, limit=resultLimit)
 
-      return searchResults['results']
+      # FIXME -- move search to DB class
+      #projection = {"ID": 1, "noteText": 1, "timestamps": 1, "_id": 0}
+      #searchResults = self.noteDB.command("text", "notes", search=searchInfo, project=projection, limit=resultLimit)
+
+      searchResults = []
+
+      colls = self.db.collection_names()
+      colls.remove(u'system.indexes')
+      colls.remove(u'IDs')
+
+      proj = {"_id": 0}
+      for coll in colls:
+         res = self.noteDB.command("text", coll, search=searchInfo, project=proj, limit=resultLimit)['results']
+         searchResults.extend(res)
+
+      return searchResults
 
    def deleteItem(self, itemID):
       """
@@ -475,43 +489,53 @@ class Contact(NoteBaseClass):
       self.noteType = "contacts"
       self.contactTemplate = "NAME\n\n\n\nAFFILIATION\n\n\n\nEMAIL\n\n\n\nMOBILE PHONE\n\n\n\nHOME PHONE\n\n\n\nWORK PHONE\n\n\n\nADDRESS\n\n\n"
       self.contactEditTemplate = "NAME\n\n{0}\n\nAFFILIATION\n\n{1}\n\nEMAIL\n\n{2}\n\nMOBILE PHONE\n\n{3}\n\nHOME PHONE\n\n{4}\n\nWORK PHONE\n\n{5}\n\nADDRESS\n\n\n"
+      self.keys = ["NAME", "AFFILIATION", "EMAIL", "MOBILE PHONE", "HOME PHONE", "WORK PHONE", "ADDRESS"]
+      self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
+      self.contactInfo = {}
 
    def edit(self, ID):
-      with open(self.tmpNote) as fd:
-         contactText = fd.read(8192)
 
-      contactInfo = {}
-      idx = []
-      lines = contactText.split('\n')
-      for i in range(len(lines)):
-         if lines[i].isupper():
-            idx.append(i)
+      ID = int(ID[0])
+      origContact = self.db.getItem(ID)
+      self.contactEditTemplate
 
-      for i in range(len(idx)):
-         start = idx[i] + 1
-         try:
-            end = idx[i + 1]
-         except:
-            end = len(lines) - 1
-         key = lines[idx[i]].lower()
-         info = lines[start:end]
-         info = [x for x in info if x != '']
-         if info:
-            contactInfo[key] = '\n'.join(info)
+      editText = self.contactEditTemplate.format(origContact['NAME'],
+                                                 origContact['AFFILIATION'],
+                                                 origContact['EMAIL'],
+                                                 origContact['MOBILE PHONE'],
+                                                 origContact['HOME PHONE'],
+                                                 origContact['WORK PHONE'],
+                                                 origContact['ADDRESS'])
 
-      self.contactInfo = contactInfo
+      with open(self.tmpNote, 'w') as fd:
+         fd.write(editText)
+
+      self.startEditor(3)
+      self.processContact()
+      self.db.addItem(self.noteType, self.contactInfo, ID)
       return
 
    def new(self, dummy=None):
-      self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
       with open(self.tmpNote, 'w') as fd:
          fd.write(self.contactTemplate)
       self.startEditor(3)
       self.processContact()
-      self.addContactToDB()
+      self.db.addItem("contacts", self.contactInfo)
 
    def processContact(self):
-      return
+      try:
+         with open(self.tmpNote) as fd:
+            lines = fd.read()
+      except IOError:
+         print("Config file doesn't exist, exiting")
+         sys.exit(-1)
+
+      keys = copy.deepcopy(self.keys)
+      keys.reverse()
+
+      for k in keys:
+         self.contactInfo[k] = (lines.split(k)[-1]).strip()
+         lines = " ".join(lines.split(k)[0:-1])
 
    def search(self, searchTerm):
       return
@@ -522,17 +546,19 @@ class Runner(object):
    def __init__(self):
 
       self.dbName = 'note'
-
       db = mongoDB(self.dbName)
-      note = Note(db)
-      todo = ToDo(db)
-      contact = Contact(db)
 
       # TODO - when editing or deleting get the ID number then
       # initialize the object ie if the ID is for a todo
       # then get the ID, figure out that it belongs to a todo
       # then make
       # self.commands['delete'] = todo.delete
+
+      self.commands = ['backup', 'showUndone', 'showDone', 'todo', 'contact', 'edit', 'delete', 'search', 'add']
+      note = Note(db)
+      todo = ToDo(db)
+      contact = Contact(db)
+      itemTypes = {"notes": note, "todos": todo, "contacts": contact}
 
       self.commands = dict()
       self.commands['add'] = note.new
@@ -548,17 +574,22 @@ class Runner(object):
 
       self.parseOpts()
 
-      # These are undocumented shortcuts
-      self.commands['a'] = note.new
-      self.commands['s'] = note.search
-      self.commands['D'] = note.delete
-      self.commands['e'] = note.edit
+      if self.command in ['edit', 'delete', 'e', 'D']:
+         itemType = db.getItemType(int(self.commandArgs[0]))
+         self.commands['delete'] = itemTypes[itemType].delete
+         self.commands['edit'] = itemTypes[itemType].edit
 
-      self.commands['t'] = todo.new
-      self.commands['d'] = todo.showDone
-      self.commands['u'] = todo.showUndone
-      self.commands['c'] = contact.new
-      self.commands['b'] = self.backup
+      # These are undocumented shortcuts
+      self.commands['a'] = self.commands['add']
+      self.commands['s'] = self.commands['search']
+      self.commands['D'] = self.commands['delete']
+      self.commands['e'] = self.commands['edit']
+
+      self.commands['t'] = self.commands['todo']
+      self.commands['d'] = self.commands['showDone']
+      self.commands['u'] = self.commands['showUndone']
+      self.commands['c'] = self.commands['contact']
+      self.commands['b'] = self.commands['backup']
 
       try:
          self.commands[self.command](self.commandArgs)
@@ -576,7 +607,7 @@ class Runner(object):
       parser.add_argument('--configFile', type=str, help='Path to config file',
                           default=defaultConfigPath)
 
-      commandHelp = 'note: eligible commands are: {0}'.format(', '.join(self.commands.keys()))
+      commandHelp = 'note: eligible commands are: {0}'.format(', '.join(self.commands))
       parser.add_argument('command', metavar='cmd', type=str, nargs='+',
                           help=commandHelp)
 
