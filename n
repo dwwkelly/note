@@ -11,10 +11,9 @@ __todo__ = '''
 -add ability to change todo state
 -make install command that copies template files to home
 -import contacts from google - https://developers.google.com/google-apps/contacts/v3/
+-implement Contact.importVCard
 -add a verify command that checks IDs collection against other collections for consistency
 -switch to a SQL database?
--possibly rewrite code to take utilize inheritance
--when editing a note, should the timestamp be the original, the newest or a list of all edits?
 -make a note info command which shows note, tags and all other metadata
 '''
 
@@ -23,6 +22,8 @@ __added_features__ = '''
 -add system for handling contact (email, phone, address, etc)
 -complete encrpytion implementation
 -fine tune search
+-possibly rewrite code to take utilize inheritance
+-when editing a note, should the timestamp be the original, the newest or a list of all edits?
 '''
 
 import subprocess
@@ -114,8 +115,6 @@ class mongoDB(dbBaseClass):
          adminDB.command({"setParameter": 1, "textSearchEnabled": "true"})
 
       self.noteDB = self.client[self.dbName]
-      if 'notes' not in self.noteDB.collection_names():
-         self.noteDB.notes.create_index([("noteText", "text"), ("tags", "text")], weights={"tags": 10, "noteText": 5})
 
       if self.noteDB.IDs.find({"currentMax": {"$exists": True}}).count() == 0:
          self.noteDB['IDs'].insert({"currentMax": 0})
@@ -128,6 +127,10 @@ class mongoDB(dbBaseClass):
          itemType really means the collection name or table name
       """
       collection = self.noteDB[itemType]
+      Weights = {ii: 1 for ii in itemContents.keys()}
+      if collection not in self.noteDB.collection_names():
+         ##collection.create_index([(collection.name, "text"), ("tags", "text")], weights={"tags": 10, "noteText": 5})
+         collection.create_index([(collection.name, "text"), ("tags", "text")], weights=Weights)
 
       if itemID is None:
          itemContents['timestamps'] = [time.time()]
@@ -209,7 +212,7 @@ class mongoDB(dbBaseClass):
 
       searchResults = []
 
-      colls = self.db.collection_names()
+      colls = self.noteDB.collection_names()
       colls.remove(u'system.indexes')
       colls.remove(u'IDs')
 
@@ -292,6 +295,10 @@ class NoteBaseClass(object):
 
    @abstractmethod
    def edit(self, ID):
+      return
+
+   @abstractmethod
+   def printItem(self):
       return
 
    @abstractmethod
@@ -399,7 +406,8 @@ class Note(NoteBaseClass):
       self.startEditor(3)
       self.processNote()
 
-      self.db.addItem("notes", {"noteText": self.noteText, "tags": self.tags})
+      if self.noteText:
+         self.db.addItem("notes", {"noteText": self.noteText, "tags": self.tags})
 
       return
 
@@ -408,7 +416,7 @@ class Note(NoteBaseClass):
 
       """
       results = []
-      searchResults = self.db.searchForItem(searchTerm[0], resultLimit)
+      searchResults = self.db.searchForItem(searchTerm, resultLimit)
       for result in searchResults:
          noteText = result['obj']['noteText']
          ID = int(result['obj']['ID'])
@@ -418,6 +426,14 @@ class Note(NoteBaseClass):
          results.append( "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID))
 
       self.printResults(results)
+
+   def printItem(self, ID):
+      result = self.db.getItem(ID)
+      noteText = result['noteText']
+      timestamps = result['timestamps']
+      timestamp = time.localtime(max(timestamps))
+      noteDate = time.strftime("%a, %b %d", timestamp)
+      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID)
 
 
 class ToDo(NoteBaseClass):
@@ -481,6 +497,14 @@ class ToDo(NoteBaseClass):
    def showUndone(self, dummy=None):
       return
 
+   def printItem(self, ID):
+      result = self.db.getItem(ID)
+      resultsStr = ""
+      timestamps = result['timestamps']
+      timestamp = time.localtime(max(timestamps))
+      noteDate = time.strftime("%a, %b %d", timestamp)
+      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, ID)
+
 
 class Contact(NoteBaseClass):
 
@@ -537,7 +561,50 @@ class Contact(NoteBaseClass):
          self.contactInfo[k] = (lines.split(k)[-1]).strip()
          lines = " ".join(lines.split(k)[0:-1])
 
-   def search(self, searchTerm):
+   def search(self, searchTerm, resultLimit=20):
+      results = []
+      searchResults = self.db.searchForItem(searchTerm, resultLimit)
+      for result in searchResults:
+         name = result['obj']['NAME']
+         work_phone = result['obj']['WORK PHONE']
+         affiliation = result['obj']['AFFILIATION']
+         mobile_phone = result['obj']['MOBILE PHONE']
+         address = result['obj']['ADDRESS']
+         email = result['obj']['EMAIL']
+         home_phone = result['obj']['HOME PHONE']
+
+         order = [name, affiliation, email, mobile_phone, work_phone, home_phone, address]
+         order = [ii for ii in order if ii]  # remove all the empty strings
+         resultsStr = ", ".join(order)
+
+         ID = int(result['obj']['ID'])
+         timestamps = result['obj']['timestamps']
+         timestamp = time.localtime(max(timestamps))
+         noteDate = time.strftime("%a, %b %d", timestamp)
+         results.append( "{5}{6} {4}{2}{0}:{3} {1}, {7}, {8}, {9}, {10}, {11}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, ID ))
+
+      self.printResults(results)
+
+   def printItem(self, ID):
+      result = self.db.getItem(ID)
+      name = result['NAME']
+      work_phone = result['WORK PHONE']
+      affiliation = result['AFFILIATION']
+      mobile_phone = result['MOBILE PHONE']
+      address = result['ADDRESS']
+      email = result['EMAIL']
+      home_phone = result['HOME PHONE']
+
+      order = [name, affiliation, email, mobile_phone, work_phone, home_phone, address]
+      order = [ii for ii in order if ii]  # remove all the empty strings
+      resultsStr = ", ".join(order)
+      timestamps = result['timestamps']
+      timestamp = time.localtime(max(timestamps))
+      noteDate = time.strftime("%a, %b %d", timestamp)
+      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, ID)
+
+   def importVCard(self):
+
       return
 
 
@@ -546,7 +613,7 @@ class Runner(object):
    def __init__(self):
 
       self.dbName = 'note'
-      db = mongoDB(self.dbName)
+      self.db = mongoDB(self.dbName)
 
       # TODO - when editing or deleting get the ID number then
       # initialize the object ie if the ID is for a todo
@@ -555,14 +622,14 @@ class Runner(object):
       # self.commands['delete'] = todo.delete
 
       self.commands = ['backup', 'showUndone', 'showDone', 'todo', 'contact', 'edit', 'delete', 'search', 'add']
-      note = Note(db)
-      todo = ToDo(db)
-      contact = Contact(db)
-      itemTypes = {"notes": note, "todos": todo, "contacts": contact}
+      note = Note(self.db)
+      todo = ToDo(self.db)
+      contact = Contact(self.db)
+      self.itemTypes = {"notes": note, "todos": todo, "contacts": contact}
 
       self.commands = dict()
       self.commands['add'] = note.new
-      self.commands['search'] = note.search
+      self.commands['search'] = self.search
       self.commands['delete'] = note.delete
       self.commands['edit'] = note.edit
 
@@ -575,9 +642,9 @@ class Runner(object):
       self.parseOpts()
 
       if self.command in ['edit', 'delete', 'e', 'D']:
-         itemType = db.getItemType(int(self.commandArgs[0]))
-         self.commands['delete'] = itemTypes[itemType].delete
-         self.commands['edit'] = itemTypes[itemType].edit
+         itemType = self.db.getItemType(int(self.commandArgs[0]))
+         self.commands['delete'] = self.itemTypes[itemType].delete
+         self.commands['edit'] = self.itemTypes[itemType].edit
 
       # These are undocumented shortcuts
       self.commands['a'] = self.commands['add']
@@ -591,14 +658,25 @@ class Runner(object):
       self.commands['c'] = self.commands['contact']
       self.commands['b'] = self.commands['backup']
 
-      try:
-         self.commands[self.command](self.commandArgs)
-      except KeyError:
-         print "{0} does not exist".format(self.command)
-         sys.exit(0)
+      self.commands[self.command](self.commandArgs)
+      #try:
+      #   self.commands[self.command](self.commandArgs)
+      #except KeyError:
+      #   print "{0} does not exist".format(self.command)
+      #   sys.exit(0)
 
    def null(self):
       return
+
+   def search(self, searchTerm):
+      searchTerm = searchTerm[0]
+
+      results = self.db.searchForItem(searchTerm)
+
+      for item in results:
+         ID = item['obj'][u"ID"]
+         itemType = self.db.getItemType(ID)
+         self.itemTypes[itemType].printItem(ID)
 
    def parseOpts(self):
       parser = argparse.ArgumentParser(description="note")
