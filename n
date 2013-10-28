@@ -615,12 +615,6 @@ class Runner(object):
       self.dbName = 'note'
       self.db = mongoDB(self.dbName)
 
-      # TODO - when editing or deleting get the ID number then
-      # initialize the object ie if the ID is for a todo
-      # then get the ID, figure out that it belongs to a todo
-      # then make
-      # self.commands['delete'] = todo.delete
-
       self.commands = ['backup', 'showUndone', 'showDone', 'todo', 'contact', 'edit', 'delete', 'search', 'add']
       note = Note(self.db)
       todo = ToDo(self.db)
