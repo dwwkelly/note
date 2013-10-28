@@ -33,7 +33,7 @@ import sys
 import time
 import copy
 import subprocess as SP
-from pymongo import MongoClient
+import pymongo
 from abc import ABCMeta, abstractmethod
 
 try:
@@ -107,7 +107,7 @@ class mongoDB(dbBaseClass):
       """
       self.dbName = dbName
 
-      self.client = MongoClient()
+      self.client = pymongo.MongoClient()
       adminDB = self.client['admin']
       textSearchEnabled = adminDB.command({"getParameter": 1, "textSearchEnabled": 1})['textSearchEnabled']
 
@@ -251,6 +251,12 @@ class mongoDB(dbBaseClass):
    def getBackup(self):
 
       return
+
+   def getDone(self, done):
+
+      doneItems = self.noteDB['todos'].find({"done": done}).sort("date", pymongo.DESCENDING)
+      IDs = [ii['ID'] for ii in doneItems]
+      return IDs
 
 
 def sqliteDB(dbBaseClass):
@@ -454,10 +460,12 @@ class ToDo(NoteBaseClass):
       self.date = time.mktime(time.strptime(date, "%m %d %y"))
 
    def showDone(self, dummy=None):
-      return
+      IDs = self.db.getDone(False)
+      [self.printItem(ii) for ii in IDs]
 
    def showUndone(self, dummy=None):
-      return
+      IDs = self.db.getDone(True)
+      [self.printItem(ii) for ii in IDs]
 
    def printItem(self, ID):
 
