@@ -652,12 +652,11 @@ class Runner(object):
       self.commands['c'] = self.commands['contact']
       self.commands['b'] = self.commands['backup']
 
-      self.commands[self.command](self.commandArgs)
-      #try:
-      #   self.commands[self.command](self.commandArgs)
-      #except KeyError:
-      #   print "{0} does not exist".format(self.command)
-      #   sys.exit(0)
+      try:
+         self.commands[self.command](self.commandArgs)
+      except KeyError:
+         print "{0} does not exist".format(self.command)
+         sys.exit(0)
 
    def null(self):
       return
