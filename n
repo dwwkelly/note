@@ -305,10 +305,6 @@ class NoteBaseClass(object):
    def new(self):
       return
 
-   @abstractmethod
-   def search(self, searchTerm):
-      return
-
    """ Concrete Methods """
 
    def delete(self, ID):
@@ -329,20 +325,6 @@ class NoteBaseClass(object):
                           "-c", "startinsert", self.tmpNote])
       else:
          subprocess.call([self.editor, self.tmpNote])
-
-   def printResults(self, results):
-      # Not sure if I want this in a pager or not
-      pager = False
-      if pager:
-         try:
-            import pydoc
-            pydoc.pager('\n'.join(results))
-         except ImportError:
-            print '\n'.join(results)
-      else:
-         print '\n'.join(results)
-
-      return
 
 
 class Note(NoteBaseClass):
@@ -411,22 +393,6 @@ class Note(NoteBaseClass):
 
       return
 
-   def search(self, searchTerm, resultLimit=20):
-      """
-
-      """
-      results = []
-      searchResults = self.db.searchForItem(searchTerm, resultLimit)
-      for result in searchResults:
-         noteText = result['obj']['noteText']
-         ID = int(result['obj']['ID'])
-         timestamps = result['obj']['timestamps']
-         timestamp = time.localtime(max(timestamps))
-         noteDate = time.strftime("%a, %b %d", timestamp)
-         results.append( "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID))
-
-      self.printResults(results)
-
    def printItem(self, ID):
       result = self.db.getItem(ID)
       noteText = result['noteText']
@@ -486,10 +452,6 @@ class ToDo(NoteBaseClass):
       date = lines[lines.index('DATE - MM DD YY') + 15: -1]
       date = date.strip()
       self.date = date
-
-   def search(self, searchTerm):
-
-      return
 
    def showDone(self, dummy=None):
       return
@@ -560,30 +522,6 @@ class Contact(NoteBaseClass):
       for k in keys:
          self.contactInfo[k] = (lines.split(k)[-1]).strip()
          lines = " ".join(lines.split(k)[0:-1])
-
-   def search(self, searchTerm, resultLimit=20):
-      results = []
-      searchResults = self.db.searchForItem(searchTerm, resultLimit)
-      for result in searchResults:
-         name = result['obj']['NAME']
-         work_phone = result['obj']['WORK PHONE']
-         affiliation = result['obj']['AFFILIATION']
-         mobile_phone = result['obj']['MOBILE PHONE']
-         address = result['obj']['ADDRESS']
-         email = result['obj']['EMAIL']
-         home_phone = result['obj']['HOME PHONE']
-
-         order = [name, affiliation, email, mobile_phone, work_phone, home_phone, address]
-         order = [ii for ii in order if ii]  # remove all the empty strings
-         resultsStr = ", ".join(order)
-
-         ID = int(result['obj']['ID'])
-         timestamps = result['obj']['timestamps']
-         timestamp = time.localtime(max(timestamps))
-         noteDate = time.strftime("%a, %b %d", timestamp)
-         results.append( "{5}{6} {4}{2}{0}:{3} {1}, {7}, {8}, {9}, {10}, {11}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, ID ))
-
-      self.printResults(results)
 
    def printItem(self, ID):
       result = self.db.getItem(ID)
