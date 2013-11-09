@@ -34,6 +34,7 @@ import time
 import copy
 import subprocess as SP
 import pymongo
+import shutil
 from abc import ABCMeta, abstractmethod
 
 try:
@@ -95,7 +96,7 @@ class dbBaseClass:
       pass
 
    @abstractmethod
-   def getBackup(self):
+   def makeBackupFile(self):
       pass
 
 
@@ -248,15 +249,19 @@ class mongoDB(dbBaseClass):
          unusedIDs.append(itemID)
          self.noteDB['IDs'].update({"unusedIDs": {"$exists": True}}, {"unusedIDs": unusedIDs})
 
-   def getBackup(self):
-
-      return
-
    def getDone(self, done):
 
       doneItems = self.noteDB['todos'].find({"done": done}).sort("date", pymongo.DESCENDING)
       IDs = [ii['ID'] for ii in doneItems]
       return IDs
+
+   def makeBackupFile(self, dstPath, fileName):
+
+      with open(os.devnull) as devnull:
+         SP.call(['mongodump', '--db', self.dbName, '--out', dstPath], stdout=devnull, stderr=devnull)
+         SP.call(['zip', '-r', os.path.join(dstPath, fileName), os.path.join(dstPath, self.dbName)], stdout=devnull, stderr=devnull)
+
+      SP.call(['rm', '-rf', os.path.join(dstPath, self.dbName)])
 
 
 def sqliteDB(dbBaseClass):
@@ -281,7 +286,7 @@ def sqliteDB(dbBaseClass):
 
       return
 
-   def getBackup(self):
+   def makeBackupFile(self):
 
       return
 
@@ -588,6 +593,7 @@ class Runner(object):
       self.commands['showDone'] = todo.showDone
       self.commands['showUndone'] = todo.showUndone
       self.commands['backup'] = self.backup
+      self.commands['encrypt'] = self.encrypt
 
       self.parseOpts()
 
@@ -607,6 +613,7 @@ class Runner(object):
       self.commands['u'] = self.commands['showUndone']
       self.commands['c'] = self.commands['contact']
       self.commands['b'] = self.commands['backup']
+      self.commands['E'] = self.encrypt
 
       try:
          self.commands[self.command](self.commandArgs)
@@ -649,33 +656,37 @@ class Runner(object):
 
    def backup(self, dst):
 
-      self.initGPG()
-
       if not dst:
          dst = '/tmp'
       else:
          dst = dst[0]
 
-      backupZip = os.path.join(dst, 'note_backup.zip')
-      backupGPG = os.path.join(dst, 'note_backup.gpg')
-
-      with open(os.devnull) as devnull:
-         SP.call(['mongodump', '--db', self.dbName, '--out', dst], stdout=devnull, stderr=devnull)
-         SP.call(['zip', '-r', os.path.join(dst, backupZip), os.path.join(dst, self.dbName)], stdout=devnull, stderr=devnull)
-
-      if self.key is not None:
-         stream = open(backupZip, "rb")
-         self.gpg.encrypt_file(stream, [self.key['fingerprint']], output=backupGPG)
-         SP.call(['rm', '-rf', os.path.join(dst, 'note_backup.zip')])
-         print "Encrypted Backup: {0}".format(backupGPG)
-      else:
-         print "Backup: {0}".format(backupZip)
-
-      SP.call(['rm', '-rf', os.path.join(dst, self.dbName)])
+      self.backupName = 'note_backup.zip'
+      self.db.makeBackupFile(dst, self.backupName)
+      if dst is "/tmp":
+         pwd = os.getcwd()
+         shutil.move(os.path.join(dst, self.backupName), os.path.join(pwd, self.backupName))
 
       return
 
-   def encrypt(self):
+   def encrypt(self, dst):
+
+      self.backup(dst)
+      if not dst:
+         dst = os.getcwd()
+      else:
+         dst = dst[0]
+
+      self.initGPG()
+      backupGPG = os.path.join(dst, 'note_backup.gpg')
+      backupFile = os.path.join(dst, self.backupName)
+      if self.key is not None:
+         stream = open(backupFile, "rb")
+         self.gpg.encrypt_file(stream, [self.key['fingerprint']], output=backupGPG)
+         SP.call(['rm', '-rf', backupFile])
+         print "Encrypted Backup: {0}".format(backupGPG)
+      else:
+         print "Could not encrpyt: {0}".format(backupFile)
 
       return
 
