@@ -36,6 +36,7 @@ import subprocess as SP
 import pymongo
 import shutil
 import json
+import datetime
 from abc import ABCMeta, abstractmethod
 
 try:
@@ -263,6 +264,30 @@ class mongoDB(dbBaseClass):
          SP.call(['zip', '-r', os.path.join(dstPath, fileName), os.path.join(dstPath, self.dbName)], stdout=devnull, stderr=devnull)
 
       SP.call(['rm', '-rf', os.path.join(dstPath, self.dbName)])
+
+   def getByTime(self, startTime=None, endTime=None):
+      collections = self.noteDB.collection_names()
+      collections.remove(u'system.indexes')
+      collections.remove(u'IDs')
+
+      startTime = float(startTime)
+      endTime = float(endTime)
+
+      if startTime is not None and endTime is not None:
+         timeQuery = {"$and": [{"timestamps": {"$gt": startTime}}, {"timestamps": {"$lt": endTime}}]}
+      elif startTime is not None and endTime is None:
+         timeQuery = {"timestamps": {"$gt": startTime}}
+      elif startTime is None and endTime is not None:
+         timeQuery = {"timestamps": {"$lt": endTime}}
+
+      IDs = []
+
+      for coll in collections:
+         docs = self.noteDB[coll].find(timeQuery, {"ID": 1, "_id": 0})
+         for doc in docs:
+            IDs.append(doc['ID'])
+
+      return IDs
 
 
 def sqliteDB(dbBaseClass):
@@ -596,6 +621,8 @@ class Runner(object):
       self.commands['backup'] = self.backup
       self.commands['encrypt'] = self.encrypt
       self.commands['dropbox'] = self.pushToDropbox
+      self.commands['lastMonth'] = self.lastMonth
+      self.commands['thisMonth'] = self.thisMonth
 
       self.parseOpts()
 
@@ -634,6 +661,7 @@ class Runner(object):
 
       results = self.db.searchForItem(searchTerm)
 
+      # FIXME This needs changing to be more generic
       for item in results:
          ID = item['obj'][u"ID"]
          itemType = self.db.getItemType(ID)
@@ -735,6 +763,44 @@ class Runner(object):
       with open(gpgFile) as f:
          response = client.put_file('/note_backup.gpg', f)
       print "uploaded:", response
+
+   def lastMonth(self):
+      now = datetime.datetime.now()
+
+      if now.month == 1:
+         month = 1
+         year = now.year - 1
+      else:
+         month = now.month
+         year = now.year
+
+      # FIXME - need to fix endOfMoneth to be the last second of the last day
+      firstOfMonth = datetime.datetime(year, month, day=1, hour=0, minute=0, second=0)
+      endOfMonth = datetime.datetime(year, month, day=1, hour=0, minute=0, second=0)
+
+      startTime = firstOfMonth.strftime('%s.%f')
+      endTime = endOfMonth.strftime('%s.%f')
+
+      IDs = self.db.getByTime(startTime=startTime, endTime=endTime)
+
+      for ID in IDs:
+         itemType = self.db.getItemType(ID)
+         self.itemTypes[itemType].printItem(ID)
+
+      return
+
+   def thisMonth(self, null=None):
+      now = datetime.datetime.now()
+      firstOfMonth = datetime.datetime(now.year, now.month, day=1, hour=0, minute=0, second=0)
+
+      startTime = firstOfMonth.strftime('%s.%f')
+      endTime = now.strftime('%s.%f')
+
+      IDs = self.db.getByTime(startTime=startTime, endTime=endTime)
+
+      for ID in IDs:
+         itemType = self.db.getItemType(ID)
+         self.itemTypes[itemType].printItem(ID)
 
 
 if __name__ == '__main__':
