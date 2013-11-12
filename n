@@ -35,6 +35,7 @@ import copy
 import subprocess as SP
 import pymongo
 import shutil
+import json
 from abc import ABCMeta, abstractmethod
 
 try:
@@ -594,6 +595,7 @@ class Runner(object):
       self.commands['showUndone'] = todo.showUndone
       self.commands['backup'] = self.backup
       self.commands['encrypt'] = self.encrypt
+      self.commands['dropbox'] = self.pushToDropbox
 
       self.parseOpts()
 
@@ -614,6 +616,9 @@ class Runner(object):
       self.commands['c'] = self.commands['contact']
       self.commands['b'] = self.commands['backup']
       self.commands['E'] = self.encrypt
+
+      with open(self.configFile, 'r') as fd:
+         self.config = json.loads(fd.read())
 
       try:
          self.commands[self.command](self.commandArgs)
@@ -637,7 +642,7 @@ class Runner(object):
    def parseOpts(self):
       parser = argparse.ArgumentParser(description="note")
 
-      defaultConfigPath = os.path.expanduser('~/.note.json')
+      defaultConfigPath = os.path.expanduser('~/.config/note.json')
       parser.add_argument('--configFile', type=str, help='Path to config file',
                           default=defaultConfigPath)
 
@@ -688,7 +693,7 @@ class Runner(object):
       else:
          print "Could not encrpyt: {0}".format(backupFile)
 
-      return
+      return backupGPG
 
    def initGPG(self):
       try:
@@ -719,19 +724,16 @@ class Runner(object):
 
       return
 
-   def pushToDropbox(self):
+   def pushToDropbox(self, backupFile=None):
 
-      app_key = ''
-      app_secret = ''
-      code = ""
+      token = self.config['dropbox']['token']
 
-      flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
+      gpgFile = self.encrypt([])
 
-      access_token, user_id = flow.finish(code)
-      client = dropbox.client.DropboxClient(access_token)
+      client = dropbox.client.DropboxClient(token)
 
-      f = open(self.mongoBackup)
-      response = client.put_file('/note-backup.gpg', f)
+      with open(gpgFile) as f:
+         response = client.put_file('/note_backup.gpg', f)
       print "uploaded:", response
 
 
