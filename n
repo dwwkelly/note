@@ -4,8 +4,6 @@ __author__ = "Devin Kelly"
 __email__ = "dwwkelly@gmail.com"
 __version__ = 0.1
 __todo__ = '''
--add ability to edit note/todo/contact
--add support for mongolab backups
 -add support for dropbox/box backups
 -test todo system
 -add ability to change todo state
@@ -14,10 +12,12 @@ __todo__ = '''
 -implement Contact.importVCard
 -add a verify command that checks IDs collection against other collections for consistency
 -switch to a SQL database?
--make a note info command which shows note, tags and all other metadata
+-add goodreads book
 '''
 
 __added_features__ = '''
+-make a note info command which shows note, tags and all other metadata
+-add ability to edit note/todo/contact
 -add ability to delete note/todo/contact
 -add system for handling contact (email, phone, address, etc)
 -complete encrpytion implementation
@@ -37,6 +37,7 @@ import pymongo
 import shutil
 import json
 import datetime
+import calendar
 from abc import ABCMeta, abstractmethod
 
 try:
@@ -288,6 +289,38 @@ class mongoDB(dbBaseClass):
             IDs.append(doc['ID'])
 
       return IDs
+
+   def verify(self):
+      collections = self.noteDB.collection_names()
+      collections.remove(u'system.indexes')
+      collections.remove(u'IDs')
+
+      allIDs = []
+      for coll in collections:
+         IDs = self.noteDB[coll].find({"ID": {"$exists": True}}, {"ID": 1, "_id": 0})
+         for ID in IDs:
+            allIDs.append(ID["ID"])
+
+      maxID = self.noteDB['IDs'].find_one({"currentMax": {"$exists": True}})["currentMax"]
+      unusedIDs = self.noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})["unusedIDs"]
+
+      unusedIDsMatch = True
+      for ID in allIDs:
+         if ID in unusedIDs:
+            unusedIDsMatch = False
+
+      maxIDMatch = True
+      if maxID is not max(allIDs):
+         maxIDMatch = False
+
+      if maxIDMatch and unusedIDsMatch:
+         print "Database is valid"
+      elif not maxIDMatch and not unusedIDsMatch:
+         print "Database not valid, max ID and unused IDs are incorrent"
+      elif not maxIDMatch:
+         print "Database not valid, max ID is incorrent"
+      elif not unusedIDsMatch:
+         print "Database not valid, unusedIDs is incorrent"
 
 
 def sqliteDB(dbBaseClass):
@@ -623,6 +656,8 @@ class Runner(object):
       self.commands['dropbox'] = self.pushToDropbox
       self.commands['lastMonth'] = self.lastMonth
       self.commands['thisMonth'] = self.thisMonth
+      self.commands['info'] = self.info
+      self.commands['verifyDB'] = self.verify
 
       self.parseOpts()
 
@@ -643,6 +678,8 @@ class Runner(object):
       self.commands['c'] = self.commands['contact']
       self.commands['b'] = self.commands['backup']
       self.commands['E'] = self.encrypt
+      self.commands['i'] = self.info
+      self.commands['V'] = self.verify
 
       with open(self.configFile, 'r') as fd:
          self.config = json.loads(fd.read())
@@ -764,19 +801,20 @@ class Runner(object):
          response = client.put_file('/note_backup.gpg', f)
       print "uploaded:", response
 
-   def lastMonth(self):
+   def lastMonth(self, null=None):
       now = datetime.datetime.now()
 
       if now.month == 1:
-         month = 1
+         month = 12
          year = now.year - 1
       else:
-         month = now.month
+         month = now.month - 1
          year = now.year
 
-      # FIXME - need to fix endOfMoneth to be the last second of the last day
+      day = calendar.monthrange(year, month)[1]  # gets the number of days in a month
+
       firstOfMonth = datetime.datetime(year, month, day=1, hour=0, minute=0, second=0)
-      endOfMonth = datetime.datetime(year, month, day=1, hour=0, minute=0, second=0)
+      endOfMonth = datetime.datetime(year, month, day=day, hour=23, minute=59, second=59)
 
       startTime = firstOfMonth.strftime('%s.%f')
       endTime = endOfMonth.strftime('%s.%f')
@@ -801,6 +839,21 @@ class Runner(object):
       for ID in IDs:
          itemType = self.db.getItemType(ID)
          self.itemTypes[itemType].printItem(ID)
+
+   def info(self, ID):
+      ID = int(ID[0])
+
+      info = self.db.getItem(ID)
+
+      print "{red}ID: {reset} {ID}".format(red=FRED, reset=RS, ID=ID)
+      del info['ID']
+
+      for k in info.keys():
+         print "{red}{key}: {reset} {value}".format(red=FRED, reset=RS, value=info[k], key=k)
+
+   def verify(self, null=None):
+
+      self.db.verify()
 
 
 if __name__ == '__main__':
