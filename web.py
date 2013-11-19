@@ -20,8 +20,8 @@ htmlStart = """
     <link rel="shortcut icon" href="/docs-assets/ico/favicon.png">
 
     <title>Note</title>
-    <link href="static/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
-    <link href="static/bootstrap/examples/starter-template/starter-template.css" rel="stylesheet">
+    <link href="static/dist/css/bootstrap.css" rel="stylesheet">
+    <link href="static/note.css" rel="stylesheet">
   </head>
 
   <body>
@@ -49,15 +49,15 @@ htmlStart = """
 
     <div class="container">
 
-      <div class="starter-template">
+      <div class="note-template">
 """
 htmlEnd = """
       </div>
 
     </div>
 
-    <script src="static/jquery-1.10.2.min.js"></script>
-    <script src="static/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="static/jquery-1.10.2.js"></script>
+    <script src="static/dist/js/bootstrap.js"></script>
   </body>
 </html>
 """
@@ -67,13 +67,14 @@ htmlEnd = """
 def search():
    if request.method == "GET":
       s = htmlStart
-      s += "<form action=\"Search\" method=\"POST\" enctype=\"multipart/form-data\" class=\"form-horizontal\" role=\"form\">" +\
+      s += "<form action=\"Search\" method=\"POST\" enctype=\"multipart/form-data\" class=\"form-inline\" role=\"form\">" +\
            "   <div class=\"form-group\">" +\
            "      <label for=\"Search\" class=\"col-sm-2 control-label\"></label>" +\
            "      <div class=\"col-sm-10\">" +\
            "         <input type=\"text\" class=\"form-control\" name=\"term\">" +\
            "      </div>" +\
            "   </div>" +\
+           "<br><br>" +\
            "   <div class=\"form-group\">" +\
            "      <div class=\"col-sm-offset-2 col-sm-10\">" +\
            "         <button type=\"Search\" class=\"btn btn-default\">Search</button>" +\
@@ -148,11 +149,52 @@ def Notes():
 def New():
    s = htmlStart
    if request.method == "GET":
-      s += "<form action=New enctype=\"multipart/form-data\" method=\"POST\">" +\
-           "noteText: <input type=\"text\" name=\"noteText\"><br>" +\
-           "tags: <input type=\"text\" name=\"tags\"><br>" +\
-           "<input type=\"submit\" value=\"Submit\">" +\
-           "</form>"
+      s += """<form action="New" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+              <div class="row">
+                  <div class="col-sm-2">
+                     <div class="btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Note <span class="caret"></span></button>
+                        <ul class="dropdown-menu" role="menu">
+                           <li><a href="#">Note</a></li>
+                           <li><a href="#">Todo</a></li>
+                           <li><a href="#">Contact</a></li>
+                        </ul>
+                     </div>
+                     <!--
+                     <div class="dropdown">
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                           <li>Note</li>
+                           <li>Contact</li>
+                           <li>Todo</li>
+                        </ul>
+                     </div>
+                     -->
+                  </div>
+                  <div class="col-sm-10">
+                     <div class="form-group">
+                        <label for="Note" class="control-label"></label>
+                        <textarea class="form-control" name="noteText" placeholder="Note" rows="3"></textarea>
+                     </div>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-sm-2"></div>
+                  <div class="col-sm-10">
+                     <div class="form-group">
+                        <label for="Tags" class="control-label"></label>
+                        <input type="text" class="form-control" name="tags" placeholder="Tags">
+                     </div>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group">
+                     <div class="col-sm-12">
+                        <button type="Note" class="btn btn-default">Add Note</button>
+                     </div>
+                  </div>
+              </div>
+           </form>"""
+
    elif request.method == "POST":
       tags = request.form["tags"]
       noteText = request.form["noteText"]
