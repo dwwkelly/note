@@ -469,7 +469,7 @@ class Note(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, ID)
+      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, int(ID))
 
 
 class ToDo(NoteBaseClass):
@@ -547,7 +547,7 @@ class ToDo(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, ID)
+      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
 
 
 class Contact(NoteBaseClass):
@@ -621,7 +621,7 @@ class Contact(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, ID)
+      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
 
    def importVCard(self):
 
