@@ -1,7 +1,17 @@
 body {
-  padding-top: 70px;
+   padding-top: 70px;
 }
 .note-template {
-  padding: 0 15px;
-  text-align: center;
+   padding: 0 15px;
+   text-align: center;
+}
+
+.pull-left .dropdown-menu:after {
+   left: 13px;
+   right: auto;
+}
+
+.pull-left .dropdown-menu {
+   left: 0;
+   right: ;
 }

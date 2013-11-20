@@ -2,6 +2,7 @@
 
 import time
 from flask import Flask
+from flask import url_for
 from flask import request
 from n import mongoDB
 app = Flask(__name__)
@@ -22,6 +23,8 @@ htmlStart = """
     <title>Note</title>
     <link href="static/dist/css/bootstrap.css" rel="stylesheet">
     <link href="static/note.css" rel="stylesheet">
+    <script src="static/jquery-1.10.2.js"></script>
+    <script src="static/dist/js/bootstrap.js"></script>
   </head>
 
   <body>
@@ -40,7 +43,14 @@ htmlStart = """
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="Notes">Notes</a></li>
-            <li><a href="New">New</a></li>
+            <li class="dropdown">
+               <a href="NewNote" class="dropdown-toggle" data-toggle="dropdown">New<b class="caret"></b></a>
+               <ul class="dropdown-menu">
+                  <li><a href="NewNote">Note</a></li>
+                  <li><a href="Todo">Todo</a></li>
+                  <li><a href="Contact">Contact</a></li>
+               </ul>
+            </li>
             <li><a href="Search">Search</a></li>
           </ul>
         </div>
@@ -56,8 +66,6 @@ htmlEnd = """
 
     </div>
 
-    <script src="static/jquery-1.10.2.js"></script>
-    <script src="static/dist/js/bootstrap.js"></script>
   </body>
 </html>
 """
@@ -145,32 +153,17 @@ def Notes():
    return s
 
 
-@app.route('/New', methods=["GET", "POST"])
-def New():
+@app.route('/NewNote', methods=["GET", "POST"])
+def NewNote():
+   url_for('static', filename='jquery-1.10.2.js')
+   url_for('static', filename='dist/js/bootstrap.js')
+
    s = htmlStart
    if request.method == "GET":
-      s += """<form action="New" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+      s += """
+           <form action="NewNote" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
               <div class="row">
-                  <div class="col-sm-2">
-                     <div class="btn-group">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Note <span class="caret"></span></button>
-                        <ul class="dropdown-menu" role="menu">
-                           <li><a href="#">Note</a></li>
-                           <li><a href="#">Todo</a></li>
-                           <li><a href="#">Contact</a></li>
-                        </ul>
-                     </div>
-                     <!--
-                     <div class="dropdown">
-                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                           <li>Note</li>
-                           <li>Contact</li>
-                           <li>Todo</li>
-                        </ul>
-                     </div>
-                     -->
-                  </div>
-                  <div class="col-sm-10">
+                  <div class="col-sm-12">
                      <div class="form-group">
                         <label for="Note" class="control-label"></label>
                         <textarea class="form-control" name="noteText" placeholder="Note" rows="3"></textarea>
@@ -178,8 +171,7 @@ def New():
                   </div>
               </div>
               <div class="row">
-                  <div class="col-sm-2"></div>
-                  <div class="col-sm-10">
+                  <div class="col-sm-12">
                      <div class="form-group">
                         <label for="Tags" class="control-label"></label>
                         <input type="text" class="form-control" name="tags" placeholder="Tags">

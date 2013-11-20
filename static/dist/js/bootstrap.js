@@ -27,6 +27,8 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
  * limitations under the License.
  * ======================================================================== */
 
+console.log("bootstrap loaded");
+
 
 +function ($) { "use strict";
 
