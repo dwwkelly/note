@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import time
+import json
 from flask import Flask
 from flask import url_for
 from flask import request
@@ -47,8 +48,8 @@ htmlStart = """
                <a href="NewNote" class="dropdown-toggle" data-toggle="dropdown">New<b class="caret"></b></a>
                <ul class="dropdown-menu">
                   <li><a href="NewNote">Note</a></li>
-                  <li><a href="Todo">Todo</a></li>
-                  <li><a href="Contact">Contact</a></li>
+                  <li><a href="NewTodo">Todo</a></li>
+                  <li><a href="NewContact">Contact</a></li>
                </ul>
             </li>
             <li><a href="Search">Search</a></li>
@@ -75,22 +76,24 @@ htmlEnd = """
 def search():
    if request.method == "GET":
       s = htmlStart
-      s += "<form action=\"Search\" method=\"POST\" enctype=\"multipart/form-data\" class=\"form-inline\" role=\"form\">" +\
-           "   <div class=\"form-group\">" +\
-           "      <label for=\"Search\" class=\"col-sm-2 control-label\"></label>" +\
-           "      <div class=\"col-sm-10\">" +\
-           "         <input type=\"text\" class=\"form-control\" name=\"term\">" +\
-           "      </div>" +\
-           "   </div>" +\
-           "<br><br>" +\
-           "   <div class=\"form-group\">" +\
-           "      <div class=\"col-sm-offset-2 col-sm-10\">" +\
-           "         <button type=\"Search\" class=\"btn btn-default\">Search</button>" +\
-           "      </div>" +\
-           "   </div>" +\
-           "</form>"
+      s += """<form action="Search" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
+              <div class="form-group">
+                 <label for="Search" class="col-sm-2 control-label"></label>
+                 <div class="col-sm-10">
+                    <input type="text" class="form-control" name="term">
+                    <input type="hidden" class="form-control" name="api" value="false">
+                 </div>
+              </div>
+           <br><br>
+              <div class="form-group">
+                 <div class="col-sm-offset-2 col-sm-10">
+                    <button type="Search" class="btn btn-default">Search</button>
+                 </div>
+              </div>
+           </form>
+         """
       s += htmlEnd
-   elif request.method == "POST":
+   elif request.method == "POST" and request.form["api"] == "false":
       term = request.form["term"]
       db = mongoDB("note")
       results = db.searchForItem(term)
@@ -104,31 +107,20 @@ def search():
             s += str(k) + ": " + str(item[k]) + "<br>"
          s += "</div>"
       s += htmlEnd
+   elif request.method == "POST" and request.form["api"] == "true":
+      term = request.form["term"]
+      db = mongoDB("note")
+      s = json.dumps(db.searchForItem(term))
    else:
       s = "not valid"
 
    return s
 
 
-@app.route('/', methods=["GET", "POST"])
+@app.route('/', methods=["GET"])
 def start():
-   if request.method == "GET":
-      s = "<form action=index enctype=\"multipart/form-data\" method=\"POST\">" +\
-          "ID: <input type=\"text\" name=\"id\"><br>" +\
-          "<input type=\"submit\" value=\"Submit\">" +\
-          "</form></html>"
-   elif request.method == "POST":
-      ID = request.form["id"]
-      ID = int(ID)
-      db = mongoDB("note")
-      item = db.getItem(ID)
-      s = "<html>"
-      for k in item.keys():
-         s += str(k) + ": " + str(item[k]) + "<br>"
-      s = s + "</html>"
-
-   else:
-      s = "not valid"
+   s = htmlStart
+   s += htmlEnd
 
    return s
 
@@ -175,6 +167,7 @@ def NewNote():
                      <div class="form-group">
                         <label for="Tags" class="control-label"></label>
                         <input type="text" class="form-control" name="tags" placeholder="Tags">
+                        <input type="hidden" class="form-control" name="api" value="false">
                      </div>
                   </div>
               </div>
@@ -187,18 +180,171 @@ def NewNote():
               </div>
            </form>"""
 
-   elif request.method == "POST":
+   elif request.method == "POST" and request.form["api"] == "false":
       tags = request.form["tags"]
       noteText = request.form["noteText"]
       s += noteText + "<br>"
       s += tags + "<br>"
+      s + htmlEnd
+   elif request.method == "POST" and request.form["api"] == "true":
+      noteText = request.form["noteText"]
+      tags = request.form["tags"].split(",")
+      note = {"noteText": noteText, "tags": tags, "timestamp": time.time()}
+      s = json.dumps(note)
+   return s
 
-   s + htmlEnd
+
+@app.route('/NewContact', methods=["GET", "POST"])
+def NewContact():
+   url_for('static', filename='jquery-1.10.2.js')
+   url_for('static', filename='dist/js/bootstrap.js')
+
+   s = htmlStart
+   if request.method == "GET":
+      s += """
+           <form action="NewContact" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+           <input type="hidden" class="form-control" name="api" value="false">
+
+              <div class="row">
+                  <div class="col-xs-12 col-sm-4">
+                     <div class="form-group">
+                        <label for="Name" class="control-label"></label>
+                        <input type="text" class="form-control" name="name" placeholder="Name">
+                     </div>
+                  </div>
+                  <div class="col-xs-12 col-sm-4">
+                     <div class="form-group">
+                        <label for="Affiliation" class="control-label"></label>
+                        <input type="text" class="form-control" name="affiliation" placeholder="Affiliation">
+                     </div>
+                  </div>
+                  <div class="col-sm-4">
+                     <div class="form-group">
+                        <label for="EMail" class="control-label"></label>
+                        <input type="text" class="form-control" name="email" placeholder="EMail">
+                     </div>
+                  </div>
+              </div>
+
+              <div class="row">
+                  <div class="col-xs-12 col-sm-4">
+                     <div class="form-group">
+                        <label for="Mobile Phone" class="control-label"></label>
+                        <input type="text" class="form-control" name="mobile" placeholder="Mobile Phone">
+                     </div>
+                  </div>
+                  <div class="col-xs-12 col-sm-4">
+                     <div class="form-group">
+                        <label for="Work Phone" class="control-label"></label>
+                        <input type="text" class="form-control" name="work" placeholder="Work Phone">
+                     </div>
+                  </div>
+                  <div class="col-sm-4">
+                     <div class="form-group">
+                        <label for="Home Phone" class="control-label"></label>
+                        <input type="text" class="form-control" name="Home Phone" placeholder="Home Phone">
+                     </div>
+                  </div>
+              </div>
+
+              <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="Address" class="control-label"></label>
+                        <input type="text" class="form-control" name="address" placeholder="Address">
+                     </div>
+                  </div>
+              </div>
+
+
+              <div class="row">
+                  <div class="form-group">
+                     <div class="col-sm-12">
+                        <button type="Contact" class="btn btn-default">Add Contact</button>
+                     </div>
+                  </div>
+              </div>
+           </form>"""
+
+   elif request.method == "POST" and request.form["api"] == "false":
+      tags = request.form["tags"]
+      contactText = request.form["contactText"]
+      s += contactText + "<br>"
+      s += tags + "<br>"
+      s + htmlEnd
+   elif request.method == "POST" and request.form["api"] == "true":
+      contactText = request.form["contactText"]
+      tags = request.form["tags"].split(",")
+      contact = {"contactText": contactText, "tags": tags, "timestamp": time.time()}
+      s = json.dumps(contact)
+   return s
+
+
+@app.route('/NewTodo', methods=["GET", "POST"])
+def NewTodo():
+   url_for('static', filename='jquery-1.10.2.js')
+   url_for('static', filename='dist/js/bootstrap.js')
+
+   s = htmlStart
+   if request.method == "GET":
+      s += """
+           <form action="NewTodo" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+              <input type="hidden" class="form-control" name="api" value="false">
+              <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="Todo" class="control-label"></label>
+                        <textarea class="form-control" name="todoText" placeholder="Todo" rows="3"></textarea>
+                     </div>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-sm-4">
+                     <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary">
+                           <input type="radio" name="options" id="done">Done
+                        </label>
+                        <label class="btn btn-primary">
+                           <input type="radio" name="options" id="undone">Not Done
+                        </label>
+                     </div>
+                  </div>
+                  <div class="col-sm-8">
+                     <!-- FIXME calendar here -->
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group">
+                     <div class="col-sm-12">
+                        <button type="Todo" class="btn btn-default">Add Todo</button>
+                     </div>
+                  </div>
+              </div>
+           </form>
+
+           </div>
+
+           </div>
+
+         </body>
+         </html>
+         """
+   elif request.method == "POST" and request.form["api"] == "false":
+      tags = request.form["tags"]
+      todoText = request.form["todoText"]
+      s += todoText + "<br>"
+      s += tags + "<br>"
+      s + htmlEnd
+   elif request.method == "POST" and request.form["api"] == "true":
+      todoText = request.form["todoText"]
+      tags = request.form["tags"].split(",")
+      todo = {"todoText": todoText, "tags": tags, "timestamp": time.time()}
+      s = json.dumps(todo)
    return s
 
 
 def main():
-   app.run()
+   app.run(host="0.0.0.0")
 
 if __name__ == "__main__":
    main()
