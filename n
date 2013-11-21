@@ -845,7 +845,7 @@ class Runner(object):
 
       info = self.db.getItem(ID)
 
-      print "{red}ID: {reset} {ID}".format(red=FRED, reset=RS, ID=ID)
+      print "{red}ID: {reset} {ID}".format(red=FRED, reset=RS, ID=int(ID))
       del info['ID']
 
       for k in info.keys():
