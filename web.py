@@ -19,15 +19,14 @@ htmlStart = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="shortcut icon" href="/docs-assets/ico/favicon.png">
 
     <title>Note</title>
-    <link href="static/dist/css/bootstrap.css" rel="stylesheet">
-    <link href="static/note.css" rel="stylesheet">
-    <link href="static/datepicker/css/datepicker.css" rel="stylesheet">
-    <script src="static/jquery-1.10.2.js"></script>
-    <script src="static/dist/js/bootstrap.js"></script>
-    <script src="static/datepicker/js/bootstrap-datepicker.js"></script>
+    <link href="/static/dist/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/note.css" rel="stylesheet">
+    <link href="/static/datepicker/css/datepicker.css" rel="stylesheet">
+    <script src="/static/jquery-1.10.2.js"></script>
+    <script src="/static/dist/js/bootstrap.js"></script>
+    <script src="/static/datepicker/js/bootstrap-datepicker.js"></script>
   </head>
 
   <body>
