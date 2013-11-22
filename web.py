@@ -24,8 +24,10 @@ htmlStart = """
     <title>Note</title>
     <link href="static/dist/css/bootstrap.css" rel="stylesheet">
     <link href="static/note.css" rel="stylesheet">
+    <link href="static/datepicker/css/datepicker.css" rel="stylesheet">
     <script src="static/jquery-1.10.2.js"></script>
     <script src="static/dist/js/bootstrap.js"></script>
+    <script src="static/datepicker/js/bootstrap-datepicker.js"></script>
   </head>
 
   <body>
@@ -242,7 +244,7 @@ def NewContact():
                   <div class="col-sm-4">
                      <div class="form-group">
                         <label for="Home Phone" class="control-label"></label>
-                        <input type="text" class="form-control" name="Home Phone" placeholder="Home Phone">
+                        <input type="text" class="form-control" name="home" placeholder="Home Phone">
                      </div>
                   </div>
               </div>
@@ -265,12 +267,23 @@ def NewContact():
                   </div>
               </div>
            </form>"""
-
+      s += htmlEnd
    elif request.method == "POST" and request.form["api"] == "false":
-      tags = request.form["tags"]
-      contactText = request.form["contactText"]
-      s += contactText + "<br>"
-      s += tags + "<br>"
+      name = request.form["name"]
+      affiliation = request.form["affiliation"]
+      email = request.form["email"]
+      work = request.form["work"]
+      home = request.form["home"]
+      mobile = request.form["mobile"]
+      address = request.form["address"]
+
+      s += name + "<br>"
+      s += affiliation + "<br>"
+      s += email + "<br>"
+      s += work + "<br>"
+      s += home + "<br>"
+      s += mobile + "<br>"
+      s += address + "<br>"
       s + htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       contactText = request.form["contactText"]
@@ -284,6 +297,7 @@ def NewContact():
 def NewTodo():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
+   url_for('static', filename='datepicker/js/bootstrap-datepicker.js')
 
    s = htmlStart
    if request.method == "GET":
@@ -299,18 +313,18 @@ def NewTodo():
                   </div>
               </div>
               <div class="row">
-                  <div class="col-sm-4">
+                  <div class="col-sm-6">
                      <div class="btn-group" data-toggle="buttons">
                         <label class="btn btn-primary">
-                           <input type="radio" name="options" id="done">Done
+                           <input type="radio" name="options" value="done">Done
                         </label>
                         <label class="btn btn-primary">
-                           <input type="radio" name="options" id="undone">Not Done
+                           <input type="radio" name="options" value="undone">Not Done
                         </label>
                      </div>
                   </div>
-                  <div class="col-sm-8">
-                     <!-- FIXME calendar here -->
+                  <div class="col-sm-6">
+                     <input type="text" class="datepicker" name="date" placeholder="Date">
                   </div>
               </div>
               <div class="row">
@@ -326,14 +340,22 @@ def NewTodo():
 
            </div>
 
+           <script>
+              $(document).ready(function() {
+                    $('.datepicker').datepicker();
+                    });
+           </script>
+
          </body>
          </html>
          """
    elif request.method == "POST" and request.form["api"] == "false":
-      tags = request.form["tags"]
       todoText = request.form["todoText"]
+      done = str(request.form['options'])
+      date = request.form['date']
       s += todoText + "<br>"
-      s += tags + "<br>"
+      s += str(done) + "<br>"
+      s += str(date) + "<br>"
       s + htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       todoText = request.form["todoText"]
