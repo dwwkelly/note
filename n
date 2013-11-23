@@ -478,9 +478,18 @@ class ToDo(NoteBaseClass):
       super(ToDo, self).__init__(db)
       self.noteType = "todos"
       self.todoTemplate = "TODO\n\n\n\nDONE\n\n\n\nDATE - MM DD YY\n\n\n"
-      self.todoEditTemplate = "TODO\n\n{0}\n\nDONE\n\n{1}\n\nDATE - MM DD YY\n\n\n"
+      self.todoEditTemplate = "TODO\n\n{0}\n\nDONE\n\n{1}\n\nDATE - MM DD YY\n\n{2}\n\n"
 
    def edit(self, ID):
+      ID = int(ID[0])
+      self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
+      todo = self.db.getItem(ID)
+      dateStr = time.strftime('%m %d %y', time.localtime(todo['date']))
+      with open(self.tmpNote, 'w') as fd:
+         fd.write(self.todoEditTemplate.format(todo['todoText'], todo['done'], dateStr))
+      self.startEditor(3)
+      self.processTodo()
+      self.db.addItem(self.noteType, {"todoText": self.todoText, "done": self.done, "date": self.date}, ID)
       return
 
    def new(self, dummy=None):
