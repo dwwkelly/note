@@ -524,11 +524,11 @@ class ToDo(NoteBaseClass):
       self.date = time.mktime(time.strptime(date, "%m %d %y"))
 
    def showDone(self, dummy=None):
-      IDs = self.db.getDone(False)
+      IDs = self.db.getDone(True)
       [self.printItem(ii) for ii in IDs]
 
    def showUndone(self, dummy=None):
-      IDs = self.db.getDone(True)
+      IDs = self.db.getDone(False)
       [self.printItem(ii) for ii in IDs]
 
    def printItem(self, ID):
