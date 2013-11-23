@@ -9,6 +9,10 @@ from n import mongoDB
 app = Flask(__name__)
 
 __author__ = "Devin Kelly"
+__todo__ = """
+-make a decent way to display notes when searching, maybe use angular.js?
+-add ability to delete
+"""
 
 htmlStart = """
 <!DOCTYPE html>
@@ -75,6 +79,7 @@ htmlEnd = """
 
 @app.route('/Search', methods=["GET", "POST"])
 def search():
+   db = mongoDB("note")
    if request.method == "GET":
       s = htmlStart
       s += """<form action="Search" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
@@ -96,7 +101,6 @@ def search():
       s += htmlEnd
    elif request.method == "POST" and request.form["api"] == "false":
       term = request.form["term"]
-      db = mongoDB("note")
       results = db.searchForItem(term)
 
       s = htmlStart
@@ -105,12 +109,11 @@ def search():
          item = db.getItem(ID)
          s += "<div id=\"searchResult\">"
          for k in item.keys():
-            s += str(k) + ": " + str(item[k]) + "<br>"
+            s += str(k).lower() + ": " + str(item[k]) + "<br>"
          s += "</div>"
       s += htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
-      db = mongoDB("note")
       s = json.dumps(db.searchForItem(term))
    else:
       s = "not valid"
@@ -151,6 +154,8 @@ def NewNote():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
 
+   db = mongoDB("note")
+
    s = htmlStart
    if request.method == "GET":
       s += """
@@ -184,6 +189,8 @@ def NewNote():
    elif request.method == "POST" and request.form["api"] == "false":
       tags = request.form["tags"]
       noteText = request.form["noteText"]
+      db.addItem("notes", {"noteText": noteText, "tags": tags})
+      s += "Note added<br><br>"
       s += noteText + "<br>"
       s += tags + "<br>"
       s + htmlEnd
@@ -191,6 +198,7 @@ def NewNote():
       noteText = request.form["noteText"]
       tags = request.form["tags"].split(",")
       note = {"noteText": noteText, "tags": tags, "timestamp": time.time()}
+      db.addItem("notes", {"noteText": noteText, "tags": tags})
       s = json.dumps(note)
    return s
 
@@ -200,6 +208,7 @@ def NewContact():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
 
+   db = mongoDB("note")
    s = htmlStart
    if request.method == "GET":
       s += """
@@ -276,6 +285,16 @@ def NewContact():
       mobile = request.form["mobile"]
       address = request.form["address"]
 
+      contactInfo = {"NAME": name,
+                     "WORK PHONE": work,
+                     "AFFILIATION": affiliation,
+                     "MOBILE PHONE": mobile,
+                     "ADDRESS": address,
+                     "EMAIL": email,
+                     "HOME PHONE": home}
+      db.addItem("contacts", contactInfo)
+
+      s += "Note added<br><br>"
       s += name + "<br>"
       s += affiliation + "<br>"
       s += email + "<br>"
@@ -283,7 +302,6 @@ def NewContact():
       s += home + "<br>"
       s += mobile + "<br>"
       s += address + "<br>"
-      s + htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       contactText = request.form["contactText"]
       tags = request.form["tags"].split(",")
@@ -297,6 +315,7 @@ def NewTodo():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
    url_for('static', filename='datepicker/js/bootstrap-datepicker.js')
+   db = mongoDB("note")
 
    s = htmlStart
    if request.method == "GET":
@@ -352,6 +371,14 @@ def NewTodo():
       todoText = request.form["todoText"]
       done = str(request.form['options'])
       date = request.form['date']
+
+      if done == "done":
+         done = True
+      else:
+         done = False
+
+      db.addItem("todos", {"todoText": todoText, "done": done, "date": time.mktime(time.strptime(date, "%m/%d/%Y"))})
+
       s += todoText + "<br>"
       s += str(done) + "<br>"
       s += str(date) + "<br>"
