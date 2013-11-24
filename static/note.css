@@ -20,3 +20,44 @@ body {
    width: 31.6%;
    margin-left: 10px;
 }
+
+.jumbotron {
+   padding: 0.5em 0.6em;
+   h1 {
+      font-size: 2em;
+   }
+   p {
+      font-size: 2em;
+      .btn {
+         padding: 0.5em;
+      }
+   }
+}
+
+.devintron {
+   padding: 15px;
+   margin-bottom: 20px;
+   font-size: 12px;
+   font-weight: 120;
+   line-height: 2.1428571435;
+   color: inherit;
+   background-color: #eeeeee;
+   text-align: left;
+}
+
+.devintron h1 {
+   line-height: 1;
+   color: inherit;
+}
+
+.devintron p {
+   line-height: 1.0;
+   display: inline-block;
+   vertical-align: middle;
+   display: table-cell;
+}
+
+.container .devintron {
+   border-radius: 6px;
+}
+

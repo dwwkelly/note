@@ -2,11 +2,14 @@
 
 import time
 import json
+import re
 from flask import Flask
 from flask import url_for
 from flask import request
 from n import mongoDB
 app = Flask(__name__)
+
+db = mongoDB("note")
 
 __author__ = "Devin Kelly"
 __todo__ = """
@@ -44,7 +47,7 @@ htmlStart = """
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">Note</a>
+          <a class="navbar-brand" href="Notes">Note</a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -80,7 +83,6 @@ htmlEnd = """
 
 @app.route('/Search', methods=["GET", "POST"])
 def search():
-   db = mongoDB("note")
    if request.method == "GET":
       s = htmlStart.format("Search")
       s += """<form action="Search" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
@@ -108,10 +110,18 @@ def search():
       for item in results:
          ID = item['obj'][u"ID"]
          item = db.getItem(ID)
-         s += "<div id=\"searchResult\">"
-         for k in item.keys():
-            s += str(k).lower() + ": " + str(item[k]) + "<br>"
-         s += "</div>"
+
+         s += '<div class="devintron">'
+         #s += "<p>"
+         ##s += "<div id=\"searchResult\">"
+         #for k in item.keys():
+         #   s += str(k).lower() + ": " + re.sub("\n", "<br>", str(item[k]))
+         #   s += "<br>"
+         #s += "</p>"
+         s += genHTML(int(ID))
+         print genHTML(int(ID))
+         s += '</div>'
+         #s += "</div>"
       s += htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
@@ -124,7 +134,6 @@ def search():
 
 @app.route('/Delete', methods=["GET", "POST"])
 def Delete():
-   db = mongoDB("note")
    if request.method == "GET":
       s = htmlStart.format("Delete")
       s += """<form action="Delete" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
@@ -176,14 +185,17 @@ def Notes():
    fourWeeks = 4.0 * 7.0 * 24.0 * 60.0 * 60.0
    now = time.time()
    fourWeeksAgo = now - fourWeeks
-   db = mongoDB("note")
    items = db.getByTime(startTime=fourWeeksAgo, endTime=now)
 
    for item in items:
       info = db.getItem(item)
+      s += '<div class="devintron">'
+      s += "<p>"
       for k in info.keys():
-         s += str(k) + ": " + str(info[k])
-      s += "<br>"
+         s += str(k) + ": " + re.sub("\n", "<br>", str(info[k]))
+         s += "<br>"
+      s += "</p>"
+      s += '</div>'
 
    s + htmlEnd
 
@@ -194,8 +206,6 @@ def Notes():
 def NewNote():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
-
-   db = mongoDB("note")
 
    s = htmlStart.format("New Note")
    if request.method == "GET":
@@ -249,7 +259,6 @@ def NewContact():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
 
-   db = mongoDB("note")
    s = htmlStart.format("New Contact")
    if request.method == "GET":
       s += """
@@ -356,7 +365,6 @@ def NewTodo():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
    url_for('static', filename='datepicker/js/bootstrap-datepicker.js')
-   db = mongoDB("note")
 
    s = htmlStart.format("New Todo")
    if request.method == "GET":
@@ -429,6 +437,42 @@ def NewTodo():
       tags = request.form["tags"].split(",")
       todo = {"todoText": todoText, "tags": tags, "timestamp": time.time()}
       s = json.dumps(todo)
+   return s
+
+
+def genHTML(ID):
+
+   itemType = db.getItemType(ID)
+   item = db.getItem(ID)
+
+   if itemType == "todos":
+      s = "<p>"
+      s += re.sub("\n", "<br>", str(item['todoText']))
+      s += "</p>"
+
+      s += "<p>"
+      if item['done']:
+         s += 'done'
+      else:
+         s += 'not done'
+      s += '</p>'
+
+   elif itemType == "notes":
+      s = "<p>"
+      s += re.sub("\n", "<br>", str(item['noteText']))
+      s += "</p>"
+
+   elif itemType == "contact":
+      s = "<p>"
+      s += item['NAME'] + "<br>"
+      s += item['EMAIL'] + "<br>"
+      s += item['AFFILIATION'] + "<br>"
+      s += item['MOBILE'] + "<br>"
+      s += item['HOME'] + "<br>"
+      s += item['WORK'] + "<br>"
+      s += item['ADDRESS'] + "<br>"
+      s += "</p>"
+
    return s
 
 
