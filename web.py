@@ -178,17 +178,12 @@ def Notes():
    fourWeeksAgo = now - fourWeeks
    items = db.getByTime(startTime=fourWeeksAgo, endTime=now)
 
-   for item in items:
-      info = db.getItem(item)
+   for ID in items:
       s += '<div class="devintron">'
-      s += "<p>"
-      for k in info.keys():
-         s += str(k) + ": " + re.sub("\n", "<br>", str(info[k]))
-         s += "<br>"
-      s += "</p>"
+      s += genHTML(int(ID))
       s += '</div>'
 
-   s + htmlEnd
+   s += htmlEnd
 
    return s
 
@@ -427,6 +422,7 @@ def NewTodo():
       todoText = request.form["todoText"]
       tags = request.form["tags"].split(",")
       todo = {"todoText": todoText, "tags": tags, "timestamp": time.time()}
+      db.addItem("todos", {"todoText": todoText, "done": done, "date": time.mktime(time.strptime(date, "%m/%d/%Y"))})
       s = json.dumps(todo)
    return s
 
@@ -443,15 +439,23 @@ def genHTML(ID):
       s += "</p>"
       s += "<br>"
       s += "<p>"
-      if item['done']:
-         s += 'done'
+      if item["done"]:
+         s += "done"
       else:
-         s += 'not done'
-      s += '</p>'
+         s += "not done"
+      s += "</p>"
+      s += "<br>"
+      s += "<p>"
+      s += 'ID: {0}'.format(ID)
+      s += "</p>"
 
    elif itemType == "notes":
       s += "<p>"
       s += re.sub("\n", "<br>", str(item['noteText']))
+      s += "</p>"
+      s += "<br>"
+      s += "<p>"
+      s += 'ID: {0}'.format(ID)
       s += "</p>"
 
    elif itemType == "contact":
@@ -463,6 +467,10 @@ def genHTML(ID):
       s += item['HOME'] + "<br>"
       s += item['WORK'] + "<br>"
       s += item['ADDRESS'] + "<br>"
+      s += "</p>"
+      s += "<br>"
+      s += "<p>"
+      s += 'ID: {0}'.format(ID)
       s += "</p>"
 
    return s
