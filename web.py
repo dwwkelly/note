@@ -120,6 +120,7 @@ def search():
    else:
       s = "not valid"
 
+   s = addLinks(s)
    return s
 
 
@@ -184,6 +185,8 @@ def Notes():
       s += '</div>'
 
    s += htmlEnd
+
+   s = addLinks(s)
 
    return s
 
@@ -472,6 +475,17 @@ def genHTML(ID):
       s += "<p>"
       s += 'ID: {0}'.format(ID)
       s += "</p>"
+
+   return s
+
+
+def addLinks(s):
+
+   part1 = re.compile(r"(^|)(([\w]+?://[\w\#$%&~.\-;:=,?@\[\]+]*)(/[\w\#$%&~/.\-;:=,?@\[\]+]*)?)", re.IGNORECASE | re.DOTALL)
+   part2 = re.compile(r"#(^|)(((www|ftp)\.[\w\#$%&~.\-;:=,?@\[\]+]*)(/[\w\#$%&~/.\-;:=,?@\[\]+]*)?)", re.IGNORECASE | re.DOTALL)
+
+   s = part1.sub(r'\1<a href="\2">\3</a>', s)
+   s = part2.sub(r'\1<a href="http:/\2">\3</a>', s)
 
    return s
 
