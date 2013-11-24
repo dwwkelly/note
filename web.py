@@ -48,7 +48,7 @@ htmlStart = """
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="Notes">Notes</a></li>
+            <li class="active"><a href="{0}">{0}</a></li>
             <li class="dropdown">
                <a href="NewNote" class="dropdown-toggle" data-toggle="dropdown">New<b class="caret"></b></a>
                <ul class="dropdown-menu">
@@ -58,6 +58,7 @@ htmlStart = """
                </ul>
             </li>
             <li><a href="Search">Search</a></li>
+            <li><a href="Delete">Delete</a></li>
           </ul>
         </div>
       </div>
@@ -81,7 +82,7 @@ htmlEnd = """
 def search():
    db = mongoDB("note")
    if request.method == "GET":
-      s = htmlStart
+      s = htmlStart.format("Search")
       s += """<form action="Search" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
               <div class="form-group">
                  <label for="Search" class="col-sm-2 control-label"></label>
@@ -103,7 +104,7 @@ def search():
       term = request.form["term"]
       results = db.searchForItem(term)
 
-      s = htmlStart
+      s = htmlStart.format("Search")
       for item in results:
          ID = item['obj'][u"ID"]
          item = db.getItem(ID)
@@ -121,9 +122,49 @@ def search():
    return s
 
 
+@app.route('/Delete', methods=["GET", "POST"])
+def Delete():
+   db = mongoDB("note")
+   if request.method == "GET":
+      s = htmlStart.format("Delete")
+      s += """<form action="Delete" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
+              <div class="form-group">
+                 <label for="Delete" class="col-sm-2 control-label"></label>
+                 <div class="col-sm-10">
+                    <input type="text" class="form-control" name="ID">
+                    <input type="hidden" class="form-control" name="api" value="false">
+                 </div>
+              </div>
+           <br><br>
+              <div class="form-group">
+                 <div class="col-sm-offset-2 col-sm-10">
+                    <button type="Delete" class="btn btn-default">Delete</button>
+                 </div>
+              </div>
+           </form>
+         """
+      s += htmlEnd
+   elif request.method == "POST" and request.form["api"] == "false":
+      ID = int(request.form["ID"])
+      db.deleteItem(ID)
+
+      s = htmlStart.format("Delete")
+      s += "Item ID={0} deleted".format(ID)
+      s += htmlEnd
+   elif request.method == "POST" and request.form["api"] == "true":
+      ID = int(request.form["ID"])
+      result = db.deleteItem(ID)
+      retVal = {"result": result, "ID": ID}
+      s = json.dumps(retVal)
+   else:
+      s = "not valid"
+
+   return s
+
+
 @app.route('/', methods=["GET"])
 def start():
-   s = htmlStart
+   s = htmlStart.format("Notes")
    s += htmlEnd
 
    return s
@@ -131,7 +172,7 @@ def start():
 
 @app.route('/Notes', methods=["GET"])
 def Notes():
-   s = htmlStart
+   s = htmlStart.format("Notes")
    fourWeeks = 4.0 * 7.0 * 24.0 * 60.0 * 60.0
    now = time.time()
    fourWeeksAgo = now - fourWeeks
@@ -156,7 +197,7 @@ def NewNote():
 
    db = mongoDB("note")
 
-   s = htmlStart
+   s = htmlStart.format("New Note")
    if request.method == "GET":
       s += """
            <form action="NewNote" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
@@ -209,7 +250,7 @@ def NewContact():
    url_for('static', filename='dist/js/bootstrap.js')
 
    db = mongoDB("note")
-   s = htmlStart
+   s = htmlStart.format("New Contact")
    if request.method == "GET":
       s += """
            <form action="NewContact" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
@@ -317,7 +358,7 @@ def NewTodo():
    url_for('static', filename='datepicker/js/bootstrap-datepicker.js')
    db = mongoDB("note")
 
-   s = htmlStart
+   s = htmlStart.format("New Todo")
    if request.method == "GET":
       s += """
            <form action="NewTodo" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
