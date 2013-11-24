@@ -43,6 +43,7 @@ body {
    color: inherit;
    background-color: #eeeeee;
    text-align: left;
+   font-family: monospace;
 }
 
 .devintron h1 {
@@ -53,8 +54,7 @@ body {
 .devintron p {
    line-height: 1.0;
    display: inline-block;
-   vertical-align: middle;
-   display: table-cell;
+   white-space: pre;
 }
 
 .container .devintron {

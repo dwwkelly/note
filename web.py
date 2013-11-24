@@ -110,18 +110,9 @@ def search():
       for item in results:
          ID = item['obj'][u"ID"]
          item = db.getItem(ID)
-
          s += '<div class="devintron">'
-         #s += "<p>"
-         ##s += "<div id=\"searchResult\">"
-         #for k in item.keys():
-         #   s += str(k).lower() + ": " + re.sub("\n", "<br>", str(item[k]))
-         #   s += "<br>"
-         #s += "</p>"
          s += genHTML(int(ID))
-         print genHTML(int(ID))
          s += '</div>'
-         #s += "</div>"
       s += htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
@@ -445,11 +436,12 @@ def genHTML(ID):
    itemType = db.getItemType(ID)
    item = db.getItem(ID)
 
+   s = ""
    if itemType == "todos":
-      s = "<p>"
+      s += "<p>"
       s += re.sub("\n", "<br>", str(item['todoText']))
       s += "</p>"
-
+      s += "<br>"
       s += "<p>"
       if item['done']:
          s += 'done'
@@ -458,12 +450,12 @@ def genHTML(ID):
       s += '</p>'
 
    elif itemType == "notes":
-      s = "<p>"
+      s += "<p>"
       s += re.sub("\n", "<br>", str(item['noteText']))
       s += "</p>"
 
    elif itemType == "contact":
-      s = "<p>"
+      s += "<p>"
       s += item['NAME'] + "<br>"
       s += item['EMAIL'] + "<br>"
       s += item['AFFILIATION'] + "<br>"
