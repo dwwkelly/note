@@ -13,8 +13,6 @@ db = mongoDB("note")
 
 __author__ = "Devin Kelly"
 __todo__ = """
--make a decent way to display notes when searching, maybe use angular.js?
--add ability to delete
 """
 
 htmlStart = """
