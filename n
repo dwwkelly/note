@@ -301,7 +301,7 @@ class mongoDB(dbBaseClass):
          for ID in IDs:
             allIDs.append(ID["ID"])
 
-      maxID = self.noteDB['IDs'].find_one({"currentMax": {"$exists": True}})["currentMax"]
+      maxID = int(self.noteDB['IDs'].find_one({"currentMax": {"$exists": True}})["currentMax"])
       unusedIDs = self.noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})["unusedIDs"]
 
       unusedIDsMatch = True
