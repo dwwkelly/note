@@ -34,6 +34,7 @@ import time
 import copy
 import subprocess as SP
 import pymongo
+import dataset
 import shutil
 import json
 import datetime
@@ -323,13 +324,30 @@ class mongoDB(dbBaseClass):
          print "Database not valid, unusedIDs is incorrent"
 
 
-def sqliteDB(dbBaseClass):
+class sqliteDB(dbBaseClass):
 
-   def __init__(self):
+   def __init__(self, dbName):
+      self.dbName = os.path.expanduser(dbName)
 
-      return
+      self.db = dataset.connect('sqlite:///{0}'.format(self.dbName))
+
+      if not self.db['currentMax'].find_one():
+         self.db['currentMax'].insert({"ID": 0})
 
    def addItem(self, itemType, itemContents):
+
+      unusedIDs = self.db['unusedIDs']
+      currentMax = self.db['currentMax']
+
+      if len(unusedIDs) == 0:
+         ID = currentMax.find_one() + 1
+         currentMax.update({"currentMax": ID})
+      else:
+         ID = db.query("SELECT MIN(ID) from unusedIDs;")
+
+      table = self.db[itemType]
+      itemContents['tags'] = ','.join(itemContents['tags'])
+      table.insert(itemContents)
 
       return
 
@@ -641,8 +659,9 @@ class Runner(object):
 
    def __init__(self):
 
-      self.dbName = 'note'
-      self.db = mongoDB(self.dbName)
+      #self.dbName = 'note'
+      #self.db = mongoDB(self.dbName)
+      self.db = sqliteDB("~/.notedb.sql")
 
       self.commands = ['backup', 'showUndone', 'showDone', 'todo', 'contact', 'edit', 'delete', 'search', 'add']
       note = Note(self.db)
