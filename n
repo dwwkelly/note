@@ -331,8 +331,10 @@ class sqliteDB(dbBaseClass):
 
       self.db = dataset.connect('sqlite:///{0}'.format(self.dbName))
 
-      if not self.db['currentMax'].find_one():
-         self.db['currentMax'].insert({"ID": 0})
+      currentMax = self.db['currentMax']
+
+      if not currentMax.find_one():
+         currentMax.insert({'uid': 0})
 
    def addItem(self, itemType, itemContents):
 
@@ -340,13 +342,17 @@ class sqliteDB(dbBaseClass):
       currentMax = self.db['currentMax']
 
       if len(unusedIDs) == 0:
-         ID = currentMax.find_one() + 1
-         currentMax.update({"currentMax": ID})
+         ID = currentMax.find_one()['uid'] + 1
+         currentMax.update({"uid": ID, "id": 1}, ['id'])
+         [ii for ii in currentMax]
       else:
-         ID = db.query("SELECT MIN(ID) from unusedIDs;")
+         ID = unusedIDs.find_one()
+         unusedIDs.delete(id=ID['id'])
+         ID = ID['uid']
 
       table = self.db[itemType]
       itemContents['tags'] = ','.join(itemContents['tags'])
+      itemContents['uid'] = ID
       table.insert(itemContents)
 
       return
@@ -360,12 +366,44 @@ class sqliteDB(dbBaseClass):
       return
 
    def deleteItem(self, itemID):
+      unusedIDs = self.db['unusedIDs']
+      currentMax = self.db['currentMax']
+
+      tables = self.db.tables
+      tables.remove("unusedIDs")
+      tables.remove("currentMax")
+
+      for tableName in tables:
+         table = self.db.get_table(tableName)
+         item = table.find_one(uid=itemID)
+         if item:
+            table.delete(uid=itemID)
+            break
+
+      #  FIXME  -  when deleting a note with uid == currentMax, check to make
+      #  the sure the next currentMax isn't in unusedIDs, if it is decrement
+      #  currentMax and remove that value from unusedIDs
+      if itemID == currentMax.find_one()['uid']:
+         currentMax.update({"uid": itemID - 1, "id": 1}, ['id'])
+      else:
+         unusedIDs.insert({"uid": itemID})
 
       return
 
    def makeBackupFile(self):
 
       return
+
+   def getItemType(self, itemID):
+      tables = self.db.tables
+      tables.remove("unusedIDs")
+      tables.remove("currentMax")
+
+      for table in tables:
+         if self.db.get_table(table).find_one(uid=itemID):
+            return table
+      else:
+         return None
 
 
 class NoteBaseClass(object):
