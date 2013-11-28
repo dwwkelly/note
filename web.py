@@ -489,7 +489,7 @@ def addLinks(s):
 
 
 def main():
-   app.run(host="0.0.0.0")
+   app.run()
 
 if __name__ == "__main__":
    main()
