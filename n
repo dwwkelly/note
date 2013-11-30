@@ -26,6 +26,7 @@ __added_features__ = '''
 -when editing a note, should the timestamp be the original, the newest or a list of all edits?
 '''
 
+
 import subprocess
 import argparse
 import os
@@ -239,7 +240,7 @@ class mongoDB(dbBaseClass):
       unusedIDs = self.noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
 
       if (itemID > currentMax) or (itemID in unusedIDs):
-         print("Item {0} does not exist".format(itemID))
+         print(u"Item {0} does not exist".format(itemID))
          sys.exit(1)
 
       # Find document with ID
@@ -404,9 +405,9 @@ class Note(NoteBaseClass):
 
       """
       super(Note, self).__init__(db)
-      self.noteType = "notes"
-      self.noteTemplate = "NOTE\n\n\n\nTAGS\n\n\n"
-      self.noteEditTemplate = "NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
+      self.noteType = u"notes"
+      self.noteTemplate = u"NOTE\n\n\n\nTAGS\n\n\n"
+      self.noteEditTemplate = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
 
    def processNote(self):
 
@@ -440,7 +441,7 @@ class Note(NoteBaseClass):
       origNotetext = origNote['noteText']
       origTags = ','.join(origNote['tags'])
 
-      editText = self.noteEditTemplate.format(origNotetext, origTags)
+      editText = (self.noteEditTemplate.format(origNotetext, origTags)).encode('utf-8')
       self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       with open(self.tmpNote, 'w') as fd:
          fd.write(editText)
@@ -470,7 +471,7 @@ class Note(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, int(ID))
+      print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, int(ID))
 
 
 class ToDo(NoteBaseClass):
@@ -557,7 +558,7 @@ class ToDo(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+      print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
 
 
 class Contact(NoteBaseClass):
@@ -631,7 +632,7 @@ class Contact(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print "{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+      print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
 
    def importVCard(self):
 
@@ -697,7 +698,7 @@ class Runner(object):
       try:
          self.commands[self.command](self.commandArgs)
       except KeyError:
-         print "{0} does not exist".format(self.command)
+         print u"{0} does not exist".format(self.command)
          sys.exit(0)
 
    def null(self):
@@ -764,9 +765,9 @@ class Runner(object):
          stream = open(backupFile, "rb")
          self.gpg.encrypt_file(stream, [self.key['fingerprint']], output=backupGPG)
          SP.call(['rm', '-rf', backupFile])
-         print "Encrypted Backup: {0}".format(backupGPG)
+         print u"Encrypted Backup: {0}".format(backupGPG)
       else:
-         print "Could not encrpyt: {0}".format(backupFile)
+         print u"Could not encrpyt: {0}".format(backupFile)
 
       return backupGPG
 
@@ -784,10 +785,10 @@ class Runner(object):
          if time.time() < key['expires']:
             usable_keys.append(key)
 
-      print "Select key:"
+      print u"Select key:"
       counter = 0
       for key in usable_keys:
-         print "[{0}] Fingerprint: {1}, Key Length: {2}, UIDs: {3}".format(counter, key['fingerprint'], key['length'], key['uids'])
+         print u"[{0}] Fingerprint: {1}, Key Length: {2}, UIDs: {3}".format(counter, key['fingerprint'], key['length'], key['uids'])
          counter = counter + 1
 
       data = int(sys.stdin.readline())
@@ -809,7 +810,7 @@ class Runner(object):
 
       with open(gpgFile) as f:
          response = client.put_file('/note_backup.gpg', f)
-      print "uploaded:", response
+      print u"uploaded:", response
 
    def lastMonth(self, null=None):
       now = datetime.datetime.now()
@@ -855,11 +856,11 @@ class Runner(object):
 
       info = self.db.getItem(ID)
 
-      print "{red}ID: {reset} {ID}".format(red=FRED, reset=RS, ID=int(ID))
+      print u"{red}ID: {reset} {ID}".format(red=FRED, reset=RS, ID=int(ID))
       del info['ID']
 
       for k in info.keys():
-         print "{red}{key}: {reset} {value}".format(red=FRED, reset=RS, value=info[k], key=k)
+         print u"{red}{key}: {reset} {value}".format(red=FRED, reset=RS, value=info[k], key=k)
 
    def verify(self, null=None):
 

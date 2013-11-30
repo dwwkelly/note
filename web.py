@@ -15,7 +15,7 @@ __author__ = "Devin Kelly"
 __todo__ = """
 """
 
-htmlStart = """
+htmlStart = u"""
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -69,7 +69,7 @@ htmlStart = """
 
       <div class="note-template">
 """
-htmlEnd = """
+htmlEnd = u"""
       </div>
 
     </div>
@@ -83,7 +83,7 @@ htmlEnd = """
 def search():
    if request.method == "GET":
       s = htmlStart.format("Search")
-      s += """<form action="Search" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
+      s += u"""<form action="Search" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
               <div class="form-group">
                  <label for="Search" class="col-sm-2 control-label"></label>
                  <div class="col-sm-10">
@@ -108,9 +108,9 @@ def search():
       for item in results:
          ID = item['obj'][u"ID"]
          item = db.getItem(ID)
-         s += '<div class="devintron">'
+         s += u'<div class="devintron">'
          s += genHTML(int(ID))
-         s += '</div>'
+         s += u'</div>'
       s += htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
@@ -126,7 +126,7 @@ def search():
 def Delete():
    if request.method == "GET":
       s = htmlStart.format("Delete")
-      s += """<form action="Delete" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
+      s += u"""<form action="Delete" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
               <div class="form-group">
                  <label for="Delete" class="col-sm-2 control-label"></label>
                  <div class="col-sm-10">
@@ -148,7 +148,7 @@ def Delete():
       db.deleteItem(ID)
 
       s = htmlStart.format("Delete")
-      s += "Item ID={0} deleted".format(ID)
+      s += u"Item ID={0} deleted".format(ID)
       s += htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       ID = int(request.form["ID"])
@@ -156,7 +156,7 @@ def Delete():
       retVal = {"result": result, "ID": ID}
       s = json.dumps(retVal)
    else:
-      s = "not valid"
+      s = u"not valid"
 
    return s
 
@@ -196,7 +196,7 @@ def NewNote():
 
    s = htmlStart.format("New Note")
    if request.method == "GET":
-      s += """
+      s += u"""
            <form action="NewNote" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
               <div class="row">
                   <div class="col-sm-12">
@@ -228,9 +228,9 @@ def NewNote():
       tags = request.form["tags"]
       noteText = request.form["noteText"]
       db.addItem("notes", {"noteText": noteText, "tags": tags})
-      s += "Note added<br><br>"
-      s += noteText + "<br>"
-      s += tags + "<br>"
+      s += u"Note added<br><br>"
+      s += noteText + u"<br>"
+      s += tags + u"<br>"
       s + htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       noteText = request.form["noteText"]
@@ -248,7 +248,7 @@ def NewContact():
 
    s = htmlStart.format("New Contact")
    if request.method == "GET":
-      s += """
+      s += u"""
            <form action="NewContact" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
            <input type="hidden" class="form-control" name="api" value="false">
 
@@ -331,14 +331,14 @@ def NewContact():
                      "HOME PHONE": home}
       db.addItem("contacts", contactInfo)
 
-      s += "Note added<br><br>"
-      s += name + "<br>"
-      s += affiliation + "<br>"
-      s += email + "<br>"
-      s += work + "<br>"
-      s += home + "<br>"
-      s += mobile + "<br>"
-      s += address + "<br>"
+      s += u"Note added<br><br>"
+      s += name + u"<br>"
+      s += affiliation + u"<br>"
+      s += email + u"<br>"
+      s += work + u"<br>"
+      s += home + u"<br>"
+      s += mobile + u"<br>"
+      s += address + u"<br>"
    elif request.method == "POST" and request.form["api"] == "true":
       contactText = request.form["contactText"]
       tags = request.form["tags"].split(",")
@@ -355,7 +355,7 @@ def NewTodo():
 
    s = htmlStart.format("New Todo")
    if request.method == "GET":
-      s += """
+      s += u"""
            <form action="NewTodo" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
               <input type="hidden" class="form-control" name="api" value="false">
               <div class="row">
@@ -415,9 +415,9 @@ def NewTodo():
 
       db.addItem("todos", {"todoText": todoText, "done": done, "date": time.mktime(time.strptime(date, "%m/%d/%Y"))})
 
-      s += todoText + "<br>"
-      s += str(done) + "<br>"
-      s += str(date) + "<br>"
+      s += todoText + u"<br>"
+      s += str(done) + u"<br>"
+      s += str(date) + u"<br>"
       s + htmlEnd
    elif request.method == "POST" and request.form["api"] == "true":
       todoText = request.form["todoText"]
@@ -433,46 +433,46 @@ def genHTML(ID):
    itemType = db.getItemType(ID)
    item = db.getItem(ID)
 
-   s = ""
+   s = u""
    if itemType == "todos":
-      s += "<p>"
+      s += u"<p>"
       s += re.sub("\n", "<br>", str(item['todoText']))
-      s += "</p>"
-      s += "<br>"
-      s += "<p>"
+      s += u"</p>"
+      s += u"<br>"
+      s += u"<p>"
       if item["done"]:
          s += "done"
       else:
-         s += "not done"
-      s += "</p>"
-      s += "<br>"
-      s += "<p>"
-      s += 'ID: {0}'.format(ID)
-      s += "</p>"
+         s += u"not done"
+      s += u"</p>"
+      s += u"<br>"
+      s += u"<p>"
+      s += u'ID: {0}'.format(ID)
+      s += u"</p>"
 
    elif itemType == "notes":
-      s += "<p>"
-      s += re.sub("\n", "<br>", str(item['noteText']))
-      s += "</p>"
-      s += "<br>"
-      s += "<p>"
-      s += 'ID: {0}'.format(ID)
-      s += "</p>"
+      s += u"<p>"
+      s += re.sub(u"\n", u"<br>", item['noteText'])
+      s += u"</p>"
+      s += u"<br>"
+      s += u"<p>"
+      s += u'ID: {0}'.format(ID)
+      s += u"</p>"
 
    elif itemType == "contact":
-      s += "<p>"
-      s += item['NAME'] + "<br>"
-      s += item['EMAIL'] + "<br>"
-      s += item['AFFILIATION'] + "<br>"
-      s += item['MOBILE'] + "<br>"
-      s += item['HOME'] + "<br>"
-      s += item['WORK'] + "<br>"
-      s += item['ADDRESS'] + "<br>"
-      s += "</p>"
-      s += "<br>"
-      s += "<p>"
-      s += 'ID: {0}'.format(ID)
-      s += "</p>"
+      s += u"<p>"
+      s += item['NAME'] + u"<br>"
+      s += item['EMAIL'] + u"<br>"
+      s += item['AFFILIATION'] + u"<br>"
+      s += item['MOBILE'] + u"<br>"
+      s += item['HOME'] + u"<br>"
+      s += item['WORK'] + u"<br>"
+      s += item['ADDRESS'] + u"<br>"
+      s += u"</p>"
+      s += u"<br>"
+      s += u"<p>"
+      s += u'ID: {0}'.format(ID)
+      s += u"</p>"
 
    return s
 
