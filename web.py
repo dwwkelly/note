@@ -1,19 +1,24 @@
 #!/usr/bin/env python
 
-import time
-import json
-import re
-from flask import Flask
-from flask import url_for
-from flask import request
-from n import mongoDB
-app = Flask(__name__)
-
-db = mongoDB("note")
-
 __author__ = "Devin Kelly"
 __todo__ = """
 """
+
+import time
+import json
+import re
+import os
+import sys
+from flask import Flask
+from flask import url_for
+from flask import request
+from flask import Response
+from functools import wraps
+from n import mongoDB
+
+app = Flask(__name__)
+
+db = mongoDB("note")
 
 htmlStart = u"""
 <!DOCTYPE html>
@@ -79,7 +84,65 @@ htmlEnd = u"""
 """
 
 
-@app.route('/Search', methods=["GET", "POST"])
+def check_auth(username, password):
+   """This function is called to check if a username /
+   password combination is valid.
+   """
+
+   with open(os.path.expanduser("~/.note.conf")) as fd:
+      config = json.loads(fd.read())
+
+   try:
+      u = config['server']['login']['username']
+      p = config['server']['login']['password']
+   except:
+      print "cannot start server"
+      sys.exit(1)
+
+   return username == u and password == p
+
+
+def authenticate():
+   """Sends a 401 response that enables basic auth"""
+   return Response(
+      'Could not verify your access level for that URL.\n'
+      'You have to login with proper credentials', 401,
+      {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+
+def requires_auth(f):
+   with open(os.path.expanduser("~/.note.conf")) as fd:
+      config = json.loads(fd.read())
+
+   try:
+      login = config['server']['login']
+      if 'username' in login.keys() and 'password' in login.keys():
+         authOn = True
+      else:
+         authOn = False
+
+   except KeyError:
+      authOn = False
+
+   if authOn:
+
+      @wraps(f)
+      def decorated(*args, **kwargs):
+         auth = request.authorization
+         if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+         return f(*args, **kwargs)
+   else:
+
+      @wraps(f)
+      def decorated(*args, **kwargs):
+            return f(*args, **kwargs)
+
+   return decorated
+
+
+@app.route(r'/Search', methods=["GET", "POST"])
+@requires_auth
 def search():
    if request.method == "GET":
       s = htmlStart.format("Search")
@@ -123,6 +186,7 @@ def search():
 
 
 @app.route('/Delete', methods=["GET", "POST"])
+@requires_auth
 def Delete():
    if request.method == "GET":
       s = htmlStart.format("Delete")
@@ -162,6 +226,7 @@ def Delete():
 
 
 @app.route('/', methods=["GET"])
+@requires_auth
 def start():
    s = htmlStart.format("Notes")
    s += htmlEnd
@@ -170,6 +235,7 @@ def start():
 
 
 @app.route('/Notes', methods=["GET"])
+@requires_auth
 def Notes():
    s = htmlStart.format("Notes")
    fourWeeks = 4.0 * 7.0 * 24.0 * 60.0 * 60.0
@@ -190,6 +256,7 @@ def Notes():
 
 
 @app.route('/NewNote', methods=["GET", "POST"])
+@requires_auth
 def NewNote():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
@@ -242,6 +309,7 @@ def NewNote():
 
 
 @app.route('/NewContact', methods=["GET", "POST"])
+@requires_auth
 def NewContact():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
@@ -348,6 +416,7 @@ def NewContact():
 
 
 @app.route('/NewTodo', methods=["GET", "POST"])
+@requires_auth
 def NewTodo():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')

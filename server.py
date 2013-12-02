@@ -4,9 +4,37 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import daemon
+import os
+import json
 from web import app
 
-with daemon.DaemonContext():
-   http_server = HTTPServer(WSGIContainer(app))
-   http_server.listen(5000)
-   IOLoop.instance().start()
+
+def main():
+
+   with open(os.path.expanduser("~/.note.conf")) as fd:
+      config = json.loads(fd.read())
+
+   try:
+      port = config['server']['port']
+   except:
+      port = 5000
+
+   try:
+      certfile = config['server']['ssl']['certfile']
+      keyfile = config['server']['ssl']['keyfile']
+      serverSSLOptions = {"certfile": certfile, "keyfile": keyfile}
+      if not (os.path.exists(certfile) and os.path.exists(keyfile)):
+         raise IOError
+   except:
+      certfile = None
+      keyfile = None
+      serverSSLOptions = None
+
+   with daemon.DaemonContext():
+      http_server = HTTPServer(WSGIContainer(app), ssl_options=serverSSLOptions)
+      http_server.listen(port)
+      IOLoop.instance().start()
+
+
+if __name__ == '__main__':
+   main()
