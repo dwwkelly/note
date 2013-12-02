@@ -35,11 +35,10 @@ def main():
    except:
       listenIP = "127.0.0.1"
 
-   print listenIP
-   #with daemon.DaemonContext():
-   http_server = HTTPServer(WSGIContainer(app), ssl_options=serverSSLOptions)
-   http_server.listen(port, address=listenIP)
-   IOLoop.instance().start()
+   with daemon.DaemonContext():
+      http_server = HTTPServer(WSGIContainer(app), ssl_options=serverSSLOptions)
+      http_server.listen(port, address=listenIP)
+      IOLoop.instance().start()
 
 
 if __name__ == '__main__':
