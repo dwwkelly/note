@@ -141,7 +141,7 @@ def requires_auth(f):
    return decorated
 
 
-@app.route(r'/Search', methods=["GET", "POST"])
+@app.route(r'/Note/Search', methods=["GET", "POST"])
 @requires_auth
 def search():
    if request.method == "GET":
@@ -185,7 +185,7 @@ def search():
    return s
 
 
-@app.route('/Delete', methods=["GET", "POST"])
+@app.route('/Note/Delete', methods=["GET", "POST"])
 @requires_auth
 def Delete():
    if request.method == "GET":
@@ -225,7 +225,7 @@ def Delete():
    return s
 
 
-@app.route('/', methods=["GET"])
+@app.route('/Note', methods=["GET"])
 @requires_auth
 def start():
    s = htmlStart.format("Notes")
@@ -234,7 +234,7 @@ def start():
    return s
 
 
-@app.route('/Notes', methods=["GET"])
+@app.route('/Note/Notes', methods=["GET"])
 @requires_auth
 def Notes():
    s = htmlStart.format("Notes")
@@ -255,7 +255,7 @@ def Notes():
    return s
 
 
-@app.route('/NewNote', methods=["GET", "POST"])
+@app.route('/Note/NewNote', methods=["GET", "POST"])
 @requires_auth
 def NewNote():
    url_for('static', filename='jquery-1.10.2.js')
@@ -308,7 +308,7 @@ def NewNote():
    return s
 
 
-@app.route('/NewContact', methods=["GET", "POST"])
+@app.route('/Note/NewContact', methods=["GET", "POST"])
 @requires_auth
 def NewContact():
    url_for('static', filename='jquery-1.10.2.js')
@@ -415,7 +415,7 @@ def NewContact():
    return s
 
 
-@app.route('/NewTodo', methods=["GET", "POST"])
+@app.route('/Note/NewTodo', methods=["GET", "POST"])
 @requires_auth
 def NewTodo():
    url_for('static', filename='jquery-1.10.2.js')
