@@ -261,7 +261,7 @@ def NewNote():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
 
-   s = htmlStart.format("New Note")
+   s = htmlStart.format("NewNote")
    if request.method == "GET":
       s += u"""
            <form action="NewNote" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
@@ -314,7 +314,7 @@ def NewContact():
    url_for('static', filename='jquery-1.10.2.js')
    url_for('static', filename='dist/js/bootstrap.js')
 
-   s = htmlStart.format("New Contact")
+   s = htmlStart.format("NewContact")
    if request.method == "GET":
       s += u"""
            <form action="NewContact" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
@@ -422,7 +422,7 @@ def NewTodo():
    url_for('static', filename='dist/js/bootstrap.js')
    url_for('static', filename='datepicker/js/bootstrap-datepicker.js')
 
-   s = htmlStart.format("New Todo")
+   s = htmlStart.format("NewTodo")
    if request.method == "GET":
       s += u"""
            <form action="NewTodo" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
