@@ -420,7 +420,6 @@ class Note(NoteBaseClass):
 
       noteText = lines[lines.index('NOTE') + 4: lines.index('TAGS')]
       noteText = noteText.split('\n')
-      noteText = filter(lambda x: x != '', noteText)
       noteText = map(lambda x: x.rstrip(), noteText)
       noteText = '\n'.join(noteText)
       self.noteText = noteText
