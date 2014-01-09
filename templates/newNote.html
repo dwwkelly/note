@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+         <form action="NewNote" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <label for="Note" class="control-label"></label>
+                     <textarea class="form-control" name="noteText" placeholder="Note" rows="3"></textarea>
+                  </div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <label for="Tags" class="control-label"></label>
+                     <input type="text" class="form-control" name="tags" placeholder="Tags">
+                     <input type="hidden" class="form-control" name="api" value="false">
+                  </div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="form-group">
+                  <div class="col-sm-12">
+                     <button type="Note" class="btn btn-default">Add Note</button>
+                  </div>
+               </div>
+            </div>
+         </form>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<form action="newContact" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+   <input type="hidden" class="form-control" name="api" value="false">
+
+   <div class="row">
+      <div class="col-xs-12 col-sm-4">
+         <div class="form-group">
+            <label for="Name" class="control-label"></label>
+            <input type="text" class="form-control" name="name" placeholder="Name">
+         </div>
+      </div>
+      <div class="col-xs-12 col-sm-4">
+         <div class="form-group">
+            <label for="Affiliation" class="control-label"></label>
+            <input type="text" class="form-control" name="affiliation" placeholder="Affiliation">
+         </div>
+      </div>
+      <div class="col-sm-4">
+         <div class="form-group">
+            <label for="EMail" class="control-label"></label>
+            <input type="text" class="form-control" name="email" placeholder="EMail">
+         </div>
+      </div>
+   </div>
+
+   <div class="row">
+      <div class="col-xs-12 col-sm-4">
+         <div class="form-group">
+            <label for="Mobile Phone" class="control-label"></label>
+            <input type="text" class="form-control" name="mobile" placeholder="Mobile Phone">
+         </div>
+      </div>
+      <div class="col-xs-12 col-sm-4">
+         <div class="form-group">
+            <label for="Work Phone" class="control-label"></label>
+            <input type="text" class="form-control" name="work" placeholder="Work Phone">
+         </div>
+      </div>
+      <div class="col-sm-4">
+         <div class="form-group">
+            <label for="Home Phone" class="control-label"></label>
+            <input type="text" class="form-control" name="home" placeholder="Home Phone">
+         </div>
+      </div>
+   </div>
+
+   <div class="row">
+      <div class="col-sm-12">
+         <div class="form-group">
+            <label for="Address" class="control-label"></label>
+            <input type="text" class="form-control" name="address" placeholder="Address">
+         </div>
+      </div>
+   </div>
+
+
+   <div class="row">
+      <div class="form-group">
+         <div class="col-sm-12">
+            <button type="Contact" class="btn btn-default">Add Contact</button>
+         </div>
+      </div>
+   </div>
+</form>
+{% endblock %}

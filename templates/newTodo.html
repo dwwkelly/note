@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<form action="newTodo" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+   <input type="hidden" class="form-control" name="api" value="false">
+   <div class="row">
+      <div class="col-sm-12">
+         <div class="form-group">
+            <label for="Todo" class="control-label"></label>
+            <textarea class="form-control" name="todoText" placeholder="Todo" rows="3"></textarea>
+         </div>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-sm-6">
+         <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-primary">
+               <input type="radio" name="options" value="done">Done
+            </label>
+            <label class="btn btn-primary">
+               <input type="radio" name="options" value="undone">Not Done
+            </label>
+         </div>
+      </div>
+      <div class="col-sm-6">
+         <input type="text" class="datepicker" name="date" placeholder="Date">
+      </div>
+   </div>
+   <div class="row">
+      <div class="form-group">
+         <div class="col-sm-12">
+            <button type="Todo" class="btn btn-default">Add Todo</button>
+         </div>
+      </div>
+   </div>
+</form>
+
+
+<script>
+   $(document).ready(function() {
+      $('.datepicker').datepicker();
+   });
+</script>
+
+{% endblock %}
