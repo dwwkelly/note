@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block head %}
+   {{ super() }}
+{% endblock %}
+
+{% block content %}
+   {% for item in searchResults %}
+      <div class="devintron">
+         {{ item }}
+      </div>
+   {% endfor %}
+{% endblock %}

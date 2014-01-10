@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+Note added<br><br>
+
+{{ todo.todoText }}
+<br>
+Done: {{ todo.done }}
+<br>
+Date: {{ todo.date }}        
+
+{% endblock %}

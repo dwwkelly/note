@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+Note added<br><br>
+
+name        
+<br>
+affiliation: {{ contact.AFFILIATION }}
+<br>
+email: {{ contact.EMAIL }}
+<br>
+work: {{ contact.WORK }}        
+<br>
+home: {{ contact.HOME }}        
+<br>
+mobile: {{ contact.MOBILE }}      
+<br>
+address: {{ contact.ADDRESS }}     
+<br>
+
+{% endblock %}
