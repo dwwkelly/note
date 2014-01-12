@@ -224,6 +224,8 @@ class mongoDB(dbBaseClass):
       proj = {"_id": 0}
       for coll in colls:
          res = self.noteDB.command("text", coll, search=searchInfo, project=proj, limit=resultLimit)['results']
+         for ii in res:
+            ii['itemType'] = coll
          searchResults.extend(res)
 
       return searchResults
