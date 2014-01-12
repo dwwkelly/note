@@ -7,13 +7,13 @@
       <meta name="description" content="">
       <meta name="author" content="">
 
-      <title>{p.title}</title>
-      <link href="/static/dist/css/bootstrap.css" rel="stylesheet">
-      <link href="/static/note.css" rel="stylesheet">
-      <link href="/static/datepicker/css/datepicker.css" rel="stylesheet">
-      <script src="/static/jquery-1.10.2.js"></script>
-      <script src="/static/dist/js/bootstrap.js"></script>
-      <script src="/static/datepicker/js/bootstrap-datepicker.js"></script>
+      <title>{{ p.title }}</title>
+      <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+      <link href="{{ url_for('static', filename='css/note.css') }}" rel="stylesheet">
+      <link href="{{ url_for('static', filename='css/datepicker.css') }}" rel="stylesheet">
+      <script src="{{ url_for('static', filename='js/jquery-1.10.2.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/bootstrap-datepicker.js') }}"></script>
    </head>
 
    <body>

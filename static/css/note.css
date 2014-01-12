@@ -55,9 +55,15 @@ body {
    line-height: 1.0;
    display: inline-block;
    white-space: pre;
+   overflow-x: hidden;
 }
 
 .container .devintron {
    border-radius: 6px;
+}
+
+.like-pre {
+   white-space: pre; 
+   font monospace;
 }
 

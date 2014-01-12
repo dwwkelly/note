@@ -12,15 +12,13 @@ import sys
 from flask import Flask
 from flask import request
 from flask import Response
-from jinja2 import Environment
-from jinja2 import FileSystemLoader
+from flask import render_template
 from functools import wraps
 from n import mongoDB
 
 app = Flask(__name__)
 app.debug = True
 db = mongoDB("note")
-j2_env = Environment(loader=FileSystemLoader('templates'), trim_blocks=True)
 
 
 def check_auth(username, password):
@@ -86,20 +84,20 @@ def search():
 
    if request.method == "GET":
       pages = {"cmd": {"link": "search", "name": "Search"}, "title": "Search"}
-      t = j2_env.get_template('search.html')
-      s = t.render(p=pages)
+      s = render_template('search.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
       pages = {"cmd": {"link": "search", "name": "Search Result"}, "title": "Search Result"}
-      t = j2_env.get_template('searchResult.html')
-
       term = request.form["term"]
       results = db.searchForItem(term)
-      resultsHTML = []
-      for item in results:
-         ID = int(item['obj'][u"ID"])
-         resultsHTML.append(genHTML(ID))
 
-      s = t.render(p=pages, searchResults=resultsHTML)
+      #resultsHTML = []
+      #for item in results:
+      #   import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
+      #   ID = int(item['obj'][u"ID"])
+      #  resultsHTML.append(genHTML(ID))
+      #
+      #s = render_template('searchResult.html', p=pages, searchResults=resultsHTML)
+      s = render_template('searchResult.html', p=pages, searchResults=results)
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
       s = json.dumps(db.searchForItem(term))
@@ -115,13 +113,11 @@ def search():
 def Delete():
    pages = {"cmd": {"link": "delete", "name": "Delete"}, "title": "Delete"}
    if request.method == "GET":
-      t = j2_env.get_template('delete.html')
-      s = t.render(p=pages)
+      s = render_template('delete.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
       ID = int(request.form["ID"])
       db.deleteItem(ID)
-      t = j2_env.get_template('deleted.html')
-      s = t.render(p=pages, itemID=ID)
+      s = render_template('deleted.html', p=pages, itemID=ID)
    elif request.method == "POST" and request.form["api"] == "true":
       ID = int(request.form["ID"])
       result = db.deleteItem(ID)
@@ -137,8 +133,7 @@ def Delete():
 @requires_auth
 def start():
    pages = {"cmd": {"link": "note", "name": "Note"}, "title": "Note"}
-   t = j2_env.get_template('note.html')
-   s = t.render(p=pages)
+   s = render_template('note.html', p=pages)
    return s
 
 
@@ -150,14 +145,13 @@ def Notes():
    fourWeeksAgo = now - fourWeeks
    items = db.getByTime(startTime=fourWeeksAgo, endTime=now)
    pages = {"cmd": {"link": "search", "name": "Search Result"}, "title": "Search Result"}
-   t = j2_env.get_template('searchResult.html')
 
    resultsHTML = []
    for ID in items:
       tmpHTML = addLinks(genHTML(ID))
       resultsHTML.append(tmpHTML)
 
-   s = t.render(p=pages, searchResults=resultsHTML)
+   s = render_template('searchResult.html', p=pages, searchResults=resultsHTML)
    return s
 
 
@@ -167,16 +161,12 @@ def NewNote():
 
    pages = {"cmd": {"link": "newNote", "name": "New Note"}, "title": "New Note"}
    if request.method == "GET":
-      t = j2_env.get_template('newNote.html')
-      s = t.render(p=pages)
+      s = render_template('newNote.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
       tags = request.form["tags"]
       noteText = request.form["noteText"]
       db.addItem("notes", {"noteText": noteText, "tags": tags})
-
-      t = j2_env.get_template('noteAdded.html')
-      s = t.render(p=pages, noteText=noteText, tags=tags )
-
+      s = render_template('noteAdded.html', p=pages, noteText=noteText, tags=tags )
    elif request.method == "POST" and request.form["api"] == "true":
       noteText = request.form["noteText"]
       tags = request.form["tags"].split(",")
@@ -191,8 +181,7 @@ def NewNote():
 def NewContact():
    pages = {"cmd": {"link": "newContact", "name": "New Contact"}, "title": "New Contact"}
    if request.method == "GET":
-      t = j2_env.get_template('newContact.html')
-      s = t.render(p=pages)
+      s = render_template('newContact.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
       name = request.form["name"]
       affiliation = request.form["affiliation"]
@@ -210,8 +199,7 @@ def NewContact():
                      "EMAIL": email,
                      "HOME PHONE": home}
       db.addItem("contacts", contactInfo)
-      t = j2_env.get_template('contactAdded.html')
-      s = t.render(p=pages, contact=contactInfo)
+      s = render_template('contactAdded.html', p=pages, contact=contactInfo)
    elif request.method == "POST" and request.form["api"] == "true":
       contactText = request.form["contactText"]
       tags = request.form["tags"].split(",")
@@ -226,8 +214,7 @@ def NewTodo():
 
    pages = {"cmd": {"link": "newTodo", "name": "New ToDo"}, "title": "New ToDo"}
    if request.method == "GET":
-      t = j2_env.get_template('newTodo.html')
-      s = t.render(p=pages)
+      s = render_template('newTodo.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
       todoText = request.form["todoText"]
       done = str(request.form['options'])
@@ -238,8 +225,7 @@ def NewTodo():
       db.addItem("todos", todoItem)
       todoItem['done'] = str(todoItem['done'])
       todoItem['date'] = str(todoItem['date'])
-      t = j2_env.get_template('todoAdded.html')
-      s = t.render(p=pages, todo=todoItem)
+      s = render_template('todoAdded.html', p=pages, todo=todoItem)
    elif request.method == "POST" and request.form["api"] == "true":
       todoText = request.form["todoText"]
       tags = request.form["tags"].split(",")

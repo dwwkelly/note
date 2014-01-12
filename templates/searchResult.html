@@ -5,8 +5,17 @@
 
 {% block content %}
    {% for item in searchResults %}
-      <div class="devintron">
-         {{ item }}
+      <div class="row">
+         <div class="col-lg-12">
+            <div class="like-pre">
+               <p class="text-left">
+                  {{ item.obj.noteText| replace('\r\n', '<br>')|safe }}
+               </p>
+            </div>
+            <br>
+            ID: {{ item.obj.ID }}
+         </div>
       </div>
+      <hr>
    {% endfor %}
 {% endblock %}
