@@ -4,19 +4,36 @@
 {% endblock %}
 
 {% block content %}
-<form action="search" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
-   <div class="form-group">
-      <label for="Search" class="col-sm-2 control-label"></label>
-      <div class="col-sm-10">
-         <input type="text" class="form-control" name="term">
-         <input type="hidden" class="form-control" name="api" value="false">
+<form action="search" method="POST" enctype="multipart/form-data"  role="form">
+
+
+
+   <div class="row">
+      <div class="col-sm-offset-2 col-sm-8">
+         <label for="search" class="col-sm-2 control-label"></label>
+         <input type="text" class="form-control" name="term" id="search"></input>
+         <input type="hidden" class="form-control" name="api" value="false"></input>
       </div>
    </div>
-   <br><br>
-   <div class="form-group">
-      <div class="col-sm-offset-2 col-sm-10">
-         <button type="search" class="btn btn-default">Search</button>
+
+   <div class="row">
+
+      <div class="col-sm-offset-3 col-sm-3">
+         Sort By:
+         <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-primary">
+               <input type="radio" name="options" value="relevance">Relevance
+            </label>
+            <label class="btn btn-primary active">
+               <input type="radio" name="options" value="date" checked="">Date
+            </label>
+         </div>
+      </div>
+
+      <div class="col-sm-3">
+         <button type="search" class="btn btn-primary">Search</button>
       </div>
    </div>
+
 </form>
 {% endblock %}
