@@ -67,3 +67,6 @@ body {
    font monospace;
 }
 
+form .row {
+   margin-bottom:10px;
+}
