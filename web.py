@@ -89,14 +89,6 @@ def search():
       pages = {"cmd": {"link": "search", "name": "Search Result"}, "title": "Search Result"}
       term = request.form["term"]
       results = db.searchForItem(term)
-
-      #resultsHTML = []
-      #for item in results:
-      #   import ipdb; ipdb.set_trace()  # XXX BREAKPOINT
-      #   ID = int(item['obj'][u"ID"])
-      #  resultsHTML.append(genHTML(ID))
-      #
-      #s = render_template('searchResult.html', p=pages, searchResults=resultsHTML)
       s = render_template('searchResult.html', p=pages, searchResults=results)
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
