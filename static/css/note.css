@@ -64,7 +64,8 @@ body {
 
 .like-pre {
    white-space: pre; 
-   font monospace;
+   font-family: Consolas, Lucida Console, monospace; 
+   text-align left;
 }
 
 form .row {

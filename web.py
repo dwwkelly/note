@@ -18,6 +18,7 @@ from n import mongoDB
 
 app = Flask(__name__)
 app.debug = True
+app.jinja_env.trim_blocks = True
 db = mongoDB("note")
 
 
@@ -96,7 +97,29 @@ def search():
    else:
       s = "not valid"
 
-   s = addLinks(s)
+   #s = addLinks(s)
+   return s
+
+
+@app.route(r'/newPlace', methods=["GET", "POST"])
+@requires_auth
+def newPlace():
+   if request.method == "GET":
+      pages = {"cmd": {"link": "newPlace", "name": "New Place"}, "title": "New Place"}
+      s = render_template('newPlace.html', p=pages)
+   elif request.method == "POST" and request.form["api"] == "false":
+      pages = {"cmd": {"link": "newPlace", "name": "Place Added"}, "title": "Place Added"}
+      loc = request.form["location"]
+      tags = request.form["tags"]
+      noteText = request.form["noteText"]
+      place = {"location": loc, "noteText": noteText, "tags": tags}
+      s = render_template('placeAdded.html', p=pages, placeInfo=place)
+   elif request.method == "POST" and request.form["api"] == "true":
+      term = request.form["term"]
+      s = json.dumps(db.searchForItem(term))
+   else:
+      s = "not valid"
+
    return s
 
 

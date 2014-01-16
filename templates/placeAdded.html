@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+New Place Added<br><br>
+{{placeInfo.location}}
+{{placeInfo.noteText}}
+{{placeInfo.tags}}
+{% endblock %}
+

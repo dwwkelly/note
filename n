@@ -30,6 +30,7 @@ __added_features__ = '''
 import subprocess
 import argparse
 import os
+import re
 import sys
 import time
 import copy
@@ -424,6 +425,8 @@ class Note(NoteBaseClass):
       noteText = noteText.split('\n')
       noteText = map(lambda x: x.rstrip(), noteText)
       noteText = '\n'.join(noteText)
+      noteText = re.sub(r'^\s*', '', noteText)
+      noteText = re.sub(r'\s*$', '', noteText)
       self.noteText = noteText
 
       tags = lines[lines.index('TAGS') + 4: -1]

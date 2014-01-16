@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<form action="newPlace" method="POST" enctype="multipart/form-data" class="form-horizontal" role="form">
+
+   <div class="row">
+      <div class="col-sm-8">
+         <div class="full">
+            <input type="text" class="form-control" id="location" name="location" value="Boston, MA"/>
+         </div>
+      </div>
+
+      <div class="col-sm-4">
+
+         <div class="form-group">
+            <label for="newPlace" class="control-label"></label>
+            <textarea class="form-control" name="noteText" placeholder="Description" rows="9"></textarea>
+         </div>
+
+         <div class="form-group">
+            <label for="tags" class="control-label"></label>
+            <input type="text" class="form-control" name="tags" placeholder="Tags">
+         </div>
+
+         <div class="form-group">
+            <button id="addPlace" class="btn btn-primary">Add Place</button>
+         </div>
+
+      </div>
+   </div>
+
+   <input type="hidden" class="form-control" name="api" value="false">
+</form>
+
+
+<script>
+   $(function() {
+   $('#location').autoGeocoder();
+   });
+</script>
+{% endblock %}
