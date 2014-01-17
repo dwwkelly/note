@@ -679,6 +679,13 @@ class Runner(object):
       self.commands['info'] = self.info
       self.commands['verifyDB'] = self.verify
 
+      # FIXME -- add commands to sort search results by relevance, ID and date
+      # Not sure how to do without breaking API or adding state variable
+      #self.commands['sID'] = self.search
+      #self.commands['sdate'] = self.search
+      #self.commands['srelevance'] = self.search
+
+
       self.parseOpts()
 
       if self.command in ['edit', 'delete', 'e', 'D']:
