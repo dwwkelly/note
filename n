@@ -204,7 +204,7 @@ class mongoDB(dbBaseClass):
          if note is not None:
             return coll
 
-   def searchForItem(self, searchInfo, resultLimit=20):
+   def searchForItem(self, searchInfo, resultLimit=20, sortBy="relevance"):
       """
       Given a search term returns a list of results that match that term:
 
@@ -228,6 +228,11 @@ class mongoDB(dbBaseClass):
          for ii in res:
             ii['itemType'] = coll
          searchResults.extend(res)
+
+      if sortBy.lower() == "date":
+         searchResults = sorted(searchResults, key=(lambda x: max(x['obj']['timestamps'])))
+      elif sortBy.lower() == "id":
+         searchResults = sorted(searchResults, key=(lambda x: x['obj']['ID']))
 
       return searchResults
 

@@ -6,7 +6,6 @@ __todo__ = """
 
 import time
 import json
-import re
 import os
 import sys
 from flask import Flask
@@ -89,7 +88,8 @@ def search():
    elif request.method == "POST" and request.form["api"] == "false":
       pages = {"cmd": {"link": "search", "name": "Search Result"}, "title": "Search Result"}
       term = request.form["term"]
-      results = db.searchForItem(term)
+      s = request.form['options']
+      results = db.searchForItem(term, sortBy=s)
       s = render_template('searchResult.html', p=pages, searchResults=results)
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
@@ -97,7 +97,6 @@ def search():
    else:
       s = "not valid"
 
-   #s = addLinks(s)
    return s
 
 
@@ -155,6 +154,7 @@ def start():
 @app.route('/notes', methods=["GET"])
 @requires_auth
 def Notes():
+   # FIXME -- this function needs a template
    fourWeeks = 4.0 * 7.0 * 24.0 * 60.0 * 60.0
    now = time.time()
    fourWeeksAgo = now - fourWeeks
@@ -162,9 +162,6 @@ def Notes():
    pages = {"cmd": {"link": "search", "name": "Search Result"}, "title": "Search Result"}
 
    resultsHTML = []
-   for ID in items:
-      tmpHTML = addLinks(genHTML(ID))
-      resultsHTML.append(tmpHTML)
 
    s = render_template('searchResult.html', p=pages, searchResults=resultsHTML)
    return s
@@ -247,66 +244,6 @@ def NewTodo():
       todo = {"todoText": todoText, "tags": tags, "timestamp": time.time()}
       db.addItem("todos", {"todoText": todoText, "done": done, "date": time.mktime(time.strptime(date, "%m/%d/%Y"))})
       s = json.dumps(todo)
-   return s
-
-
-def genHTML(ID):
-
-   itemType = db.getItemType(ID)
-   item = db.getItem(ID)
-
-   s = u""
-   if itemType == "todos":
-      s += u"<p>"
-      s += re.sub("\n", "<br>", str(item['todoText']))
-      s += u"</p>"
-      s += u"<br>"
-      s += u"<p>"
-      if item["done"]:
-         s += "done"
-      else:
-         s += u"not done"
-      s += u"</p>"
-      s += u"<br>"
-      s += u"<p>"
-      s += u'ID: {0}'.format(ID)
-      s += u"</p>"
-
-   elif itemType == "notes":
-      s += u"<p>"
-      s += re.sub(u"\n", u"<br>", item['noteText'])
-      s += u"</p>"
-      s += u"<br>"
-      s += u"<p>"
-      s += u'ID: {0}'.format(ID)
-      s += u"</p>"
-
-   elif itemType == "contact":
-      s += u"<p>"
-      s += item['NAME'] + u"<br>"
-      s += item['EMAIL'] + u"<br>"
-      s += item['AFFILIATION'] + u"<br>"
-      s += item['MOBILE'] + u"<br>"
-      s += item['HOME'] + u"<br>"
-      s += item['WORK'] + u"<br>"
-      s += item['ADDRESS'] + u"<br>"
-      s += u"</p>"
-      s += u"<br>"
-      s += u"<p>"
-      s += u'ID: {0}'.format(ID)
-      s += u"</p>"
-
-   return s
-
-
-def addLinks(s):
-
-   part1 = re.compile(r"(^|)(([\w]+?://[\w\#$%&~.\-;:=,?@\[\]+]*)(/[\w\#$%&~/.\-;:=,?@\[\]+]*)?)", re.IGNORECASE | re.DOTALL)
-   part2 = re.compile(r"#(^|)(((www|ftp)\.[\w\#$%&~.\-;:=,?@\[\]+]*)(/[\w\#$%&~/.\-;:=,?@\[\]+]*)?)", re.IGNORECASE | re.DOTALL)
-
-   s = part1.sub(r'\1<a href="\2">\3</a>', s)
-   s = part2.sub(r'\1<a href="http:/\2">\3</a>', s)
-
    return s
 
 
