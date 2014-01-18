@@ -16,13 +16,34 @@
                <div class="like-pre">ID: {{ item.obj.ID | trim }}</div>
             </div>
          </div>
-      {% elif item.itemType == "place" %}
-         <div class="col-lg-8">
-            {{ item.obj.noteText }}
+      {% elif item.itemType == "places" %}
+         <div class="row">
+            <div class="col-lg-4">
+               {{ item.obj.placeText }}
+            </div>
          </div>
-         <div class="col-lg-4">
-            {{ item.obj.loc }}
+         <div class="row">
+            <div class="col-lg-12">
+               {{ item.obj.noteText }}
+            </div>
          </div>
+         <div class="row">
+            <div class="col-lg-12">
+               {{ item.obj.addressText }}
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-lg-12">
+               <div class="full">
+                  <input type="hidden" class="form-control" id="{{ item.obj.addressText |replace('.', '') | replace(',', '') | replace(' ', '_')  | replace('#', '')}}" name="{{ item.obj.addressText |replace('.', '') | replace(',', '') | replace(' ', '_') | replace('#', '') }}" value="{{ item.obj.addressText }}" />
+               </div>
+            </div>
+         </div>
+         <script>
+            $(function() {
+               $("#{{ item.obj.addressText |replace('.', '') | replace(',', '') | replace(' ', '_')  | replace('#', '')}}").autoGeocoder();
+            });
+         </script>
       {% elif item.itemType == "contacts" %}
          <div class="row">
             <div class="col-md-4">
