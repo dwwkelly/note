@@ -168,7 +168,7 @@ class mongoDB(dbBaseClass):
          idCollection.update({"unusedIDs": {"$exists": True}},
                              {"$set": {"unusedIDs": unusedIDs}})
 
-      return ID
+      return int(ID)
 
    def getItem(self, itemID):
       """
