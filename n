@@ -822,7 +822,7 @@ class Runner(object):
          sortBy = 'id'
       elif self.command == 'sdate':
          sortBy = 'date'
-      elif self.command == 'srelevance':
+      else :
          sortBy = 'relevance'
 
       results = self.db.searchForItem(searchTerm, sortBy=sortBy)
