@@ -210,10 +210,6 @@ class mongoDB(dbBaseClass):
 
       """
 
-      # FIXME -- move search to DB class
-      #projection = {"ID": 1, "noteText": 1, "timestamps": 1, "_id": 0}
-      #searchResults = self.noteDB.command("text", "notes", search=searchInfo, project=projection, limit=resultLimit)
-
       searchResults = []
 
       colls = self.noteDB.collection_names()
@@ -775,9 +771,6 @@ class Runner(object):
       self.commands['thisMonth'] = self.thisMonth
       self.commands['info'] = self.info
       self.commands['verifyDB'] = self.verify
-
-      # FIXME -- add commands to sort search results by relevance, ID and date
-      # Not sure how to do without breaking API or adding state variable
       self.commands['sID'] = self.search
       self.commands['sdate'] = self.search
       self.commands['srelevance'] = self.search
