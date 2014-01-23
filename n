@@ -397,8 +397,11 @@ class NoteBaseClass(object):
       if self.editor == "/usr/bin/vim" or self.editor == '/usr/local/bin/vim':
          subprocess.call([self.editor, "+{0}".format(startingLine),
                           "-c", "startinsert", self.tmpNote])
-         os.remove("{0}.swp".format(self.tmpNote))
-         os.remove("{0}".format(self.tmpNote))
+         try:
+            os.remove("{0}.swp".format(self.tmpNote))
+            os.remove("{0}".format(self.tmpNote))
+         except OSError:
+            pass
       else:
          subprocess.call([self.editor, self.tmpNote])
 
