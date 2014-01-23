@@ -778,9 +778,9 @@ class Runner(object):
 
       # FIXME -- add commands to sort search results by relevance, ID and date
       # Not sure how to do without breaking API or adding state variable
-      #self.commands['sID'] = self.search
-      #self.commands['sdate'] = self.search
-      #self.commands['srelevance'] = self.search
+      self.commands['sID'] = self.search
+      self.commands['sdate'] = self.search
+      self.commands['srelevance'] = self.search
 
       self.parseOpts()
 
@@ -820,7 +820,14 @@ class Runner(object):
    def search(self, searchTerm):
       searchTerm = searchTerm[0]
 
-      results = self.db.searchForItem(searchTerm)
+      if self.command == 'sID':
+         sortBy = 'id'
+      elif self.command == 'sdate':
+         sortBy = 'date'
+      elif self.command == 'srelevance':
+         sortBy = 'relevance'
+
+      results = self.db.searchForItem(searchTerm, sortBy=sortBy)
 
       # FIXME This needs changing to be more generic
       for item in results:
