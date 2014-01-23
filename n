@@ -751,7 +751,6 @@ class Runner(object):
       self.dbName = 'note'
       self.db = mongoDB(self.dbName)
 
-      self.commands = ['backup', 'showUndone', 'showDone', 'todo', 'contact', 'edit', 'delete', 'search', 'add']
       note = Note(self.db)
       todo = ToDo(self.db)
       place = Place(self.db)
