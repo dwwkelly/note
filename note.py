@@ -24,7 +24,6 @@ __added_features__ = '''
 -when editing a note, should the timestamp be the original, the newest or a list of all edits?
 '''
 
-
 import subprocess
 import argparse
 import os
@@ -822,7 +821,7 @@ class Runner(object):
          sortBy = 'id'
       elif self.command == 'sdate':
          sortBy = 'date'
-      else :
+      else:
          sortBy = 'relevance'
 
       results = self.db.searchForItem(searchTerm, sortBy=sortBy)
