@@ -64,7 +64,8 @@ body {
 
 .like-pre {
    white-space: pre; 
-   font-family: Consolas, Lucida Console, monospace; 
+   font-family: Consolas, Lucida Console, monospace;
+   word-wrap: break-word;
    text-align left;
 }
 
