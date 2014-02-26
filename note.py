@@ -75,7 +75,7 @@ BWHT = "\033[47m"
 def main():
 
    runner = Runner()
-   runner.null()
+   runner.start()
 
 
 class dbBaseClass:
@@ -751,6 +751,8 @@ class Runner(object):
       self.dbName = 'note'
       self.db = mongoDB(self.dbName)
 
+   def start(self):
+
       note = Note(self.db)
       todo = ToDo(self.db)
       place = Place(self.db)
@@ -810,9 +812,6 @@ class Runner(object):
       except KeyError:
          print u"{0} does not exist".format(self.command)
          sys.exit(0)
-
-   def null(self):
-      return
 
    def search(self, searchTerm):
       searchTerm = searchTerm[0]
