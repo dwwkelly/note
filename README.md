@@ -6,9 +6,9 @@ Note is a text-based note taking system that is simple and fast to use.
 Demos
 ----
 
-![Screenshot](https://raw.github.com/dwwkelly/note/master/demo/demo_01.gif)
-![Screenshot](https://raw.github.com/dwwkelly/note/master/demo/demo_02.gif)
-![Screenshot](https://raw.github.com/dwwkelly/note/master/demo/demo_03.gif)
+![Screenshot](https://raw.github.com/dwwkelly/note/master/demos/demo_01.gif)
+![Screenshot](https://raw.github.com/dwwkelly/note/master/demos/demo_02.gif)
+![Screenshot](https://raw.github.com/dwwkelly/note/master/demos/demo_03.gif)
 
 Goals
 ----
