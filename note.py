@@ -490,7 +490,7 @@ class Note(NoteBaseClass):
 
          fileText = (self.noteEditTemplate.format(origNotetext, origTags)).encode('utf-8')
       else:
-         fileText = self.template
+         fileText = self.noteTemplate
 
       with open(self.tmpNote, 'w') as fd:
          fd.write(fileText)
