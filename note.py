@@ -423,6 +423,21 @@ class Note(NoteBaseClass):
       self.noteTemplate = u"NOTE\n\n\n\nTAGS\n\n\n"
       self.noteEditTemplate = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
 
+   def new(self, dummy=None):
+      """
+
+      """
+      self.makeTmpFile()
+      self.addByEditor()
+
+   def edit(self, ID):
+      """
+
+      """
+      ID = self.scrubID(ID)
+      self.makeTmpFile(ID)
+      self.addByEditor(ID)
+
    def processNote(self):
 
       try:
@@ -447,31 +462,29 @@ class Note(NoteBaseClass):
       tags = map(lambda x: x.lstrip(), tags)
       self.tags = tags
 
-   def edit(self, ID):
-      """
+   def makeTmpFile(self, ID=None):
+      """@todo: Makes the temporary file for a new note or a note that is to be edited.
+
+      :ID: The note ID, if given populates file with note contents, otherwise use template
+      :returns: Nothing
 
       """
-      ID = int(ID[0])
-      origNote = self.db.getItem(ID)
-      origNotetext = origNote['noteText']
-      origTags = ','.join(origNote['tags'])
 
-      editText = (self.noteEditTemplate.format(origNotetext, origTags)).encode('utf-8')
-      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
-      with open(self.tmpNote, 'w') as fd:
-         fd.write(editText)
+      fileText = ""
+      if ID:
+         ID = self.scrubID(ID)
+         origNote = self.db.getItem(ID)
+         origNotetext = origNote['noteText']
+         origTags = ','.join(origNote['tags'])
 
-      self.startEditor(3)
-      self.processNote()
-      self.db.addItem(self.noteType, {"noteText": self.noteText, "tags": self.tags}, ID)
-
-   def new(self, dummy=None):
-      """
-
-      """
+         fileText = (self.noteEditTemplate.format(origNotetext, origTags)).encode('utf-8')
+      else:
+         fileText = self.template
 
       with open(self.tmpNote, 'w') as fd:
-         fd.write(self.noteTemplate)
+         fd.write(fileText)
+
+   def addByEditor(self, ID=None):
       self.startEditor(3)
       self.processNote()
 
@@ -551,16 +564,10 @@ class Place(NoteBaseClass):
       origTags = ','.join(origNote['tags'])
 
       editText = (self.noteEditTemplate.format(origPlaceText, origNoteText, origAddressText, origTags)).encode('utf-8')
-      self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       with open(self.tmpNote, 'w') as fd:
          fd.write(editText)
 
-      self.startEditor(3)
-      self.processPlace()
-      self.db.addItem(self.noteType, {"noteText": self.noteText,
-                                      "placeText": self.placeText,
-                                      "addressText": self.addressText,
-                                      "tags": self.tags}, ID)
+      self.addByEditor(ID)
 
    def new(self, dummy=None):
       """
@@ -569,16 +576,8 @@ class Place(NoteBaseClass):
 
       with open(self.tmpNote, 'w') as fd:
          fd.write(self.noteTemplate)
-      self.startEditor(3)
-      self.processPlace()
 
-      if self.noteText:
-         self.db.addItem(self.noteType, {"noteText": self.noteText,
-                                         "placeText": self.placeText,
-                                         "addressText": self.addressText,
-                                         "tags": self.tags})
-
-      return
+      self.addByEditor()
 
    def printItem(self, ID, color=True):
       ID = self.scrubID(ID)
@@ -590,6 +589,15 @@ class Place(NoteBaseClass):
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
       print u"{0}{1} {2}{3}{4}:{5}\n{6}\n{7}".format(FBLE, int(ID),  FRED, RS, noteDate, placeText, noteText, addressText)
+
+   def addByEditor(self, ID=None):
+
+      self.startEditor(3)
+      self.processPlace()
+      self.db.addItem(self.noteType, {"noteText": self.noteText,
+                                      "placeText": self.placeText,
+                                      "addressText": self.addressText,
+                                      "tags": self.tags}, ID)
 
 
 class ToDo(NoteBaseClass):
@@ -606,19 +614,14 @@ class ToDo(NoteBaseClass):
       dateStr = time.strftime('%m %d %y', time.localtime(todo['date']))
       with open(self.tmpNote, 'w') as fd:
          fd.write(self.todoEditTemplate.format(todo['todoText'], todo['done'], dateStr))
-      self.startEditor(3)
-      self.processTodo()
-      self.db.addItem(self.noteType, {"todoText": self.todoText, "done": self.done, "date": self.date}, ID)
-      return
+
+      self.addByEditor(ID)
 
    def new(self, dummy=None):
-      self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
       with open(self.tmpNote, 'w') as fd:
          fd.write(self.todoTemplate)
-      self.startEditor(3)
-      self.processTodo()
-      self.db.addItem(self.noteType, {"todoText": self.todoText, "done": self.done, "date": self.date})
-      return
+
+      self.addByEditor()
 
    def processTodo(self):
       try:
@@ -650,6 +653,14 @@ class ToDo(NoteBaseClass):
       date = lines[lines.index('DATE - MM DD YY') + 15: -1]
       date = date.strip()
       self.date = time.mktime(time.strptime(date, "%m %d %y"))
+
+   def addByEditor(self, ID=None):
+      ID = self.scrubID(ID)
+      self.startEditor(3)
+      self.processTodo()
+      self.db.addItem(self.noteType, {"todoText": self.todoText,
+                                      "done": self.done,
+                                      "date": self.date}, ID)
 
    def showDone(self, dummy=None):
       IDs = self.db.getDone(True)
@@ -706,17 +717,13 @@ class Contact(NoteBaseClass):
       with open(self.tmpNote, 'w') as fd:
          fd.write(editText)
 
-      self.startEditor(3)
-      self.processContact()
-      self.db.addItem(self.noteType, self.contactInfo, ID)
-      return
+      self.addByEditor(ID)
 
    def new(self, dummy=None):
       with open(self.tmpNote, 'w') as fd:
          fd.write(self.contactTemplate)
-      self.startEditor(3)
-      self.processContact()
-      self.db.addItem("contacts", self.contactInfo)
+
+      self.addByEditor()
 
    def processContact(self):
       try:
@@ -750,6 +757,11 @@ class Contact(NoteBaseClass):
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
       print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+
+   def addByEditor(self, ID=None):
+      self.startEditor(3)
+      self.processContact()
+      self.db.addItem("contacts", self.contactInfo)
 
 
 class Runner(object):
