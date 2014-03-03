@@ -705,7 +705,6 @@ class Contact(NoteBaseClass):
       self.contactTemplate = "NAME\n\n\n\nAFFILIATION\n\n\n\nEMAIL\n\n\n\nMOBILE PHONE\n\n\n\nHOME PHONE\n\n\n\nWORK PHONE\n\n\n\nADDRESS\n\n\n"
       self.contactEditTemplate = "NAME\n\n{0}\n\nAFFILIATION\n\n{1}\n\nEMAIL\n\n{2}\n\nMOBILE PHONE\n\n{3}\n\nHOME PHONE\n\n{4}\n\nWORK PHONE\n\n{5}\n\nADDRESS\n\n\n"
       self.keys = ["NAME", "AFFILIATION", "EMAIL", "MOBILE PHONE", "HOME PHONE", "WORK PHONE", "ADDRESS"]
-      self.tmpNote = os.path.join(self.homeDir, '.contact.TMP')
       self.contactInfo = {}
 
    def edit(self, ID):
@@ -738,7 +737,7 @@ class Contact(NoteBaseClass):
          with open(self.tmpNote) as fd:
             lines = fd.read()
       except IOError:
-         print("Config file doesn't exist, exiting")
+         print("Note file file doesn't exist, exiting")
          sys.exit(-1)
 
       keys = copy.deepcopy(self.keys)
