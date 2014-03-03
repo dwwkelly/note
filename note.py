@@ -781,6 +781,12 @@ class Runner(object):
       self.dbName = 'note'
       self.db = mongoDB(self.dbName)
 
+      note = Note(self.db)
+      todo = ToDo(self.db)
+      place = Place(self.db)
+      contact = Contact(self.db)
+      self.itemTypes = {"notes": note, "todos": todo, "contacts": contact, "places": place}
+
    def start(self):
 
       note = Note(self.db)
