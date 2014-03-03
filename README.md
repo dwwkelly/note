@@ -22,10 +22,9 @@ TODO
 
 - convert to python 3
 - rewrite processX funtions to use regex
-- merge in changes made when writing vim plugin
 - add distributed code
 - finish writing this file
 - clean up web templates so they look nice on all browsers
-- Addd SQL backedend
+- Add SQL backedend
 - Rewrite configuration file format/handler
-- Add demos
+- Improve demos, gifs are ugly.
