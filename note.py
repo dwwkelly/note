@@ -147,8 +147,6 @@ class mongoDB(dbBaseClass):
          itemContents["ID"] = itemID
          collection.update({"_id": _id}, itemContents)
 
-      return
-
    def getNewID(self):
       """
          Get a new ID by either incrementing the currentMax ID or using an unusedID
@@ -390,7 +388,6 @@ class NoteBaseClass(object):
          pass
 
       self.db.deleteItem(ID)
-      return
 
    def startEditor(self, startingLine=1):
       if self.editor == "/usr/bin/vim" or self.editor == '/usr/local/bin/vim':
@@ -849,8 +846,6 @@ class Runner(object):
 
       self.commandArgs = args.command[1:]
 
-      return
-
    def backup(self, dst):
 
       if not dst:
@@ -863,8 +858,6 @@ class Runner(object):
       if dst is "/tmp":
          pwd = os.getcwd()
          shutil.move(os.path.join(dst, self.backupName), os.path.join(pwd, self.backupName))
-
-      return
 
    def encrypt(self, dst):
 
@@ -914,8 +907,6 @@ class Runner(object):
       else:
          self.key = usable_keys[data - 1]
 
-      return
-
    def pushToDropbox(self, backupFile=None):
 
       token = self.config['dropbox']['token']
@@ -951,8 +942,6 @@ class Runner(object):
       for ID in IDs:
          itemType = self.db.getItemType(ID)
          self.itemTypes[itemType].printItem(ID)
-
-      return
 
    def thisMonth(self, null=None):
       now = datetime.datetime.now()
