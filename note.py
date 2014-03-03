@@ -401,6 +401,17 @@ class NoteBaseClass(object):
       else:
          subprocess.call([self.editor, self.tmpNote])
 
+   def scrubID(self, ID):
+
+      if type(ID) == list:
+         return int(ID)
+      elif type(ID) == str:
+         return int(ID)
+      elif type(ID) == int:
+         return ID
+      else:
+         return None
+
 
 class Note(NoteBaseClass):
    def __init__(self, db):
@@ -532,7 +543,7 @@ class Place(NoteBaseClass):
       """
 
       """
-      ID = int(ID[0])
+      ID = self.scrubID(ID)
       origNote = self.db.getItem(ID)
       origNoteText = origNote['noteText']
       origAddressText = origNote['addressText']
@@ -569,7 +580,8 @@ class Place(NoteBaseClass):
 
       return
 
-   def printItem(self, ID):
+   def printItem(self, ID, color=True):
+      ID = self.scrubID(ID)
       result = self.db.getItem(ID)
       noteText = result['noteText']
       addressText = result['addressText']
@@ -589,8 +601,7 @@ class ToDo(NoteBaseClass):
       self.todoEditTemplate = "TODO\n\n{0}\n\nDONE\n\n{1}\n\nDATE - MM DD YY\n\n{2}\n\n"
 
    def edit(self, ID):
-      ID = int(ID[0])
-      self.tmpNote = os.path.join(self.homeDir, '.todo.TMP')
+      ID = self.scrubID(ID)
       todo = self.db.getItem(ID)
       dateStr = time.strftime('%m %d %y', time.localtime(todo['date']))
       with open(self.tmpNote, 'w') as fd:
@@ -680,7 +691,7 @@ class Contact(NoteBaseClass):
 
    def edit(self, ID):
 
-      ID = int(ID[0])
+      ID = self.scrubID(ID)
       origContact = self.db.getItem(ID)
       self.contactEditTemplate
 
@@ -957,7 +968,7 @@ class Runner(object):
          self.itemTypes[itemType].printItem(ID)
 
    def info(self, ID):
-      ID = int(ID[0])
+      ID = self.scrubID(ID)
 
       info = self.db.getItem(ID)
 
