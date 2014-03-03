@@ -438,6 +438,17 @@ class Note(NoteBaseClass):
       self.makeTmpFile(ID)
       self.addByEditor(ID)
 
+   def printItem(self, ID, color=True):
+      result = self.db.getItem(ID)
+      noteText = result['noteText']
+      timestamps = result['timestamps']
+      timestamp = time.localtime(max(timestamps))
+      noteDate = time.strftime("%a, %b %d", timestamp)
+      if color:
+         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, int(ID))
+      else:
+         print u"{2} {0}: {1}".format(noteDate, noteText, int(ID)).encode('utf-8')
+
    def processNote(self):
 
       try:
@@ -490,16 +501,6 @@ class Note(NoteBaseClass):
 
       if self.noteText:
          self.db.addItem("notes", {"noteText": self.noteText, "tags": self.tags})
-
-      return
-
-   def printItem(self, ID):
-      result = self.db.getItem(ID)
-      noteText = result['noteText']
-      timestamps = result['timestamps']
-      timestamp = time.localtime(max(timestamps))
-      noteDate = time.strftime("%a, %b %d", timestamp)
-      print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, int(ID))
 
 
 class Place(NoteBaseClass):
@@ -588,7 +589,11 @@ class Place(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print u"{0}{1} {2}{3}{4}:{5}\n{6}\n{7}".format(FBLE, int(ID),  FRED, RS, noteDate, placeText, noteText, addressText)
+
+      if color:
+         print u"{0}{1} {2}{3}{4}:{5}\n{6}\n{7}".format(FBLE, int(ID),  FRED, RS, noteDate, placeText, noteText, addressText)
+      else:
+         print u"{0} {1}: {2}\n{3}\n{4}".format(int(ID), noteDate, placeText, noteText, addressText).encode('utf-8')
 
    def addByEditor(self, ID=None):
 
@@ -670,7 +675,7 @@ class ToDo(NoteBaseClass):
       IDs = self.db.getDone(False)
       [self.printItem(ii) for ii in IDs]
 
-   def printItem(self, ID):
+   def printItem(self, ID, color=True):
 
       result = self.db.getItem(ID)
       todoText = result['todoText']
@@ -686,7 +691,10 @@ class ToDo(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+      if color:
+         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+      else:
+         print u"{0} {1}:{2}".format(int(ID), noteDate, resultsStr).encode('utf-8')
 
 
 class Contact(NoteBaseClass):
@@ -740,7 +748,7 @@ class Contact(NoteBaseClass):
          self.contactInfo[k] = (lines.split(k)[-1]).strip()
          lines = " ".join(lines.split(k)[0:-1])
 
-   def printItem(self, ID):
+   def printItem(self, ID, color=True):
       result = self.db.getItem(ID)
       name = result['NAME']
       work_phone = result['WORK PHONE']
@@ -756,7 +764,10 @@ class Contact(NoteBaseClass):
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
-      print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+      if color:
+         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+      else:
+         print u"{0} {1}: {2}".format(int(ID), noteDate, resultsStr).encode('utf-8')
 
    def addByEditor(self, ID=None):
       self.startEditor(3)
@@ -833,7 +844,7 @@ class Runner(object):
          print u"{0} does not exist".format(self.command)
          sys.exit(0)
 
-   def search(self, searchTerm):
+   def search(self, searchTerm, color=True):
       searchTerm = searchTerm[0]
 
       if self.command == 'sID':
@@ -849,7 +860,7 @@ class Runner(object):
       for item in results:
          ID = item['obj'][u"ID"]
          itemType = self.db.getItemType(ID)
-         self.itemTypes[itemType].printItem(ID)
+         self.itemTypes[itemType].printItem(ID, color=color)
 
    def parseOpts(self):
       parser = argparse.ArgumentParser(description="note")
