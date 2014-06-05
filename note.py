@@ -6,7 +6,8 @@ __version__ = 0.1
 __todo__ = '''
 -add support for dropbox/box backups
 -make install command that copies template files to home
--import contacts from google - https://developers.google.com/google-apps/contacts/v3/
+-import contacts from google -
+   https://developers.google.com/google-apps/contacts/v3/
 -switch to a SQL database?
 -add goodreads book
 '''
@@ -15,13 +16,15 @@ __added_features__ = '''
 -make a note info command which shows note, tags and all other metadata
 -add ability to change todo state
 -add ability to edit note/todo/contact
--add a verify command that checks IDs collection against other collections for consistency
+-add a verify command that checks IDs collection against other collections
+   for consistency
 -add ability to delete note/todo/contact
 -add system for handling contact (email, phone, address, etc)
 -complete encrpytion implementation
 -fine tune search
 -possibly rewrite code to take utilize inheritance
--when editing a note, should the timestamp be the original, the newest or a list of all edits?
+-when editing a note, should the timestamp be the original, the newest or a
+   list of all edits?
 '''
 
 import subprocess
@@ -78,6 +81,18 @@ def main():
    runner.start()
 
 
+def scrubID(ID):
+
+   if type(ID) == list:
+      return int(ID[0])
+   elif type(ID) == str:
+      return int(ID)
+   elif type(ID) == int:
+      return ID
+   else:
+      return None
+
+
 class dbBaseClass:
    __metaclass__ = ABCMeta
 
@@ -112,7 +127,8 @@ class mongoDB(dbBaseClass):
 
       self.client = pymongo.MongoClient()
       adminDB = self.client['admin']
-      textSearchEnabled = adminDB.command({"getParameter": 1, "textSearchEnabled": 1})['textSearchEnabled']
+      cmd = {"getParameter": 1, "textSearchEnabled": 1}
+      textSearchEnabled = adminDB.command(cmd)['textSearchEnabled']
 
       if not textSearchEnabled:
          adminDB.command({"setParameter": 1, "textSearchEnabled": "true"})
@@ -131,9 +147,9 @@ class mongoDB(dbBaseClass):
       """
       collection = self.noteDB[itemType]
       Weights = {ii: 1 for ii in itemContents.keys()}
-      if collection not in self.noteDB.collection_names():
-         ##collection.create_index([(collection.name, "text"), ("tags", "text")], weights={"tags": 10, "noteText": 5})
-         collection.create_index([(collection.name, "text"), ("tags", "text")], weights=Weights)
+      if collection.name not in self.noteDB.collection_names():
+         collection.create_index([(collection.name, "text"), ("tags", "text")],
+                                 weights=Weights)
 
       if itemID is None:
          itemContents['timestamps'] = [time.time()]
@@ -149,17 +165,20 @@ class mongoDB(dbBaseClass):
 
    def getNewID(self):
       """
-         Get a new ID by either incrementing the currentMax ID or using an unusedID
-
+         Get a new ID by either incrementing the currentMax ID
+         or using an unusedID
       """
       idCollection = self.noteDB['IDs']
-      unusedIDs = idCollection.find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+      query = {"unusedIDs": {"$exists": True}}
+      unusedIDs = idCollection.find_one(query)['unusedIDs']
 
       if not unusedIDs:
-         ID = idCollection.find_one({"currentMax": {"$exists": True}})['currentMax'] + 1
+         query = {"currentMax": {"$exists": True}}
+         ID = idCollection.find_one(query)['currentMax'] + 1
          idCollection.update({"currentMax": ID - 1}, {"currentMax": ID})
       else:
-         unusedIDs = idCollection.find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+         query = {"unusedIDs": {"$exists": True}}
+         unusedIDs = idCollection.find_one(query)['unusedIDs']
          ID = min(unusedIDs)
          unusedIDs.remove(ID)
          idCollection.update({"unusedIDs": {"$exists": True}},
@@ -171,7 +190,10 @@ class mongoDB(dbBaseClass):
       """
          Given an ID return the note JSON object
 
-         {u'noteText': u'note8', u'ID': 3.0, u'tags': [u'8'], u'timestamps': [1381719620.315899]}
+         {u'noteText': u'note8',
+          u'ID': 3.0,
+          u'tags': [u'8'],
+          u'timestamps': [1381719620.315899]}
 
       """
       collections = self.noteDB.collection_names()
@@ -181,18 +203,27 @@ class mongoDB(dbBaseClass):
       for coll in collections:
          note = self.noteDB[coll].find_one({"ID": itemID})
          if note is not None:
+            del note["_id"]
             break
 
-      del note["_id"]
       return note
+
+   def getAllItemTypes(self):
+      """
+
+      """
+
+      collections = self.noteDB.collection_names()
+      collections.remove(u'system.indexes')
+      collections.remove(u'IDs')
+      return collections
 
    def getItemType(self, itemID):
       """
          Given an itemID, return the "type" i.e. the collection it belongs to.
       """
-      collections = self.noteDB.collection_names()
-      collections.remove(u'system.indexes')
-      collections.remove(u'IDs')
+
+      collections = self.getAllItemTypes()
 
       for coll in collections:
          note = self.noteDB[coll].find_one({"ID": itemID})
@@ -203,7 +234,10 @@ class mongoDB(dbBaseClass):
       """
       Given a search term returns a list of results that match that term:
 
-         [{u'score': 5.5, u'obj': {u'noteText': u'note8', u'ID': 3.0, u'timestamps': [1381719620.315899]}}]
+         [{u'score': 5.5,
+           u'obj': {u'noteText': u'note8',
+                    u'ID': 3.0,
+                    u'timestamps': [1381719620.315899]}}]
 
       """
 
@@ -215,15 +249,21 @@ class mongoDB(dbBaseClass):
 
       proj = {"_id": 0}
       for coll in colls:
-         res = self.noteDB.command("text", coll, search=searchInfo, project=proj, limit=resultLimit)['results']
+         res = self.noteDB.command("text",
+                                   coll,
+                                   search=searchInfo,
+                                   project=proj,
+                                   limit=resultLimit)['results']
          for ii in res:
             ii['itemType'] = coll
          searchResults.extend(res)
 
       if sortBy.lower() == "date":
-         searchResults = sorted(searchResults, key=(lambda x: max(x['obj']['timestamps'])))
+         k = (lambda x: max(x['obj']['timestamps']))
+         searchResults = sorted(searchResults, key=k)
       elif sortBy.lower() == "id":
-         searchResults = sorted(searchResults, key=(lambda x: x['obj']['ID']))
+         k = (lambda x: x['obj']['ID'])
+         searchResults = sorted(searchResults, key=k)
 
       return searchResults
 
@@ -235,8 +275,10 @@ class mongoDB(dbBaseClass):
       collections.remove(u'system.indexes')
       collections.remove(u'IDs')
 
-      currentMax = self.noteDB["IDs"].find_one({"currentMax": {"$exists": True}})['currentMax']
-      unusedIDs = self.noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})['unusedIDs']
+      query = {"currentMax": {"$exists": True}}
+      currentMax = self.noteDB["IDs"].find_one(query)['currentMax']
+      query = {"unusedIDs": {"$exists": True}}
+      unusedIDs = self.noteDB['IDs'].find_one(query)['unusedIDs']
 
       if (itemID > currentMax) or (itemID in unusedIDs):
          print(u"Item {0} does not exist".format(itemID))
@@ -247,22 +289,33 @@ class mongoDB(dbBaseClass):
          self.noteDB[coll].remove({"ID": itemID})
 
       if currentMax == itemID:
-         self.noteDB['IDs'].update({"currentMax": currentMax}, {"currentMax": currentMax - 1})
+         self.noteDB['IDs'].update({"currentMax": currentMax},
+                                   {"currentMax": currentMax - 1})
       else:
          unusedIDs.append(itemID)
-         self.noteDB['IDs'].update({"unusedIDs": {"$exists": True}}, {"unusedIDs": unusedIDs})
+         self.noteDB['IDs'].update({"unusedIDs": {"$exists": True}},
+                                   {"unusedIDs": unusedIDs})
 
    def getDone(self, done):
 
-      doneItems = self.noteDB['todos'].find({"done": done}).sort("date", pymongo.DESCENDING)
+      doneItems = self.noteDB['todos'] \
+                      .find({"done": done}) \
+                      .sort("date", pymongo.DESCENDING)
       IDs = [ii['ID'] for ii in doneItems]
       return IDs
 
    def makeBackupFile(self, dstPath, fileName):
 
       with open(os.devnull) as devnull:
-         SP.call(['mongodump', '--db', self.dbName, '--out', dstPath], stdout=devnull, stderr=devnull)
-         SP.call(['zip', '-r', os.path.join(dstPath, fileName), os.path.join(dstPath, self.dbName)], stdout=devnull, stderr=devnull)
+         SP.call(['mongodump', '--db', self.dbName, '--out', dstPath],
+                 stdout=devnull,
+                 stderr=devnull)
+         SP.call(['zip',
+                  '-r',
+                  os.path.join(dstPath, fileName),
+                  os.path.join(dstPath, self.dbName)],
+                 stdout=devnull,
+                 stderr=devnull)
 
       SP.call(['rm', '-rf', os.path.join(dstPath, self.dbName)])
 
@@ -275,7 +328,8 @@ class mongoDB(dbBaseClass):
       endTime = float(endTime)
 
       if startTime is not None and endTime is not None:
-         timeQuery = {"$and": [{"timestamps": {"$gt": startTime}}, {"timestamps": {"$lt": endTime}}]}
+         timeQuery = {"$and": [{"timestamps": {"$gt": startTime}},
+                               {"timestamps": {"$lt": endTime}}]}
       elif startTime is not None and endTime is None:
          timeQuery = {"timestamps": {"$gt": startTime}}
       elif startTime is None and endTime is not None:
@@ -297,12 +351,15 @@ class mongoDB(dbBaseClass):
 
       allIDs = []
       for coll in collections:
-         IDs = self.noteDB[coll].find({"ID": {"$exists": True}}, {"ID": 1, "_id": 0})
+         IDs = self.noteDB[coll].find({"ID": {"$exists": True}},
+                                      {"ID": 1, "_id": 0})
          for ID in IDs:
             allIDs.append(int(ID["ID"]))
 
-      maxID = int(self.noteDB['IDs'].find_one({"currentMax": {"$exists": True}})["currentMax"])
-      unusedIDs = self.noteDB['IDs'].find_one({"unusedIDs": {"$exists": True}})["unusedIDs"]
+      query = {"currentMax": {"$exists": True}}
+      maxID = int(self.noteDB['IDs'].find_one(query)["currentMax"])
+      query = {"unusedIDs": {"$exists": True}}
+      unusedIDs = self.noteDB['IDs'].find_one(query)["unusedIDs"]
       unusedIDs = [int(ii) for ii in unusedIDs]
 
       unusedIDsMatch = True
@@ -401,17 +458,6 @@ class NoteBaseClass(object):
       else:
          subprocess.call([self.editor, self.tmpNote])
 
-   def scrubID(self, ID):
-
-      if type(ID) == list:
-         return int(ID)
-      elif type(ID) == str:
-         return int(ID)
-      elif type(ID) == int:
-         return ID
-      else:
-         return None
-
 
 class Note(NoteBaseClass):
    def __init__(self, db):
@@ -434,7 +480,7 @@ class Note(NoteBaseClass):
       """
 
       """
-      ID = self.scrubID(ID)
+      ID = scrubID(ID)
       self.makeTmpFile(ID)
       self.addByEditor(ID)
 
@@ -445,9 +491,17 @@ class Note(NoteBaseClass):
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
       if color:
-         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, noteText, FRED, RS, HC, FBLE, int(ID))
+         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate,
+                                                  noteText,
+                                                  FRED,
+                                                  RS,
+                                                  HC,
+                                                  FBLE,
+                                                  int(ID))
       else:
-         print u"{2} {0}: {1}".format(noteDate, noteText, int(ID)).encode('utf-8')
+         s = u"{2} {0}: {1}".format(noteDate, noteText, int(ID))
+         s = s.encode('utf-8')
+         print s
 
    def processNote(self):
 
@@ -474,21 +528,24 @@ class Note(NoteBaseClass):
       self.tags = tags
 
    def makeTmpFile(self, ID=None):
-      """@todo: Makes the temporary file for a new note or a note that is to be edited.
+      """@todo: Makes the temporary file for a new note or
+         a note that is to be edited.
 
-      :ID: The note ID, if given populates file with note contents, otherwise use template
+      :ID: The note ID, if given populates file with note contents,
+           otherwise use template
       :returns: Nothing
 
       """
 
       fileText = ""
       if ID:
-         ID = self.scrubID(ID)
+         ID = scrubID(ID)
          origNote = self.db.getItem(ID)
          origNotetext = origNote['noteText']
          origTags = ','.join(origNote['tags'])
 
-         fileText = (self.noteEditTemplate.format(origNotetext, origTags)).encode('utf-8')
+         fileText = (self.noteEditTemplate.format(origNotetext, origTags))
+         fileText = fileText.encode('utf-8')
       else:
          fileText = self.noteTemplate
 
@@ -500,7 +557,9 @@ class Note(NoteBaseClass):
       self.processNote()
 
       if self.noteText:
-         self.db.addItem("notes", {"noteText": self.noteText, "tags": self.tags})
+         self.db.addItem("notes",
+                         {"noteText": self.noteText, "tags": self.tags},
+                         itemID=ID)
 
 
 class Place(NoteBaseClass):
@@ -510,8 +569,10 @@ class Place(NoteBaseClass):
       """
       super(Place, self).__init__(db)
       self.noteType = u"places"
-      self.noteTemplate = u"PLACE\n\n\n\nNOTES\n\n\n\nADDRESS\n\n\n\nTAGS\n\n\n"
-      self.noteEditTemplate = u"PLACE\n\n{0}\n\nNOTES\n\n{1}\n\nADDRESS\n\n{2}\n\nTAGS\n\n{3}\n"
+      self.noteTemplate = u"PLACE\n\n\n\nNOTES\n\n\n\n" +\
+                          u"ADDRESS\n\n\n\nTAGS\n\n\n"
+      self.noteEditTemplate = u"PLACE\n\n{0}\n\nNOTES\n\n{1}\n\n" +\
+                              u"ADDRESS\n\n{2}\n\nTAGS\n\n{3}\n"
 
    def processPlace(self):
 
@@ -557,14 +618,18 @@ class Place(NoteBaseClass):
       """
 
       """
-      ID = self.scrubID(ID)
+      ID = scrubID(ID)
       origNote = self.db.getItem(ID)
       origNoteText = origNote['noteText']
       origAddressText = origNote['addressText']
       origPlaceText = origNote['placeText']
       origTags = ','.join(origNote['tags'])
 
-      editText = (self.noteEditTemplate.format(origPlaceText, origNoteText, origAddressText, origTags)).encode('utf-8')
+      editText = (self.noteEditTemplate.format(origPlaceText,
+                                               origNoteText,
+                                               origAddressText,
+                                               origTags))
+      editText = editText.encode('utf-8')
       with open(self.tmpNote, 'w') as fd:
          fd.write(editText)
 
@@ -581,7 +646,7 @@ class Place(NoteBaseClass):
       self.addByEditor()
 
    def printItem(self, ID, color=True):
-      ID = self.scrubID(ID)
+      ID = scrubID(ID)
       result = self.db.getItem(ID)
       noteText = result['noteText']
       addressText = result['addressText']
@@ -591,9 +656,22 @@ class Place(NoteBaseClass):
       noteDate = time.strftime("%a, %b %d", timestamp)
 
       if color:
-         print u"{0}{1} {2}{3}{4}:{5}\n{6}\n{7}".format(FBLE, int(ID),  FRED, RS, noteDate, placeText, noteText, addressText)
+         print u"{0}{1} {2}{3}{4}:{5}\n{6}\n{7}".format(FBLE,
+                                                        int(ID),
+                                                        FRED,
+                                                        RS,
+                                                        noteDate,
+                                                        placeText,
+                                                        noteText,
+                                                        addressText)
       else:
-         print u"{0} {1}: {2}\n{3}\n{4}".format(int(ID), noteDate, placeText, noteText, addressText).encode('utf-8')
+         s = u"{0} {1}: {2}\n{3}\n{4}".format(int(ID),
+                                              noteDate,
+                                              placeText,
+                                              noteText,
+                                              addressText)
+         s = s.encode('utf-8')
+         print s
 
    def addByEditor(self, ID=None):
 
@@ -610,15 +688,18 @@ class ToDo(NoteBaseClass):
    def __init__(self, db):
       super(ToDo, self).__init__(db)
       self.noteType = "todos"
-      self.todoTemplate = "TODO\n\n\n\nDONE\n\n\n\nDATE - MM DD YY\n\n\n"
-      self.todoEditTemplate = "TODO\n\n{0}\n\nDONE\n\n{1}\n\nDATE - MM DD YY\n\n{2}\n\n"
+      self.todoTemplate = u"TODO\n\n\n\nDONE\n\n\n\nDATE - MM DD YY\n\n\n"
+      self.todoEditTemplate = u"TODO\n\n{0}\n\nDONE\n\n{1}\n\n" +\
+                              u"DATE - MM DD YY\n\n{2}\n\n"
 
    def edit(self, ID):
-      ID = self.scrubID(ID)
+      ID = scrubID(ID)
       todo = self.db.getItem(ID)
       dateStr = time.strftime('%m %d %y', time.localtime(todo['date']))
       with open(self.tmpNote, 'w') as fd:
-         fd.write(self.todoEditTemplate.format(todo['todoText'], todo['done'], dateStr))
+         fd.write(self.todoEditTemplate.format(todo['todoText'],
+                                               todo['done'],
+                                               dateStr))
 
       self.addByEditor(ID)
 
@@ -649,8 +730,9 @@ class ToDo(NoteBaseClass):
       doneText = map(lambda x: x.rstrip(), doneText)
       doneText = '\n'.join(doneText)
       doneText = doneText.lower()
-      if ('t' in doneText or 'true' in doneText or 'yes' in doneText) and \
-         ('f' not in doneText or 'false' not in doneText or 'no' not in doneText):
+      dt = doneText
+      if ('t' in dt or 'true' in dt or 'yes' in dt) and \
+         ('f' not in dt or 'false' not in dt or 'no' not in dt):
          self.done = True
       else:
          self.done = False
@@ -660,7 +742,7 @@ class ToDo(NoteBaseClass):
       self.date = time.mktime(time.strptime(date, "%m %d %y"))
 
    def addByEditor(self, ID=None):
-      ID = self.scrubID(ID)
+      ID = scrubID(ID)
       self.startEditor(3)
       self.processTodo()
       self.db.addItem(self.noteType, {"todoText": self.todoText,
@@ -692,9 +774,17 @@ class ToDo(NoteBaseClass):
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
       if color:
-         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate,
+                                                  resultsStr,
+                                                  FRED,
+                                                  RS,
+                                                  HC,
+                                                  FBLE,
+                                                  int(ID))
       else:
-         print u"{0} {1}:{2}".format(int(ID), noteDate, resultsStr).encode('utf-8')
+         s = u"{0} {1}:{2}".format(int(ID), noteDate, resultsStr)
+         s = s.encode('utf-8')
+         print s
 
 
 class Contact(NoteBaseClass):
@@ -702,14 +792,25 @@ class Contact(NoteBaseClass):
    def __init__(self, db):
       super(Contact, self).__init__(db)
       self.noteType = "contacts"
-      self.contactTemplate = "NAME\n\n\n\nAFFILIATION\n\n\n\nEMAIL\n\n\n\nMOBILE PHONE\n\n\n\nHOME PHONE\n\n\n\nWORK PHONE\n\n\n\nADDRESS\n\n\n"
-      self.contactEditTemplate = "NAME\n\n{0}\n\nAFFILIATION\n\n{1}\n\nEMAIL\n\n{2}\n\nMOBILE PHONE\n\n{3}\n\nHOME PHONE\n\n{4}\n\nWORK PHONE\n\n{5}\n\nADDRESS\n\n\n"
-      self.keys = ["NAME", "AFFILIATION", "EMAIL", "MOBILE PHONE", "HOME PHONE", "WORK PHONE", "ADDRESS"]
+      self.contactTemplate = u"NAME\n\n\n\nAFFILIATION\n\n\n\nEMAIL\n\n\n\n" +\
+                             u"MOBILE PHONE\n\n\n\nHOME PHONE\n\n\n\nWORK PHONE" +\
+                             u"\n\n\n\nADDRESS\n\n\n"
+      self.contactEditTemplate = u"NAME\n\n{0}\n\nAFFILIATION\n\n{1}\n\n" +\
+                                 u"EMAIL\n\n{2}\n\nMOBILE PHONE\n\n{3}\n\n" +\
+                                 u"HOME PHONE\n\n{4}\n\n" +\
+                                 u"WORK PHONE\n\n{5}\n\nADDRESS\n\n\n"
+      self.keys = ["NAME",
+                   "AFFILIATION",
+                   "EMAIL",
+                   "MOBILE PHONE",
+                   "HOME PHONE",
+                   "WORK PHONE",
+                   "ADDRESS"]
       self.contactInfo = {}
 
    def edit(self, ID):
 
-      ID = self.scrubID(ID)
+      ID = scrubID(ID)
       origContact = self.db.getItem(ID)
       self.contactEditTemplate
 
@@ -757,16 +858,30 @@ class Contact(NoteBaseClass):
       email = result['EMAIL']
       home_phone = result['HOME PHONE']
 
-      order = [name, affiliation, email, mobile_phone, work_phone, home_phone, address]
+      order = [name,
+               affiliation,
+               email,
+               mobile_phone,
+               work_phone,
+               home_phone,
+               address]
       order = [ii for ii in order if ii]  # remove all the empty strings
       resultsStr = ", ".join(order)
       timestamps = result['timestamps']
       timestamp = time.localtime(max(timestamps))
       noteDate = time.strftime("%a, %b %d", timestamp)
       if color:
-         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate, resultsStr, FRED, RS, HC, FBLE, int(ID))
+         print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate,
+                                                  resultsStr,
+                                                  FRED,
+                                                  RS,
+                                                  HC,
+                                                  FBLE,
+                                                  int(ID))
       else:
-         print u"{0} {1}: {2}".format(int(ID), noteDate, resultsStr).encode('utf-8')
+         s = u"{0} {1}: {2}".format(int(ID), noteDate, resultsStr)
+         s = s.encode('utf-8')
+         print s
 
    def addByEditor(self, ID=None):
       self.startEditor(3)
@@ -785,7 +900,10 @@ class Runner(object):
       todo = ToDo(self.db)
       place = Place(self.db)
       contact = Contact(self.db)
-      self.itemTypes = {"notes": note, "todos": todo, "contacts": contact, "places": place}
+      self.itemTypes = {"notes": note,
+                        "todos": todo,
+                        "contacts": contact,
+                        "places": place}
 
    def start(self):
 
@@ -793,7 +911,10 @@ class Runner(object):
       todo = ToDo(self.db)
       place = Place(self.db)
       contact = Contact(self.db)
-      self.itemTypes = {"notes": note, "todos": todo, "contacts": contact, "places": place}
+      self.itemTypes = {"notes": note,
+                        "todos": todo,
+                        "contacts": contact,
+                        "places": place}
 
       self.commands = dict()
       self.commands['add'] = note.new
@@ -874,7 +995,8 @@ class Runner(object):
       parser.add_argument('--configFile', type=str, help='Path to config file',
                           default=defaultConfigPath)
 
-      commandHelp = 'note: eligible commands are: {0}'.format(', '.join(self.commands))
+      commandHelp = 'note: eligible commands are: {0}'
+      commandHelp = commandHelp.format(', '.join(self.commands))
       parser.add_argument('command', metavar='cmd', type=str, nargs='+',
                           help=commandHelp)
 
@@ -896,7 +1018,8 @@ class Runner(object):
       self.db.makeBackupFile(dst, self.backupName)
       if dst is "/tmp":
          pwd = os.getcwd()
-         shutil.move(os.path.join(dst, self.backupName), os.path.join(pwd, self.backupName))
+         shutil.move(os.path.join(dst, self.backupName),
+                     os.path.join(pwd, self.backupName))
 
    def encrypt(self, dst):
 
@@ -911,7 +1034,9 @@ class Runner(object):
       backupFile = os.path.join(dst, self.backupName)
       if self.key is not None:
          stream = open(backupFile, "rb")
-         self.gpg.encrypt_file(stream, [self.key['fingerprint']], output=backupGPG)
+         self.gpg.encrypt_file(stream,
+                               [self.key['fingerprint']],
+                               output=backupGPG)
          SP.call(['rm', '-rf', backupFile])
          print u"Encrypted Backup: {0}".format(backupGPG)
       else:
@@ -936,7 +1061,9 @@ class Runner(object):
       print u"Select key:"
       counter = 0
       for key in usable_keys:
-         print u"[{0}] Fingerprint: {1}, Key Length: {2}, UIDs: {3}".format(counter, key['fingerprint'], key['length'], key['uids'])
+         s = u"[{0}] Fingerprint: {1}, Key Length: {2}, UIDs: {3}"
+         s = s.format(counter, key['fingerprint'], key['length'], key['uids'])
+         print s
          counter = counter + 1
 
       data = int(sys.stdin.readline())
@@ -968,10 +1095,21 @@ class Runner(object):
          month = now.month - 1
          year = now.year
 
-      day = calendar.monthrange(year, month)[1]  # gets the number of days in a month
+      # gets the number of days in a month
+      day = calendar.monthrange(year, month)[1]
 
-      firstOfMonth = datetime.datetime(year, month, day=1, hour=0, minute=0, second=0)
-      endOfMonth = datetime.datetime(year, month, day=day, hour=23, minute=59, second=59)
+      firstOfMonth = datetime.datetime(year,
+                                       month,
+                                       day=1,
+                                       hour=0,
+                                       minute=0,
+                                       second=0)
+      endOfMonth = datetime.datetime(year,
+                                     month,
+                                     day=day,
+                                     hour=23,
+                                     minute=59,
+                                     second=59)
 
       startTime = firstOfMonth.strftime('%s.%f')
       endTime = endOfMonth.strftime('%s.%f')
@@ -984,7 +1122,12 @@ class Runner(object):
 
    def thisMonth(self, null=None):
       now = datetime.datetime.now()
-      firstOfMonth = datetime.datetime(now.year, now.month, day=1, hour=0, minute=0, second=0)
+      firstOfMonth = datetime.datetime(now.year,
+                                       now.month,
+                                       day=1,
+                                       hour=0,
+                                       minute=0,
+                                       second=0)
 
       startTime = firstOfMonth.strftime('%s.%f')
       endTime = now.strftime('%s.%f')
@@ -996,15 +1139,22 @@ class Runner(object):
          self.itemTypes[itemType].printItem(ID)
 
    def info(self, ID):
-      ID = self.scrubID(ID)
+      ID = scrubID(ID)
 
       info = self.db.getItem(ID)
+
+      if not info:
+         print 'No Results'
+         return
 
       print u"{red}ID: {reset} {ID}".format(red=FRED, reset=RS, ID=int(ID))
       del info['ID']
 
       for k in info.keys():
-         print u"{red}{key}: {reset} {value}".format(red=FRED, reset=RS, value=info[k], key=k)
+         print u"{red}{key}: {reset} {value}".format(red=FRED,
+                                                     reset=RS,
+                                                     value=info[k],
+                                                     key=k)
 
    def verify(self, null=None):
 
