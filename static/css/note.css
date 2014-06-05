@@ -63,12 +63,36 @@ body {
 }
 
 .like-pre {
-   white-space: pre; 
    font-family: Consolas, Lucida Console, monospace;
-   word-wrap: break-word;
+   word-wrap: break-word; 
    text-align left;
 }
 
+h1 {
+   font-weight: bold;
+   color: #000;
+   font-size: 24px;
+}
+h2 {
+   font-weight: bold;
+   color: #000;
+   font-size: 20px;
+}
+h3 {
+   font-weight: bold;
+   color: #000;
+   font-size: 18px;
+}
+h4 {
+   font-weight: bold;
+   color: #000;
+   font-size: 16px;
+}
+h5 {
+   font-weight: bold;
+   color: #000;
+   font-size: 14px;
+}
 form .row {
    margin-bottom:10px;
 }

@@ -8,10 +8,12 @@ import time
 import json
 import os
 import sys
+import markdown
 from flask import Flask
 from flask import request
 from flask import Response
 from flask import render_template
+from flask import Markup
 from functools import wraps
 from note import mongoDB
 
@@ -90,6 +92,8 @@ def search():
       term = request.form["term"]
       s = request.form['options']
       results = db.searchForItem(term, sortBy=s)
+      for r in results:
+         r['obj']['noteText'] = Markup(markdown.markdown(r['obj']['noteText']))
       s = render_template('searchResult.html', p=pages, searchResults=results)
    elif request.method == "POST" and request.form["api"] == "true":
       term = request.form["term"]
