@@ -8,6 +8,7 @@ import time
 import json
 import os
 import sys
+import argparse
 import markdown
 from flask import Flask
 from flask import request
@@ -18,9 +19,18 @@ from functools import wraps
 from note import mongoDB
 
 app = Flask(__name__)
-app.debug = True
 app.jinja_env.trim_blocks = True
 db = mongoDB("note")
+
+
+def parseArgs():
+   parser = argparse.ArgumentParser(description='Run Note Web Server')
+   parser.add_argument('--debug', '-d', default=False, action='store_true',
+                       help='Turn on debug mode')
+
+   args = parser.parse_args()
+
+   return args
 
 
 def check_auth(username, password):
@@ -268,6 +278,9 @@ def NewTodo():
 
 
 def main():
+   args = parseArgs()
+   if args.debug:
+      app.debug = True
    app.run()
 
 if __name__ == "__main__":
