@@ -41,10 +41,9 @@ def check_auth(username, password):
 
 def authenticate():
    """Sends a 401 response that enables basic auth"""
-   return Response(
-      'Could not verify your access level for that URL.\n'
-      'You have to login with proper credentials', 401,
-      {'WWW-Authenticate': 'Basic realm="Login Required"'})
+   return Response('Could not verify your access level for that URL.\n'
+                   'You have to login with proper credentials', 401,
+                   {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
 
 def requires_auth(f):
@@ -86,7 +85,8 @@ def search():
       pages = {"cmd": {"link": "search", "name": "Search"}, "title": "Search"}
       s = render_template('search.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
-      pages = {"cmd": {"link": "search", "name": "Search Result"}, "title": "Search Result"}
+      pages = {"cmd": {"link": "search", "name": "Search Result"},
+               "title": "Search Result"}
       term = request.form["term"]
       s = request.form['options']
       results = db.searchForItem(term, sortBy=s)
@@ -104,10 +104,12 @@ def search():
 @requires_auth
 def newPlace():
    if request.method == "GET":
-      pages = {"cmd": {"link": "newPlace", "name": "New Place"}, "title": "New Place"}
+      pages = {"cmd": {"link": "newPlace", "name": "New Place"},
+               "title": "New Place"}
       s = render_template('newPlace.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
-      pages = {"cmd": {"link": "newPlace", "name": "Place Added"}, "title": "Place Added"}
+      pages = {"cmd": {"link": "newPlace", "name": "Place Added"}, "title":
+               "Place Added"}
       loc = request.form["location"]
       tags = request.form["tags"]
       noteText = request.form["noteText"]
@@ -159,7 +161,8 @@ def Notes():
    now = time.time()
    fourWeeksAgo = now - fourWeeks
    items = db.getByTime(startTime=fourWeeksAgo, endTime=now)
-   pages = {"cmd": {"link": "search", "name": "Search Result"}, "title": "Search Result"}
+   pages = {"cmd": {"link": "search", "name": "Search Result"},
+            "title": "Search Result"}
 
    resultsHTML = []
 
@@ -171,14 +174,18 @@ def Notes():
 @requires_auth
 def NewNote():
 
-   pages = {"cmd": {"link": "newNote", "name": "New Note"}, "title": "New Note"}
+   pages = {"cmd": {"link": "newNote", "name": "New Note"},
+            "title": "New Note"}
    if request.method == "GET":
       s = render_template('newNote.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
       tags = request.form["tags"]
       noteText = request.form["noteText"]
       db.addItem("notes", {"noteText": noteText, "tags": tags})
-      s = render_template('noteAdded.html', p=pages, noteText=noteText, tags=tags )
+      s = render_template('noteAdded.html',
+                          p=pages,
+                          noteText=noteText,
+                          tags=tags)
    elif request.method == "POST" and request.form["api"] == "true":
       noteText = request.form["noteText"]
       tags = request.form["tags"].split(",")
@@ -191,7 +198,8 @@ def NewNote():
 @app.route('/newContact', methods=["GET", "POST"])
 @requires_auth
 def NewContact():
-   pages = {"cmd": {"link": "newContact", "name": "New Contact"}, "title": "New Contact"}
+   pages = {"cmd": {"link": "newContact", "name": "New Contact"},
+            "title": "New Contact"}
    if request.method == "GET":
       s = render_template('newContact.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
@@ -215,7 +223,9 @@ def NewContact():
    elif request.method == "POST" and request.form["api"] == "true":
       contactText = request.form["contactText"]
       tags = request.form["tags"].split(",")
-      contact = {"contactText": contactText, "tags": tags, "timestamp": time.time()}
+      contact = {"contactText": contactText,
+                 "tags": tags,
+                 "timestamp": time.time()}
       s = json.dumps(contact)
    return s
 
@@ -224,7 +234,8 @@ def NewContact():
 @requires_auth
 def NewTodo():
 
-   pages = {"cmd": {"link": "newTodo", "name": "New ToDo"}, "title": "New ToDo"}
+   pages = {"cmd": {"link": "newTodo", "name": "New ToDo"},
+            "title": "New ToDo"}
    if request.method == "GET":
       s = render_template('newTodo.html', p=pages)
    elif request.method == "POST" and request.form["api"] == "false":
@@ -233,7 +244,9 @@ def NewTodo():
       date = request.form['date']
       done = (done == "done")
 
-      todoItem = {"todoText": todoText, "done": done, "date": time.mktime(time.strptime(date, "%m/%d/%Y"))}
+      todoItem = {"todoText": todoText,
+                  "done": done,
+                  "date": time.mktime(time.strptime(date, "%m/%d/%Y"))}
       db.addItem("todos", todoItem)
       todoItem['done'] = str(todoItem['done'])
       todoItem['date'] = str(todoItem['date'])
@@ -242,7 +255,10 @@ def NewTodo():
       todoText = request.form["todoText"]
       tags = request.form["tags"].split(",")
       todo = {"todoText": todoText, "tags": tags, "timestamp": time.time()}
-      db.addItem("todos", {"todoText": todoText, "done": done, "date": time.mktime(time.strptime(date, "%m/%d/%Y"))})
+      dateStr = time.mktime(time.strptime(date, "%m/%d/%Y"))
+      db.addItem("todos", {"todoText": todoText,
+                           "done": done,
+                           "date": dateStr})
       s = json.dumps(todo)
    return s
 
