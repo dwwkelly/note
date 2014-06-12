@@ -119,13 +119,16 @@ class dbBaseClass:
 
 class mongoDB(dbBaseClass):
 
-   def __init__(self, dbName):
+   def __init__(self, dbName, uri=None):
       """
 
       """
       self.dbName = dbName
 
-      self.client = pymongo.MongoClient()
+      if uri:
+         self.client = pymongo.MongoClient(uri)
+      else:
+         self.client = pymongo.MongoClient()
       adminDB = self.client['admin']
       cmd = {"getParameter": 1, "textSearchEnabled": 1}
       textSearchEnabled = adminDB.command(cmd)['textSearchEnabled']
@@ -894,7 +897,7 @@ class Runner(object):
    def __init__(self):
 
       self.dbName = 'note'
-      self.db = mongoDB(self.dbName)
+      self.db = mongoDB(self.dbName, self.config['database']['uri'])
 
       note = Note(self.db)
       todo = ToDo(self.db)
