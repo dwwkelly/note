@@ -278,10 +278,17 @@ def NewTodo():
 
 
 def main():
+   with open(os.path.expanduser("~/.note.conf")) as fd:
+      config = json.loads(fd.read())
+   try:
+      addr = config['server']['address']
+   except:
+      addr = "127.0.0.1"
+      print("Address not found using ", addr)
    args = parseArgs()
    if args.debug:
       app.debug = True
-   app.run()
+   app.run(host=addr)
 
 if __name__ == "__main__":
    main()
