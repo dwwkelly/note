@@ -18,9 +18,17 @@ from flask import Markup
 from functools import wraps
 from note import mongoDB
 
+# FIXME - there should be a better way to do this
+with open(os.path.expanduser("~/.note.conf")) as fd:
+   config = json.loads(fd.read())
+
+try:
+   db = mongoDB("note", uri=config['database']['uri'])
+except:
+   db = mongoDB("note")
+
 app = Flask(__name__)
 app.jinja_env.trim_blocks = True
-db = mongoDB("note")
 
 
 def parseArgs():
@@ -37,9 +45,6 @@ def check_auth(username, password):
    """This function is called to check if a username /
    password combination is valid.
    """
-
-   with open(os.path.expanduser("~/.note.conf")) as fd:
-      config = json.loads(fd.read())
 
    try:
       u = config['server']['login']['username']
@@ -59,8 +64,6 @@ def authenticate():
 
 
 def requires_auth(f):
-   with open(os.path.expanduser("~/.note.conf")) as fd:
-      config = json.loads(fd.read())
 
    try:
       login = config['server']['login']
@@ -278,8 +281,6 @@ def NewTodo():
 
 
 def main():
-   with open(os.path.expanduser("~/.note.conf")) as fd:
-      config = json.loads(fd.read())
    try:
       addr = config['server']['address']
    except:
