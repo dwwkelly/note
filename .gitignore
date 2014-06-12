@@ -4,3 +4,4 @@ dropboxAPIInfo
 develNotes
 note_backup.gpg
 *.pyc
+note.conf.docker
