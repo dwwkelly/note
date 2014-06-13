@@ -17,7 +17,7 @@ RUN apt-get -y install git
 RUN apt-get -y install ca-certificates
 RUN apt-get -y install python python-flask python-markdown python-pymongo
 
-RUN git clone https://github.com/dwwkelly/note
+RUN git clone https://github.com/dwwkelly/note /root/note
 
 EXPOSE 5000
 
