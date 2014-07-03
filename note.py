@@ -897,7 +897,7 @@ class Runner(object):
    def __init__(self):
 
       self.dbName = 'note'
-      self.db = mongoDB(self.dbName, self.config['database']['uri'])
+      self.db = mongoDB(self.dbName)
 
       note = Note(self.db)
       todo = ToDo(self.db)
