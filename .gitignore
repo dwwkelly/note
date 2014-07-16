@@ -5,6 +5,7 @@ develNotes
 note_backup.gpg
 *.pyc
 note.conf.docker
+testenv
 
 *.py[cod]
 
