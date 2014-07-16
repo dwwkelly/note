@@ -33,6 +33,7 @@ setup(
     packages=[
         'note',
     ],
+    scripts=['bin/noted', 'bin/notec', 'bin/server'],
     package_dir={'note':
                  'note'},
     include_package_data=True,
