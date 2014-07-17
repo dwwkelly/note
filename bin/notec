@@ -2,10 +2,14 @@
 
 __author__ = "Devin Kelly"
 
-import note.client
+from note.client import Note_Client
 
 
 def main():
+
+   client = Note_Client()
+   reply = client.Search("asd")
+   print "reply: {0}".format(reply)
 
    return
 
