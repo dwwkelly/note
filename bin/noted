@@ -2,10 +2,13 @@
 
 __author__ = "Devin Kelly"
 
-import note.server
+from note.server import Note_Server
 
 
 def main():
+
+   s = Note_Server()
+   s.Run()
 
    return
 
