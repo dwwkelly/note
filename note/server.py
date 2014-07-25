@@ -78,6 +78,11 @@ class Note_Server(object):
          reply = self.Handle_Search(msg)
       elif msg['type'] == "NewNote":
          reply = self.Handle_NewNote(msg)
+      elif msg['type'] == "get":
+         reply = self.Handle_Get(msg)
+      else:
+         reply = {"status": "error", "object": {"msg": "unknown command"}}
+         reply = json.dumps(reply)
 
       return reply
 
@@ -97,8 +102,10 @@ class Note_Server(object):
       """
 
       reply = {"status": "OK",
-               "received type": "search",
-               "received search": msg['searchTerm']}
+               "type": "search",
+               "object": {
+                         "received search": msg['object']['searchTerm']}
+               }
 
       return json.dumps(reply)
 
@@ -112,8 +119,18 @@ class Note_Server(object):
       """
 
       reply = {"status": "OK",
-               "received type": "NewNote",
-               "received note": msg['noteText'],
-               "received tags": msg['tags']}
+               "type": "NewNote",
+               "object": {
+                         "received note": msg['object']['noteText'],
+                         "received tags": msg['object']['tags']}
+               }
+
+      return json.dumps(reply)
+
+   def Handle_Get(self, msg):
+
+      reply = {"status": "OK",
+               "type": "note",
+               "object": {"notetext": "sad", "tags": ["1", "2"]}}
 
       return json.dumps(reply)

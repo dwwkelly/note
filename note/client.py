@@ -1,5 +1,11 @@
+import os
+import re
 import zmq
+import sys
+import time
 import json
+import argparse
+import datetime
 
 
 class Note_Client(object):
@@ -21,21 +27,7 @@ class Note_Client(object):
       self.sock = self.context.socket(zmq.REQ)
       self.sock.connect(self.server_uri)
 
-   def Search(self, search_term):
-      """ Search the note database on the server
-      :param search_term: The term to search the database for.
-      :type search_term: str
-      :returns: The message from the server
-      :rtype: str
-      """
-
-      msg = {"type": "search", "searchTerm": search_term}
-      self.sock.send(json.dumps(msg))
-      msg = self.sock.recv()
-
-      return msg
-
-   def New_Note(self, msg, tags):
+   def Send(self, msg):
       """ Add a note to the database on the server
       :param msg: The text of the note.
       :type msg: str
@@ -44,12 +36,19 @@ class Note_Client(object):
       :returns: The message from the server
       :rtype: str
       """
+      if 'type' not in msg:
+         return
 
-      msg = {"type": "newNote", "noteText": msg, "tags": tags}
-      self.sock.send(search_term)
+      self.sock.send(json.dumps(msg))
       msg = self.sock.recv()
-
       return msg
+
+   def Encrypt(self):
+      """
+
+      """
+
+      return
 
    def Handle_Reply(self, msg):
       """ Handle the reply from the server, just print for now.
