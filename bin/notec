@@ -2,14 +2,228 @@
 
 __author__ = "Devin Kelly"
 
+import re
+import os
+import sys
+import json
+import argparse
+import subprocess as SP
 from note.client import Note_Client
+
+
+class Runner(object):
+
+   def __init__(self):
+
+      self.editor = os.getenv('EDITOR')
+      self.inside = r"[!\"#$%^&@?'_()*+,\.\-\s\d:;<=>a-zA-Z\[\]`\{\}|~']"
+
+      return
+
+   def startEditor(self, startingLine=1):
+      if self.editor == "/usr/bin/vim" or self.editor == '/usr/local/bin/vim':
+         SP.call([self.editor, "+{0}".format(startingLine),
+                  "-c", "startinsert", self.tmpNote])
+         try:
+            os.remove("{0}.swp".format(self.tmpNote))
+            os.remove("{0}".format(self.tmpNote))
+         except OSError:
+            pass
+      else:
+         SP.call([self.editor, self.tmpNote])
+
+   def ParseOpts(self):
+      parser = argparse.ArgumentParser(description="note")
+
+      defaultConfigPath = os.path.expanduser('~/.config/note.json')
+      parser.add_argument('--configFile', type=str, help='Path to config file',
+                          default=defaultConfigPath)
+
+      commandHelp = 'note: eligible commands are: {0}'
+      commandHelp = commandHelp.format(', '.join(self.commands))
+      parser.add_argument('command', metavar='cmd', type=str, nargs='+',
+                          help=commandHelp)
+
+      args = parser.parse_args()
+
+      self.configFile = args.configFile
+      self.command = args.command[0]
+
+      self.commandArgs = ' '.join(args.command[1:])
+
+   def Run(self):
+
+      self.client = Note_Client()
+      self.commands = dict()
+      self.commands['add'] = self.Add
+      self.commands['edit'] = self.Edit
+      self.commands['place'] = self.Place
+      self.commands['contact'] = self.Contact
+      self.commands['todo'] = self.ToDo
+
+      self.commands['search'] = self.Search
+      self.commands['delete'] = self.Delete
+      self.commands['showDone'] = self.ShowDone
+      self.commands['showUndone'] = self.ShowUndone
+      self.commands['backup'] = self.Backup
+      self.commands['encrypt'] = self.Encrypt
+      self.commands['dropbox'] = self.Dropbox
+      self.commands['lastMonth'] = self.LastMonth
+      self.commands['thisMonth'] = self.ThisMonth
+      self.commands['info'] = self.Info
+      self.commands['verifyDB'] = self.Verify
+      self.commands['sID'] = self.SID
+      self.commands['sdate'] = self.SDate
+      self.commands['srelevance'] = self.SRelevance
+      self.commands['encrypt'] = self.Encrypt
+
+      # These are shortcuts
+      self.shortcuts = {}
+      self.shortcuts['a'] = 'add'
+      self.shortcuts['s'] = 'search'
+      self.shortcuts['D'] = 'delete'
+      self.shortcuts['e'] = 'edit'
+      self.shortcuts['p'] = 'place'
+      self.shortcuts['t'] = 'todo'
+      self.shortcuts['d'] = 'showDone'
+      self.shortcuts['u'] = 'showUndone'
+      self.shortcuts['c'] = 'contact'
+      self.shortcuts['b'] = 'backup'
+      self.shortcuts['E'] = 'encrypt'
+      self.shortcuts['i'] = 'info'
+      self.shortcuts['V'] = 'verify'
+
+      self.ParseOpts()
+
+      with open(self.configFile, 'r') as fd:
+         self.config = json.loads(fd.read())
+
+      if self.command in self.shortcuts:
+         self.command = self.shortcuts[self.command]
+
+      try:
+         reply = self.commands[self.command]()
+      except KeyError:
+         print u"{0} does not exist".format(self.command)
+         sys.exit(0)
+
+         return
+
+      print "reply: {0}".format(reply)
+
+   def Add(self):
+      self.tmpNote = "/tmp/note"
+      self.note_template = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
+
+      with open(self.tmpNote, 'w') as fd:
+         fd.write(self.note_template.format('', ''))
+
+      self.startEditor(3)
+
+      with open(self.tmpNote) as fd:
+         s = fd.read()
+
+      note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
+      note = re.sub(r'(^\s+)|(\s+$)', '', note)
+
+      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+
+      msg = {"type": "NewNote", "object": {"noteText": note, "tags": tags}}
+      return self.client.Send(msg)
+
+   def GetByID(self, ID):
+
+      msg = {"type": "get", "object": {"id": ID}}
+      return self.client.Send(msg)
+
+   def Edit(self):
+
+      note_obj = self.GetByID(self.commandArgs)
+      note_obj = json.loads(note_obj)
+
+      return note_obj
+
+   def Search(self):
+      print self.commandArgs
+      msg = {"type": "search", "object": {"searchTerm": self.commandArgs}}
+
+      return self.client.Send(msg)
+
+   def Place(self):
+
+      return
+
+   def Contact(self):
+
+      return
+
+   def ToDo(self):
+
+      return
+
+   def Delete(self):
+      """ """
+      return
+
+   def ShowDone(self):
+      """ """
+      return
+
+   def ShowUndone(self):
+      """ """
+      return
+
+   def Backup(self):
+      """ """
+      return
+
+   def Encrypt(self):
+      """ """
+      return
+
+   def Dropbox(self):
+      """ """
+      return
+
+   def LastMonth(self):
+      """ """
+      return
+
+   def ThisMonth(self):
+      """ """
+      return
+
+   def Info(self):
+      """ """
+      return
+
+   def Verify(self):
+      """ """
+      return
+
+   def SID(self):
+      """ """
+      return
+
+   def SDate(self):
+      """ """
+      return
+
+   def SRelevance(self):
+      """ """
+      return
+
+   def Encrypt(self):
+      """ """
+      return
 
 
 def main():
 
-   client = Note_Client()
-   reply = client.Search("asd")
-   print "reply: {0}".format(reply)
+   runner = Runner()
+   runner.Run()
 
    return
 
