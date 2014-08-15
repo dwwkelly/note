@@ -153,7 +153,6 @@ class Runner(object):
       return self.client.Send(msg)
 
    def GetByID(self, ID):
-
       msg = {"type": "get", "object": {"id": ID}}
       return self.client.Send(msg)
 
@@ -165,26 +164,75 @@ class Runner(object):
       return note_obj
 
    def Search(self):
-      print self.commandArgs
       msg = {"type": "search", "object": {"searchTerm": self.commandArgs}}
-
       return self.client.Send(msg)
 
    def Place(self):
       print 'place'
       self.template = self.place_template
 
-      return
+      s = self.ProcessFile()
+
+      place = re.search(r"(?<=PLACE)" + self.inside + "+(?=ADDRESS)", s)
+      place = place.group(0)
+      place = re.sub(r'(^\s+)|(\s+$)', '', place)
+
+      address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=TAGS)", s)
+      address = address.group(0)
+      address = re.sub(r'(^\s+)|(\s+$)', '', address)
+
+      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+
+      msg = {"type": "place", "object": {"place": place,
+                                         "address": address,
+                                         "tags": tags}}
+      print msg
+      return self.client.Send(msg)
 
    def Contact(self):
+      """
+
+      """
       self.template = self.note_template
 
+      s = self.ProcessFile()
+
+      note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
+      note = re.sub(r'(^\s+)|(\s+$)', '', note)
+
+      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+
+      msg = {"type": "Contact", "object": {"noteText": note, "tags": tags}}
+      return self.client.Send(msg)
 
       return
 
    def ToDo(self):
+      """
 
-      return
+      """
+      self.template = self.todo_template
+
+      s = self.ProcessFile()
+
+      todo = re.search(r"(?<=TODO)" + self.inside + "+(?=DONE)", s).group(0)
+      todo = re.sub(r'(^\s+)|(\s+$)', '', todo)
+
+      done = re.search(r"(?<=DONE)" + self.inside + "+(?=TAGS)", s).group(0)
+      done = re.sub(r'(^\s+)|(\s+$)', '', done)
+
+      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+
+      msg = {"type": "ToDo", "object": {"todoText": todo,
+                                        "done": done,
+                                        "tags": tags}}
+      return self.client.Send(msg)
 
    def Delete(self):
       """ """
