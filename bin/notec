@@ -6,6 +6,7 @@ import re
 import os
 import sys
 import json
+import string
 import argparse
 import subprocess as SP
 from note.client import Note_Client
@@ -117,18 +118,29 @@ class Runner(object):
 
       print "reply: {0}".format(reply)
 
+   def ProcessFile(self):
+
+      # this... is a hack
+      f = string.Formatter()
+      iterable = f.parse(self.template)
+      count = len([i for i in iterable])
+      spaces = count * ['']
 
       with open(self.tmpNote, 'w') as fd:
-         fd.write(self.note_template.format('', ''))
+         fd.write(self.template.format(*spaces))
 
       self.startEditor(3)
 
       with open(self.tmpNote) as fd:
          s = fd.read()
 
+      return s
+
    def Add(self):
 
       self.template = self.note_template
+
+      s = self.ProcessFile()
 
       note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
       note = re.sub(r'(^\s+)|(\s+$)', '', note)
