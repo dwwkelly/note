@@ -14,6 +14,12 @@ from note.client import Note_Client
 class Runner(object):
 
    def __init__(self):
+      self.tmpNote = "/tmp/note"
+      self.note_template = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
+      self.place_template = u"PLACE\n\n{0}\n\nADDRESS\n\n{1}\n\nTAGS\n\n{2}\n"
+      self.todo_template = u"TODO\n\n{0}\n\DONE\n\n{1}\n\n" +\
+                           u"DATE\n\n{2}\n\nTAGS\n\n{3}\n"
+      self.contact_template = u"NAME\n\n{0}"  # FIXME
 
       self.editor = os.getenv('EDITOR')
       self.inside = r"[!\"#$%^&@?'_()*+,\.\-\s\d:;<=>a-zA-Z\[\]`\{\}|~']"
@@ -111,9 +117,6 @@ class Runner(object):
 
       print "reply: {0}".format(reply)
 
-   def Add(self):
-      self.tmpNote = "/tmp/note"
-      self.note_template = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
 
       with open(self.tmpNote, 'w') as fd:
          fd.write(self.note_template.format('', ''))
@@ -122,6 +125,10 @@ class Runner(object):
 
       with open(self.tmpNote) as fd:
          s = fd.read()
+
+   def Add(self):
+
+      self.template = self.note_template
 
       note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
       note = re.sub(r'(^\s+)|(\s+$)', '', note)
@@ -152,10 +159,14 @@ class Runner(object):
       return self.client.Send(msg)
 
    def Place(self):
+      print 'place'
+      self.template = self.place_template
 
       return
 
    def Contact(self):
+      self.template = self.note_template
+
 
       return
 
