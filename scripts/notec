@@ -9,7 +9,7 @@ import json
 import string
 import argparse
 import subprocess as SP
-from note.client import Note_Client
+from note import Note_Client
 
 
 class Runner(object):

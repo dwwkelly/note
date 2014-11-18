@@ -30,12 +30,9 @@ setup(
     author='Devin Kelly',
     author_email='dwwkelly@fastmail.fm',
     url='https://github.com/dwwkelly/note',
-    packages=[
-        'note',
-    ],
-    scripts=['bin/noted', 'bin/notec', 'bin/server'],
-    package_dir={'note':
-                 'note'},
+    packages=find_packages(),
+    scripts=['scripts/noted', 'scripts/notec', 'scripts/server'],
+    package_dir={'note': 'note'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",

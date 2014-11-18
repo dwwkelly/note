@@ -2,7 +2,7 @@
 
 __author__ = "Devin Kelly"
 
-from note.server import Note_Server
+from note import Note_Server
 
 
 def main():
