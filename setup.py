@@ -4,23 +4,15 @@
 import os
 import sys
 
-
 try:
     from setuptools import setup
+    from setuptools import find_packages
 except ImportError:
     from distutils.core import setup
 
 
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
-
-requirements = [
-    # TODO: put package requirements here
-]
-
-test_requirements = [
-    # TODO: put package test requirements here
-]
 
 setup(
     name='note',
@@ -34,22 +26,19 @@ setup(
     scripts=['scripts/noted', 'scripts/notec', 'scripts/server'],
     package_dir={'note': 'note'},
     include_package_data=True,
-    install_requires=requirements,
-    license="BSD",
+    license="GPL3",
     zip_safe=False,
     keywords='note',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: GPL3 License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 2.7'
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=[],
+    install_requires=['pymongo', 'tornado', 'pyzmq']
 )
