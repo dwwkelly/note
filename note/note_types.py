@@ -8,8 +8,22 @@ class NoteBaseClass(object):
       self.homeDir = os.path.expanduser('~')
       self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
       self.editor = os.getenv('EDITOR')
+      self.possible_editors = ['vim', 'vi', 'nano', 'emacs']
       self.db = db
+
+      if self.editor is None:
+          self.set_editor()
+
       return
+
+   def set_editor(self):
+      """
+      Set the text editor to use
+      """
+      for editor in self.possible_editors:
+          if which(editor):
+              self.editor = editor
+              break
 
    @abstractmethod
    def edit(self, ID):
