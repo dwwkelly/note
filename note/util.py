@@ -1,3 +1,5 @@
+import subprocess as SP
+import os
 
 itemTypes = ["notes", "todos", "contacts", "places"]
 
@@ -38,3 +40,16 @@ def scrubID(ID):
         return ID
     else:
         return None
+
+
+def which(bin_name):
+    """
+        :param bin_name: the name of the binary to test for (e.g. vim)
+        :returns: True or False depending on wether the binary exists
+    """
+
+    rc = SP.call('which {0}'.format(bin_name),
+                 stdout=os.devnull,
+                 stderr=os.devnull)
+
+    return rc == 0

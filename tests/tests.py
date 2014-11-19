@@ -8,6 +8,7 @@ import time
 import os
 import sys
 from note import scrubID
+from note import which
 
 
 class NoteDBTest(unittest.TestCase):
@@ -168,5 +169,19 @@ class NoteDBTest(unittest.TestCase):
        ID = scrubID('13')
 
        self.assertEqual(13, ID)
+
+   def test_which_1(self):
+
+      exists = which('ls')
+
+      self.assertEqual(exists, True)
+
+   def test_which_2(self):
+
+      exists = which('I_HOPE_THIS_DOES_NOT_EXIST')
+
+      self.assertEqual(exists, False)
+
+
 if __name__ == "__main__":
    unittest.main(buffer=True)
