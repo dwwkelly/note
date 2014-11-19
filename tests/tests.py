@@ -25,9 +25,11 @@ class NoteDBTest(unittest.TestCase):
       assert self.db.noteDB['IDs'].find().count() == 2
 
    def test_mongodb_addItem(self):
-      self.db.addItem("notes", {"noteText": "this is a test note", "tags": ["one", "two"]})
+      self.db.addItem("notes", {"noteText": "this is a test note",
+                                "tags": ["one", "two"]})
 
-      assert self.db.noteDB['notes'].find({"noteText": "this is a test note"}).count() == 1
+      result = {"noteText": "this is a test note"}
+      assert self.db.noteDB['notes'].find(result).count() == 1
       assert self.db.noteDB['notes'].find().count() == 1
       assert self.db.noteDB['IDs'].find({"currentMax": 1}).count() == 1
       assert self.db.noteDB['IDs'].find({"unusedIDs": []}).count() == 1
@@ -83,10 +85,12 @@ class NoteDBTest(unittest.TestCase):
       self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
       self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
 
-      ids = self.db.getByTime(startTime=time.time() - 1, endTime=time.time() + 1)
+      ids = self.db.getByTime(startTime=time.time() - 1,
+                              endTime=time.time() + 1)
       assert ids == [1, 2]
 
-      ids = self.db.getByTime(startTime=time.time() + 1, endTime=time.time() + 4)
+      ids = self.db.getByTime(startTime=time.time() + 1,
+                              endTime=time.time() + 4)
       assert ids == []
 
    def test_mongodb_getDone(self):
