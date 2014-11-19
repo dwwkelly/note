@@ -22,3 +22,19 @@ colors['background blue'] = "\033[44m"
 colors['background magenta'] = "\033[45m"
 colors['background cyan'] = "\033[46m"
 colors['background white'] = "\033[47m"
+
+
+def scrubID(ID):
+    """
+        :param ID: An ID that can be of various types, this is very kludgy
+        :returns: An integer ID
+    """
+
+    if type(ID) == list:
+        return int(ID[0])
+    elif type(ID) == str:
+        return int(ID)
+    elif type(ID) == int:
+        return ID
+    else:
+        return None

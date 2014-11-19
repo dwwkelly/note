@@ -7,6 +7,7 @@ import note
 import time
 import os
 import sys
+from note import scrubID
 
 
 class NoteDBTest(unittest.TestCase):
@@ -146,5 +147,22 @@ class NoteDBTest(unittest.TestCase):
       output = sys.stdout.getvalue().strip()
       self.assertEquals(output, 'Database is valid')
 
+   def test_scrub_id_1(self):
+
+       ID = scrubID(['13'])
+
+       self.assertEqual(13, ID)
+
+   def test_scrub_id_2(self):
+
+       ID = scrubID([13])
+
+       self.assertEqual(13, ID)
+
+   def test_scrub_id_3(self):
+
+       ID = scrubID('13')
+
+       self.assertEqual(13, ID)
 if __name__ == "__main__":
    unittest.main(buffer=True)
