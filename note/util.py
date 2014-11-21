@@ -48,8 +48,7 @@ def which(bin_name):
         :returns: True or False depending on wether the binary exists
     """
 
-    rc = SP.call('which {0}'.format(bin_name),
-                 stdout=os.devnull,
-                 stderr=os.devnull)
+    with open(os.devnull) as devnull:
+        rc = SP.call(['which', bin_name], stdout=devnull, stderr=devnull)
 
     return rc == 0
