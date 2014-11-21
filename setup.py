@@ -22,7 +22,7 @@ setup(
     author='Devin Kelly',
     author_email='dwwkelly@fastmail.fm',
     url='https://github.com/dwwkelly/note',
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     scripts=['scripts/noted', 'scripts/notec', 'scripts/server'],
     package_dir={'note': 'note'},
     include_package_data=True,
@@ -38,7 +38,6 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7'
     ],
-    test_suite='tests',
-    tests_require=[],
-    install_requires=['pymongo', 'tornado', 'pyzmq']
+    install_requires=['pymongo', 'tornado', 'pyzmq', 'markdown', 'flask'],
+    test_suite="tests"
 )
