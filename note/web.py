@@ -16,7 +16,7 @@ from flask import Response
 from flask import render_template
 from flask import Markup
 from functools import wraps
-from note import mongoDB
+from mongo_driver import mongoDB
 
 # FIXME - there should be a better way to do this
 with open(os.path.expanduser("~/.note.conf")) as fd:
@@ -24,7 +24,7 @@ with open(os.path.expanduser("~/.note.conf")) as fd:
 
 try:
     db = mongoDB("note", uri=config['database']['uri'])
-except:
+except KeyError:
     db = mongoDB("note")
 
 app = Flask(__name__)
@@ -49,7 +49,7 @@ def check_auth(username, password):
     try:
         u = config['server']['login']['username']
         p = config['server']['login']['password']
-    except:
+    except KeyError:
         print "cannot start server"
         sys.exit(1)
 
@@ -290,7 +290,7 @@ def NewTodo():
 def main():
     try:
         addr = config['server']['address']
-    except:
+    except KeyError:
         addr = "127.0.0.1"
         print("Address not found using ", addr)
     args = parseArgs()
