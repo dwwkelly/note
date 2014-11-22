@@ -56,7 +56,7 @@ class NoteBaseClass(object):
         return
 
     @abstractmethod
-    def new(self):
+    def new(self, dummy=None):
         """
 
         """
