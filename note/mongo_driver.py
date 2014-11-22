@@ -28,7 +28,7 @@ class mongoDB(dbBaseClass):
         self.noteDB = self.client[self.dbName]
 
         query = ({"currentMax": {"$exists": True}})
-        if self.noteDB.IDs.find.count(query) == 0:
+        if self.noteDB.IDs.find(query).count() == 0:
             self.noteDB['IDs'].insert({"currentMax": 0})
 
         query = {"unusedIDs": {"$exists": True}}
