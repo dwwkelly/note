@@ -1,3 +1,6 @@
+from abc import ABCMeta, abstractmethod
+
+
 class dbBaseClass:
    __metaclass__ = ABCMeta
 
