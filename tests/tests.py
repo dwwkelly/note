@@ -7,8 +7,6 @@ import note
 import time
 import os
 import sys
-from note import scrubID
-from note import which
 
 
 class NoteDBTest(unittest.TestCase):
