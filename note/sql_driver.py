@@ -1,25 +1,43 @@
 def sqliteDB(dbBaseClass):
 
-   def __init__(self):
+    def __init__(self):
+        """
 
-      return
+        """
 
-   def addItem(self, itemType, itemContents):
+        return
 
-      return
+    def addItem(self, itemType, itemContents):
+        """
 
-   def getItem(self, itemID):
+        """
 
-      return
+        return
 
-   def searchForItem(self, searchInfo):
+    def getItem(self, itemID):
+        """
 
-      return
+        """
 
-   def deleteItem(self, itemID):
+        return
 
-      return
+    def searchForItem(self, searchInfo):
+        """
 
-   def makeBackupFile(self):
+        """
 
-      return
+        return
+
+    def deleteItem(self, itemID):
+        """
+
+        """
+
+        return
+
+    def makeBackupFile(self):
+        """
+
+        """
+
+        return
