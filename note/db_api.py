@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class dbBaseClass:
+class dbBaseClass(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
