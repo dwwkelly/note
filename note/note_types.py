@@ -62,8 +62,6 @@ class NoteBaseClass(object):
         """
         return
 
-    """ Concrete Methods """
-
     def delete(self, ID):
         """
 
