@@ -49,7 +49,7 @@ class NoteBaseClass(object):
         return
 
     @abstractmethod
-    def printItem(self):
+    def printItem(self, ID, color=True):
         """
 
         """
