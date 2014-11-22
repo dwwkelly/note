@@ -5,7 +5,7 @@ class dbBaseClass:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def addItem(self, itemType, itemContents):
+    def addItem(self, itemType, itemContents, itemID=None):
         pass
 
     @abstractmethod
@@ -13,7 +13,7 @@ class dbBaseClass:
         pass
 
     @abstractmethod
-    def searchForItem(self, searchInfo):
+    def searchForItem(self, searchInfo, resultLimit=20, sortBy="relevance"):
         pass
 
     @abstractmethod
@@ -21,5 +21,5 @@ class dbBaseClass:
         pass
 
     @abstractmethod
-    def makeBackupFile(self):
+    def makeBackupFile(self, dstPath, fileName):
         pass
