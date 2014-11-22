@@ -426,7 +426,8 @@ class ToDo(NoteBaseClass):
 
         """
         IDs = self.db.getDone(True)
-        [self.printItem(ii) for ii in IDs]
+        for ii in IDs:
+            self.printItem(ii)
 
     def showUndone(self, dummy=None):
         """
