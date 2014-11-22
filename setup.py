@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 
 try:
     from setuptools import setup
@@ -17,7 +15,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='note',
     version='0.2',
-    description='A command line based not taking application',
+    description='A command line based note taking application',
     long_description=readme + '\n\n' + history,
     author='Devin Kelly',
     author_email='dwwkelly@fastmail.fm',
@@ -32,7 +30,7 @@ setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GPL3 License',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
