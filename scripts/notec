@@ -13,290 +13,350 @@ from note import Note_Client
 
 
 class Runner(object):
+    """
+
+    """
+
+    def __init__(self):
+        """
+
+        """
+        self.tmpNote = "/tmp/note"
+        self.note_template = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
+        self.place_template = u"PLACE\n\n{0}\n\n" +\
+                              u"ADDRESS\n\n{1}\n\n" +\
+                              u"TAGS\n\n{2}\n"
+        self.todo_template = u"TODO\n\n{0}\n\DONE\n\n{1}\n\n" +\
+                             u"DATE\n\n{2}\n\nTAGS\n\n{3}\n"
+        self.contact_template = u"NAME\n\n{0}"  # FIXME
+
+        self.editor = os.getenv('EDITOR')
+        self.inside = r"[!\"#$%^&@?'_()*+,\.\-\s\d:;<=>a-zA-Z\[\]`\{\}|~']"
+
+        return
+
+    def startEditor(self, startingLine=1):
+        """
+
+        """
+        editor_paths = ['/usr/bin/vim', '/usr/local/bin/vim']
+        if any([self.editor in ii for ii in editor_paths]):
+            SP.call([self.editor, "+{0}".format(startingLine),
+                     "-c", "startinsert", self.tmpNote])
+            try:
+                os.remove("{0}.swp".format(self.tmpNote))
+                os.remove("{0}".format(self.tmpNote))
+            except OSError:
+                pass
+        else:
+            SP.call([self.editor, self.tmpNote])
+
+    def ParseOpts(self):
+        """
+
+        """
+        parser = argparse.ArgumentParser(description="note")
+
+        defaultConfigPath = os.path.expanduser('~/.config/note.json')
+        parser.add_argument('--configFile',
+                            type=str,
+                            help='Path to config file',
+                            default=defaultConfigPath)
+
+        commandHelp = 'note: eligible commands are: {0}'
+        commandHelp = commandHelp.format(', '.join(self.commands))
+        parser.add_argument('command', metavar='cmd', type=str, nargs='+',
+                            help=commandHelp)
+
+        args = parser.parse_args()
+
+        self.configFile = args.configFile
+        self.command = args.command[0]
+
+        self.commandArgs = ' '.join(args.command[1:])
+
+    def Run(self):
+        """
+
+        """
+
+        self.client = Note_Client()
+        self.commands = dict()
+        self.commands['add'] = self.Add
+        self.commands['edit'] = self.Edit
+        self.commands['place'] = self.Place
+        self.commands['contact'] = self.Contact
+        self.commands['todo'] = self.ToDo
+
+        self.commands['search'] = self.Search
+        self.commands['delete'] = self.Delete
+        self.commands['showDone'] = self.ShowDone
+        self.commands['showUndone'] = self.ShowUndone
+        self.commands['backup'] = self.Backup
+        self.commands['encrypt'] = self.Encrypt
+        self.commands['dropbox'] = self.Dropbox
+        self.commands['lastMonth'] = self.LastMonth
+        self.commands['thisMonth'] = self.ThisMonth
+        self.commands['info'] = self.Info
+        self.commands['verifyDB'] = self.Verify
+        self.commands['sID'] = self.SID
+        self.commands['sdate'] = self.SDate
+        self.commands['srelevance'] = self.SRelevance
+        self.commands['encrypt'] = self.Encrypt
 
-   def __init__(self):
-      self.tmpNote = "/tmp/note"
-      self.note_template = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
-      self.place_template = u"PLACE\n\n{0}\n\nADDRESS\n\n{1}\n\nTAGS\n\n{2}\n"
-      self.todo_template = u"TODO\n\n{0}\n\DONE\n\n{1}\n\n" +\
-                           u"DATE\n\n{2}\n\nTAGS\n\n{3}\n"
-      self.contact_template = u"NAME\n\n{0}"  # FIXME
-
-      self.editor = os.getenv('EDITOR')
-      self.inside = r"[!\"#$%^&@?'_()*+,\.\-\s\d:;<=>a-zA-Z\[\]`\{\}|~']"
-
-      return
-
-   def startEditor(self, startingLine=1):
-      if self.editor == "/usr/bin/vim" or self.editor == '/usr/local/bin/vim':
-         SP.call([self.editor, "+{0}".format(startingLine),
-                  "-c", "startinsert", self.tmpNote])
-         try:
-            os.remove("{0}.swp".format(self.tmpNote))
-            os.remove("{0}".format(self.tmpNote))
-         except OSError:
-            pass
-      else:
-         SP.call([self.editor, self.tmpNote])
-
-   def ParseOpts(self):
-      parser = argparse.ArgumentParser(description="note")
-
-      defaultConfigPath = os.path.expanduser('~/.config/note.json')
-      parser.add_argument('--configFile', type=str, help='Path to config file',
-                          default=defaultConfigPath)
-
-      commandHelp = 'note: eligible commands are: {0}'
-      commandHelp = commandHelp.format(', '.join(self.commands))
-      parser.add_argument('command', metavar='cmd', type=str, nargs='+',
-                          help=commandHelp)
-
-      args = parser.parse_args()
-
-      self.configFile = args.configFile
-      self.command = args.command[0]
-
-      self.commandArgs = ' '.join(args.command[1:])
-
-   def Run(self):
-
-      self.client = Note_Client()
-      self.commands = dict()
-      self.commands['add'] = self.Add
-      self.commands['edit'] = self.Edit
-      self.commands['place'] = self.Place
-      self.commands['contact'] = self.Contact
-      self.commands['todo'] = self.ToDo
-
-      self.commands['search'] = self.Search
-      self.commands['delete'] = self.Delete
-      self.commands['showDone'] = self.ShowDone
-      self.commands['showUndone'] = self.ShowUndone
-      self.commands['backup'] = self.Backup
-      self.commands['encrypt'] = self.Encrypt
-      self.commands['dropbox'] = self.Dropbox
-      self.commands['lastMonth'] = self.LastMonth
-      self.commands['thisMonth'] = self.ThisMonth
-      self.commands['info'] = self.Info
-      self.commands['verifyDB'] = self.Verify
-      self.commands['sID'] = self.SID
-      self.commands['sdate'] = self.SDate
-      self.commands['srelevance'] = self.SRelevance
-      self.commands['encrypt'] = self.Encrypt
-
-      # These are shortcuts
-      self.shortcuts = {}
-      self.shortcuts['a'] = 'add'
-      self.shortcuts['s'] = 'search'
-      self.shortcuts['D'] = 'delete'
-      self.shortcuts['e'] = 'edit'
-      self.shortcuts['p'] = 'place'
-      self.shortcuts['t'] = 'todo'
-      self.shortcuts['d'] = 'showDone'
-      self.shortcuts['u'] = 'showUndone'
-      self.shortcuts['c'] = 'contact'
-      self.shortcuts['b'] = 'backup'
-      self.shortcuts['E'] = 'encrypt'
-      self.shortcuts['i'] = 'info'
-      self.shortcuts['V'] = 'verify'
+        # These are shortcuts
+        self.shortcuts = {}
+        self.shortcuts['a'] = 'add'
+        self.shortcuts['s'] = 'search'
+        self.shortcuts['D'] = 'delete'
+        self.shortcuts['e'] = 'edit'
+        self.shortcuts['p'] = 'place'
+        self.shortcuts['t'] = 'todo'
+        self.shortcuts['d'] = 'showDone'
+        self.shortcuts['u'] = 'showUndone'
+        self.shortcuts['c'] = 'contact'
+        self.shortcuts['b'] = 'backup'
+        self.shortcuts['E'] = 'encrypt'
+        self.shortcuts['i'] = 'info'
+        self.shortcuts['V'] = 'verify'
 
-      self.ParseOpts()
+        self.ParseOpts()
 
-      with open(self.configFile, 'r') as fd:
-         self.config = json.loads(fd.read())
+        with open(self.configFile, 'r') as fd:
+            self.config = json.loads(fd.read())
 
-      if self.command in self.shortcuts:
-         self.command = self.shortcuts[self.command]
+        if self.command in self.shortcuts:
+            self.command = self.shortcuts[self.command]
 
-      try:
-         reply = self.commands[self.command]()
-      except KeyError:
-         print u"{0} does not exist".format(self.command)
-         sys.exit(0)
+        try:
+            reply = self.commands[self.command]()
+        except KeyError:
+            print u"{0} does not exist".format(self.command)
+            sys.exit(0)
 
-         return
+            return
 
-      print "reply: {0}".format(reply)
+        print "reply: {0}".format(reply)
 
-   def ProcessFile(self):
+    def ProcessFile(self):
+        """
 
-      # this... is a hack
-      f = string.Formatter()
-      iterable = f.parse(self.template)
-      count = len([i for i in iterable])
-      spaces = count * ['']
+        """
 
-      with open(self.tmpNote, 'w') as fd:
-         fd.write(self.template.format(*spaces))
+        # this... is a hack
+        f = string.Formatter()
+        iterable = f.parse(self.template)
+        count = len([i for i in iterable])
+        spaces = count * ['']
 
-      self.startEditor(3)
+        with open(self.tmpNote, 'w') as fd:
+            fd.write(self.template.format(*spaces))
 
-      with open(self.tmpNote) as fd:
-         s = fd.read()
+        self.startEditor(3)
 
-      return s
+        with open(self.tmpNote) as fd:
+            s = fd.read()
 
-   def Add(self):
+        return s
 
-      self.template = self.note_template
+    def Add(self):
+        """
 
-      s = self.ProcessFile()
+        """
 
-      note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
-      note = re.sub(r'(^\s+)|(\s+$)', '', note)
+        self.template = self.note_template
 
-      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
-      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+        s = self.ProcessFile()
 
-      msg = {"type": "NewNote", "object": {"noteText": note, "tags": tags}}
-      return self.client.Send(msg)
+        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
+        note = re.sub(r'(^\s+)|(\s+$)', '', note)
 
-   def GetByID(self, ID):
-      msg = {"type": "get", "object": {"id": ID}}
-      return self.client.Send(msg)
+        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-   def Edit(self):
+        msg = {"type": "NewNote", "object": {"noteText": note, "tags": tags}}
+        return self.client.Send(msg)
 
-      note_obj = self.GetByID(self.commandArgs)
-      note_obj = json.loads(note_obj)
+    def GetByID(self, ID):
+        """
 
-      return note_obj
+        """
+        msg = {"type": "get", "object": {"id": ID}}
+        return self.client.Send(msg)
 
-   def Search(self):
-      msg = {"type": "search", "object": {"searchTerm": self.commandArgs}}
-      return self.client.Send(msg)
+    def Edit(self):
+        """
 
-   def Place(self):
-      print 'place'
-      self.template = self.place_template
+        """
 
-      s = self.ProcessFile()
+        note_obj = self.GetByID(self.commandArgs)
+        note_obj = json.loads(note_obj)
 
-      place = re.search(r"(?<=PLACE)" + self.inside + "+(?=ADDRESS)", s)
-      place = place.group(0)
-      place = re.sub(r'(^\s+)|(\s+$)', '', place)
+        return note_obj
 
-      address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=TAGS)", s)
-      address = address.group(0)
-      address = re.sub(r'(^\s+)|(\s+$)', '', address)
+    def Search(self):
+        """
 
-      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
-      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+        """
+        msg = {"type": "search", "object": {"searchTerm": self.commandArgs}}
+        return self.client.Send(msg)
 
-      msg = {"type": "place", "object": {"place": place,
-                                         "address": address,
-                                         "tags": tags}}
-      print msg
-      return self.client.Send(msg)
+    def Place(self):
+        """
 
-   def Contact(self):
-      """
+        """
+        print 'place'
+        self.template = self.place_template
 
-      """
-      self.template = self.note_template
+        s = self.ProcessFile()
 
-      s = self.ProcessFile()
+        place = re.search(r"(?<=PLACE)" + self.inside + "+(?=ADDRESS)", s)
+        place = place.group(0)
+        place = re.sub(r'(^\s+)|(\s+$)', '', place)
 
-      note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
-      note = re.sub(r'(^\s+)|(\s+$)', '', note)
+        address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=TAGS)", s)
+        address = address.group(0)
+        address = re.sub(r'(^\s+)|(\s+$)', '', address)
 
-      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
-      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-      msg = {"type": "Contact", "object": {"noteText": note, "tags": tags}}
-      return self.client.Send(msg)
+        msg = {"type": "place", "object": {"place": place,
+                                           "address": address,
+                                           "tags": tags}}
+        print msg
+        return self.client.Send(msg)
 
-      return
+    def Contact(self):
+        """
 
-   def ToDo(self):
-      """
+        """
+        self.template = self.note_template
 
-      """
-      self.template = self.todo_template
+        s = self.ProcessFile()
 
-      s = self.ProcessFile()
+        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
+        note = re.sub(r'(^\s+)|(\s+$)', '', note)
 
-      todo = re.search(r"(?<=TODO)" + self.inside + "+(?=DONE)", s).group(0)
-      todo = re.sub(r'(^\s+)|(\s+$)', '', todo)
+        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-      done = re.search(r"(?<=DONE)" + self.inside + "+(?=TAGS)", s).group(0)
-      done = re.sub(r'(^\s+)|(\s+$)', '', done)
+        msg = {"type": "Contact", "object": {"noteText": note, "tags": tags}}
+        return self.client.Send(msg)
 
-      tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-      tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
-      tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+        return
 
-      msg = {"type": "ToDo", "object": {"todoText": todo,
-                                        "done": done,
-                                        "tags": tags}}
-      return self.client.Send(msg)
+    def ToDo(self):
+        """
 
-   def Delete(self):
-      """ """
-      return
+        """
+        self.template = self.todo_template
 
-   def ShowDone(self):
-      """ """
-      return
+        s = self.ProcessFile()
 
-   def ShowUndone(self):
-      """ """
-      return
+        todo = re.search(r"(?<=TODO)" + self.inside + "+(?=DONE)", s).group(0)
+        todo = re.sub(r'(^\s+)|(\s+$)', '', todo)
 
-   def Backup(self):
-      """ """
-      return
+        done = re.search(r"(?<=DONE)" + self.inside + "+(?=TAGS)", s).group(0)
+        done = re.sub(r'(^\s+)|(\s+$)', '', done)
 
-   def Encrypt(self):
-      """ """
-      return
+        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-   def Dropbox(self):
-      """ """
-      return
+        msg = {"type": "ToDo", "object": {"todoText": todo,
+                                          "done": done,
+                                          "tags": tags}}
+        return self.client.Send(msg)
 
-   def LastMonth(self):
-      """ """
-      return
+    def Delete(self):
+        """
 
-   def ThisMonth(self):
-      """ """
-      return
+        """
+        return
 
-   def Info(self):
-      """ """
-      return
+    def ShowDone(self):
+        """
 
-   def Verify(self):
-      """ """
-      return
+        """
+        return
 
-   def SID(self):
-      """ """
-      return
+    def ShowUndone(self):
+        """
 
-   def SDate(self):
-      """ """
-      return
+        """
+        return
 
-   def SRelevance(self):
-      """ """
-      return
+    def Backup(self):
+        """
 
-   def Encrypt(self):
-      """ """
-      return
+        """
+        return
+
+    def Encrypt(self):
+        """
+
+        """
+        return
+
+    def Dropbox(self):
+        """
+
+        """
+        return
+
+    def LastMonth(self):
+        """
+
+        """
+        return
+
+    def ThisMonth(self):
+        """
+
+        """
+        return
+
+    def Info(self):
+        """
+
+        """
+        return
+
+    def Verify(self):
+        """
+
+        """
+        return
+
+    def SID(self):
+        """
+
+        """
+        return
+
+    def SDate(self):
+        """
+
+        """
+        return
+
+    def SRelevance(self):
+        """
+
+        """
+        return
 
 
 def main():
 
-   runner = Runner()
-   runner.Run()
+    runner = Runner()
+    runner.Run()
 
-   return
+    return
 
 if __name__ == "__main__":
-   main()
+    main()

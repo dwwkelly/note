@@ -11,92 +11,101 @@ import argparse
 
 
 class ReverseProxied(object):
-   '''Wrap the application in this middleware and configure the
-   front-end server to add these headers, to let you quietly bind
-   this to a URL other than / and to an HTTP scheme that is
-   different than what is used locally.
+    '''
 
-   In nginx:
-   location /myprefix {
-   proxy_pass http://192.168.0.1:5001;
-   proxy_set_header Host $host;
-   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-   proxy_set_header X-Scheme $scheme;
-   proxy_set_header X-Script-Name /myprefix;
-   }
+     Wrap the application in this middleware and configure the
+     front-end server to add these headers, to let you quietly bind
+     this to a URL other than / and to an HTTP scheme that is
+     different than what is used locally.
 
-   :param app: the WSGI application
-   '''
-   def __init__(self, app):
-      self.app = app
+        In nginx:
+        location /myprefix {
+        proxy_pass http://192.168.0.1:5001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Script-Name /myprefix;
+        }
 
-   def __call__(self, environ, start_response):
-      script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
-      if script_name:
-         environ['SCRIPT_NAME'] = script_name
-         path_info = environ['PATH_INFO']
-         if path_info.startswith(script_name):
-            environ['PATH_INFO'] = path_info[len(script_name):]
+        :param app: the WSGI application
+    '''
+    def __init__(self, app):
+        self.app = app
 
-      scheme = environ.get('HTTP_X_SCHEME', '')
-      if scheme:
-         environ['wsgi.url_scheme'] = scheme
-      return self.app(environ, start_response)
+    def __call__(self, environ, start_response):
+        script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
+        if script_name:
+            environ['SCRIPT_NAME'] = script_name
+            path_info = environ['PATH_INFO']
+            if path_info.startswith(script_name):
+                environ['PATH_INFO'] = path_info[len(script_name):]
+
+        scheme = environ.get('HTTP_X_SCHEME', '')
+        if scheme:
+            environ['wsgi.url_scheme'] = scheme
+        return self.app(environ, start_response)
 
 
 def parseArgs():
 
-   parser = argparse.ArgumentParser(description='Note Web App')
-   parser.add_argument('-F', action='store_true', help="Run WebApp in foreground (don't daemonize)", default=False)
-   parser.add_argument('-f', type=str, help="Set config file", default=os.path.expanduser('~/.note.conf'))
+    parser = argparse.ArgumentParser(description='Note Web App')
+    parser.add_argument('-F',
+                        action='store_true',
+                        help="Run WebApp in foreground (don't daemonize)",
+                        default=False)
+    parser.add_argument('-f',
+                        type=str,
+                        help="Set config file",
+                        default=os.path.expanduser('~/.note.conf'))
 
-   args = parser.parse_args()
-   return args
+    args = parser.parse_args()
+    return args
 
 
 def main():
 
-   args = parseArgs()
-   foreground = args.F
-   configFile = args.f
+    args = parseArgs()
+    foreground = args.F
+    configFile = args.f
 
-   with open(configFile) as fd:
-      config = json.loads(fd.read())
+    with open(configFile) as fd:
+        config = json.loads(fd.read())
 
-   try:
-      port = config['server']['port']
-   except:
-      port = 5000
+    try:
+        port = config['server']['port']
+    except:
+        port = 5000
 
-   try:
-      certfile = config['server']['ssl']['certfile']
-      keyfile = config['server']['ssl']['keyfile']
-      serverSSLOptions = {"certfile": certfile, "keyfile": keyfile}
-      if not (os.path.exists(certfile) and os.path.exists(keyfile)):
-         raise IOError
-   except:
-      certfile = None
-      keyfile = None
-      serverSSLOptions = None
+    try:
+        certfile = config['server']['ssl']['certfile']
+        keyfile = config['server']['ssl']['keyfile']
+        serverSSLOptions = {"certfile": certfile, "keyfile": keyfile}
+        if not (os.path.exists(certfile) and os.path.exists(keyfile)):
+            raise IOError
+    except:
+        certfile = None
+        keyfile = None
+        serverSSLOptions = None
 
-   try:
-      listenIP = config['server']['listenIP']
-   except:
-      listenIP = "127.0.0.1"
+    try:
+        listenIP = config['server']['listenIP']
+    except KeyError:
+        listenIP = "127.0.0.1"
 
-   def startServer():
-      wsgi_app = ReverseProxied(app.wsgi_app)
-      http_server = HTTPServer(WSGIContainer(wsgi_app), ssl_options=serverSSLOptions)
-      http_server.listen(port, address=listenIP)
-      IOLoop.instance().start()
+    def startServer():
+        wsgi_app = ReverseProxied(app.wsgi_app)
+        http_server = HTTPServer(WSGIContainer(wsgi_app),
+                                 ssl_options=serverSSLOptions)
+        http_server.listen(port, address=listenIP)
+        IOLoop.instance().start()
 
-   startServer()
-   #if foreground:
-   #   startServer()
-   #else:
-   #   with daemon.DaemonContext():
-   #      startServer()
+    startServer()
+    if foreground:
+        startServer()
+    else:
+        with daemon.DaemonContext():
+            startServer()
 
 
 if __name__ == '__main__':
-   main()
+    main()

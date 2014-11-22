@@ -7,10 +7,10 @@ from note import Note_Server
 
 def main():
 
-   s = Note_Server()
-   s.Run()
+    s = Note_Server()
+    s.Run()
 
-   return
+    return
 
 if __name__ == "__main__":
-   main()
+    main()
