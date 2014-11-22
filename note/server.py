@@ -1,6 +1,7 @@
 import zmq
 import sys
 import json
+from mongo_driver import mongoDB as database
 
 
 class Note_Server(object):
@@ -22,6 +23,8 @@ class Note_Server(object):
 
       self.poller = zmq.Poller()
       self.poller.register(self.receive_sock, zmq.POLLIN)
+
+      self.db = database('noteTest')  # FIXME read config file
 
    def Run(self):
       """ Wait for clients to connect and service them
