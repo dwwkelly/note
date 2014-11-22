@@ -11,3 +11,9 @@ from util import which
 from util import scrubID
 
 from mongo_driver import mongoDB
+
+assert mongoDB
+assert which
+assert scrubID
+assert Note_Client
+assert Note_Server
