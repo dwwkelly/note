@@ -433,7 +433,8 @@ class ToDo(NoteBaseClass):
 
         """
         IDs = self.db.getDone(False)
-        [self.printItem(ii) for ii in IDs]
+        for ii in IDs:
+            self.printItem(ii)
 
     def printItem(self, ID, color=True):
         """
