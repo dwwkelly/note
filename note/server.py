@@ -104,10 +104,14 @@ class Note_Server(object):
       :rtype: str
       """
 
+      search_term = msg['object']['searchTerm']
+      results = self.db.searchForItem(search_term)
+
       reply = {"status": "OK",
                "type": "search",
                "object": {
-                         "received search": msg['object']['searchTerm']}
+                         "received search": msg['object']['searchTerm'],
+                         "results": results}
                }
 
       return json.dumps(reply)
