@@ -145,9 +145,14 @@ class NoteDBTest(unittest.TestCase):
       self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
       self.db.addItem("notes", {"noteText": "THREE", "tags": ["three"]})
 
-      self.db.verify()
+      from StringIO import StringIO
 
-      if not hasattr(sys.stdout, "getvalue"):
-         self.fail("need to run in buffered mode")
-      output = sys.stdout.getvalue().strip()
+      try:
+         saved_stdout = sys.stdout
+         out = StringIO()
+         sys.stdout = out
+         self.db.verify()
+         output = out.getvalue().strip()
+      finally:
+         sys.stdout = saved_stdout
       self.assertEquals(output, 'Database is valid')
