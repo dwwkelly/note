@@ -125,6 +125,12 @@ class Note_Server(object):
       :rtype: str
       """
 
+      note_text = msg['object']['noteText']
+      note_tags = msg['object']['tags']
+
+      self.db.addItem("notes", {"noteText": note_text,
+                                "tags": note_tags})
+
       reply = {"status": "OK",
                "type": "NewNote",
                "object": {
