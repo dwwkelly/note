@@ -7,3 +7,5 @@ install:
 script: "python setup.py test"
 services:
   - mongodb
+before_install:
+  - "sudo apt-get install coreutils"
