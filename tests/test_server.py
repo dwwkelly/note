@@ -113,3 +113,33 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(reply['status'], 'OK')
         note_count = self.note_server.db.noteDB['notes'].find().count()
         self.assertEquals(note_count, 3)
+
+    def test_Handle_NewNote_2(self):
+
+        note = 'note 3'
+        tags = ['t4', 't5']
+        msg = {"type": "NewNote", "object": {"noteText": note, "tags": tags}}
+
+        reply = self.note_server.Handle_NewNote(msg)
+        reply = json.loads(reply)
+
+        self.assertEquals(reply['object']['received note'], note)
+        self.assertEquals(reply['object']['received tags'], tags)
+        self.assertEquals(reply['type'], 'NewNote')
+        self.assertEquals(reply['status'], 'OK')
+        note_count = self.note_server.db.noteDB['notes'].find().count()
+        self.assertEquals(note_count, 3)
+
+        note = 'note 4'
+        tags = ['t6', 't7']
+        msg = {"type": "NewNote", "object": {"noteText": note, "tags": tags}}
+
+        reply = self.note_server.Handle_NewNote(msg)
+        reply = json.loads(reply)
+
+        self.assertEquals(reply['object']['received note'], note)
+        self.assertEquals(reply['object']['received tags'], tags)
+        self.assertEquals(reply['type'], 'NewNote')
+        self.assertEquals(reply['status'], 'OK')
+        note_count = self.note_server.db.noteDB['notes'].find().count()
+        self.assertEquals(note_count, 4)
