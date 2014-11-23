@@ -53,6 +53,7 @@ class TestNote(unittest.TestCase):
                                stdout=devnull)
         which_output = (which_output == 0)
         exists = which('ls')
+        exists = (exists == 0)
         self.assertEqual(exists, which_output)
         devnull.close()
 
@@ -62,7 +63,7 @@ class TestNote(unittest.TestCase):
 
         which_output = SP.call(['which', 'I_HOPE_THIS_DOES_NOT_EXIST'],
                                stderr=devnull)
-        which_output = (which_output == 0)
+        #which_output = (which_output == 0)
         exists = which('I_HOPE_THIS_DOES_NOT_EXIST')
 
         self.assertEqual(exists, which_output)
