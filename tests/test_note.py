@@ -48,9 +48,10 @@ class TestNote(unittest.TestCase):
     def test_which_1(self):
 
         devnull = open(os.devnull, 'w')
-        which_output = SP.call(['which', 'ls'],
-                               stderr=devnull,
-                               stdout=devnull)
+        which_output = SP.call(['which', bin_name])
+        #which_output = SP.call(['which', 'ls'],
+        #                       stderr=devnull,
+        #                       stdout=devnull)
         exists = which('ls')
         self.assertEqual(exists, which_output)
         devnull.close()
