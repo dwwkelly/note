@@ -300,7 +300,9 @@ class Runner(object):
         """
 
         """
-        return
+        ID = int(self.commandArgs)
+        msg = {"type": "Delete", "object": {"id": ID}}
+        return self.client.Send(msg)
 
     def ShowDone(self):
         """

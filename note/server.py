@@ -88,6 +88,8 @@ class Note_Server(object):
             reply = self.Handle_NewNote(msg)
         elif msg['type'] == "Get":
             reply = self.Handle_Get(msg)
+        elif msg['type'] == "Delete":
+            reply = self.Handle_Delete(msg)
         else:
             reply = {"status": "error", "object": {"msg": "unknown command"}}
             reply = json.dumps(reply)
@@ -166,5 +168,20 @@ class Note_Server(object):
         reply = {"status": "OK",
                  "type": "note",
                  "object": self.db.getItem(ID)}
+
+        return json.dumps(reply)
+
+    def Handle_Delete(self, msg):
+        """
+
+        :param: msg the JSON message from the client
+        :returns: The reply from the db driver
+        :rvalue: str
+        """
+
+        ID = msg['object']['id']
+        reply = {"status": "OK",
+                 "type": "Delete",
+                 "object": self.db.deleteItem(ID)}
 
         return json.dumps(reply)
