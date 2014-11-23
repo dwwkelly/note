@@ -137,7 +137,7 @@ class Runner(object):
 
             return
 
-        print "reply: {0}".format(reply)
+        print "{0}".format(reply)
 
     def ProcessFile(self):
         """

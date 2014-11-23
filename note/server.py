@@ -166,7 +166,7 @@ class Note_Server(object):
 
         ID = msg['object']['id']
         reply = {"status": "OK",
-                 "type": "note",
+                 "type": "Get",
                  "object": self.db.getItem(ID)}
 
         return json.dumps(reply)
