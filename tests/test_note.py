@@ -53,6 +53,9 @@ class TestNote(unittest.TestCase):
                                stderr=devnull,
                                stdout=devnull)
         exists = which(bin_name)
+
+        exists = (exists == 0)
+        which_output = (which_output == 0)
         self.assertEqual(exists, which_output)
         devnull.close()
 
