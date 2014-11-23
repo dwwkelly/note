@@ -9,7 +9,7 @@ note
         :target: https://landscape.io/github/dwwkelly/note/master
         :alt: Code Health
 
-.. image:: https://travis-ci.org/dwwkelly/note.svg?branch=master
+.. image:: https://travis-ci.org/dwwkelly/note.svg
         :target: https://travis-ci.org/dwwkelly/note
         :alt: Build Status
 
