@@ -49,7 +49,7 @@ def which(bin_name):
     """
 
     with open(os.devnull) as devnull:
-        rc = SP.call(['which', bin_name], stdout=devnull, stderr=devnull)
+        #rc = SP.call(['which', bin_name], stdout=devnull, stderr=devnull)
+        rc = SP.call(['which', bin_name])
 
-    rc = (rc == 0)
-    return rc
+    return rc  # == 0
