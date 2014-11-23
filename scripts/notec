@@ -199,7 +199,7 @@ class Runner(object):
         """
 
         """
-        msg = {"type": "search", "object": {"searchTerm": self.commandArgs}}
+        msg = {"type": "Search", "object": {"searchTerm": self.commandArgs}}
         return self.client.Send(msg)
 
     def Place(self):
@@ -324,7 +324,9 @@ class Runner(object):
         """
 
         """
-        return
+        ID = int(self.commandArgs)
+        msg = {"type": "Get", "object": {"id": ID}}
+        return self.client.Send(msg)
 
     def Verify(self):
         """

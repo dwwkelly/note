@@ -82,11 +82,11 @@ class Note_Server(object):
 
         msg = self.Check_Message(msg)
 
-        if msg['type'] == "search":
+        if msg['type'] == "Search":
             reply = self.Handle_Search(msg)
         elif msg['type'] == "NewNote":
             reply = self.Handle_NewNote(msg)
-        elif msg['type'] == "get":
+        elif msg['type'] == "Get":
             reply = self.Handle_Get(msg)
         else:
             reply = {"status": "error", "object": {"msg": "unknown command"}}
@@ -149,9 +149,16 @@ class Note_Server(object):
         return json.dumps(reply)
 
     def Handle_Get(self, msg):
+        """
 
+        :param: msg the JSON message from the client
+        :returns: The reply from the db driver
+        :rvalue: str
+        """
+
+        ID = msg['object']['id']
         reply = {"status": "OK",
                  "type": "note",
-                 "object": {"notetext": "sad", "tags": ["1", "2"]}}
+                 "object": self.db.getItem(ID)}
 
         return json.dumps(reply)
