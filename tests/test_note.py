@@ -45,12 +45,12 @@ class TestNote(unittest.TestCase):
 
     def test_which_1(self):
 
-       exists = which('ls')
+        exists = which('python')
 
-       self.assertEqual(exists, True)
+        self.assertEqual(exists, True)
 
     def test_which_2(self):
 
-       exists = which('I_HOPE_THIS_DOES_NOT_EXIST')
+        exists = which('I_HOPE_THIS_DOES_NOT_EXIST')
 
-       self.assertEqual(exists, False)
+        self.assertEqual(exists, False)
