@@ -51,4 +51,5 @@ def which(bin_name):
     with open(os.devnull) as devnull:
         rc = SP.call(['which', bin_name], stdout=devnull, stderr=devnull)
 
-    return rc == 0
+    rc = (rc == 0)
+    return rc
