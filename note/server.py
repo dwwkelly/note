@@ -8,7 +8,7 @@ class Note_Server(object):
 
     """ """
 
-    def __init__(self):
+    def __init__(self, db_name='note'):
         """
 
         """
@@ -26,7 +26,7 @@ class Note_Server(object):
         self.poller = zmq.Poller()
         self.poller.register(self.receive_sock, zmq.POLLIN)
 
-        self.db = database('noteTest')  # FIXME read config file
+        self.db = database(db_name)  # FIXME read config file
 
     def Run(self):
         """
