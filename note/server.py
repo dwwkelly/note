@@ -136,8 +136,14 @@ class Note_Server(object):
         note_text = msg['object']['noteText']
         note_tags = msg['object']['tags']
 
-        self.db.addItem("notes", {"noteText": note_text,
-                                  "tags": note_tags})
+        if 'ID' in msg['object']:
+            note_id = msg['object']['ID']
+            self.db.addItem("notes", {"noteText": note_text,
+                                      "tags": note_tags},
+                            note_id)
+        else:
+            self.db.addItem("notes", {"noteText": note_text,
+                                      "tags": note_tags})
 
         reply = {"status": "OK",
                  "type": "NewNote",
