@@ -8,7 +8,9 @@ test_note
 Tests for `note` module.
 """
 
+import os
 import unittest
+import subprocess as SP
 
 from note import which
 from note import scrubID
@@ -45,12 +47,22 @@ class TestNote(unittest.TestCase):
 
     def test_which_1(self):
 
-        exists = which('python')
-
-        self.assertEqual(exists, True)
+        devnull = open(os.devnull, 'w')
+        which_output = SP.call(['which', 'ls'],
+                               stderr=devnull,
+                               stdout=devnull)
+        which_output = (which_output == 0)
+        exists = which('ls')
+        self.assertEqual(exists, which_output)
+        devnull.close()
 
     def test_which_2(self):
 
+        devnull = open(os.devnull, 'w')
+
+        which_output = SP.call(['which', 'I_HOPE_THIS_DOES_NOT_EXIST'],
+                               stderr=devnull)
+        which_output = (which_output == 0)
         exists = which('I_HOPE_THIS_DOES_NOT_EXIST')
 
-        self.assertEqual(exists, False)
+        self.assertEqual(exists, which_output)
