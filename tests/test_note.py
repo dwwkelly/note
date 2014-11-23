@@ -65,5 +65,6 @@ class TestNote(unittest.TestCase):
                                stderr=devnull)
         #which_output = (which_output == 0)
         exists = which('I_HOPE_THIS_DOES_NOT_EXIST')
+        exists = (exists == 0)
 
         self.assertEqual(exists, which_output)
