@@ -49,9 +49,10 @@ class TestNote(unittest.TestCase):
 
         devnull = open(os.devnull, 'w')
         bin_name = 'ls'
-        which_output = SP.call(['which', bin_name],
-                               stderr=devnull,
-                               stdout=devnull)
+        which_output = SP.call(['which', bin_name])
+        # which_output = SP.call(['which', 'ls'],
+        #                        stderr=devnull,
+        #                        stdout=devnull)
         exists = which(bin_name)
 
         which_output = (which_output == 0)
@@ -63,7 +64,8 @@ class TestNote(unittest.TestCase):
         devnull = open(os.devnull, 'w')
 
         which_output = SP.call(['which', 'I_HOPE_THIS_DOES_NOT_EXIST'],
-                               stderr=devnull, stdout=devnull)
+                               stderr=devnull)
+        #  which_output = (which_output == 0)
         exists = which('I_HOPE_THIS_DOES_NOT_EXIST')
         exists = (exists == 0)
 
