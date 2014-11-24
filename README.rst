@@ -20,6 +20,10 @@ note
         :target: https://pypi.python.org/pypi/note
         :alt: Downloads
 
+.. image:: https://coveralls.io/repos/dwwkelly/note/badge.png
+        :target: https://coveralls.io/repos/dwwkelly/note
+        :alt: Code Coverage
+
 Note is a text-based note taking system that is simple and fast to use.  
 
 Documentation: http://note.readthedocs.org.
