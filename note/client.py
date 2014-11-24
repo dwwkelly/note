@@ -46,17 +46,3 @@ class Note_Client(object):
         """
 
         return
-
-    def Handle_Reply(self, msg):
-        """ Handle the reply from the server, just print for now.
-        :param msg: The reply.
-        :type msg: str
-        :returns: None
-        """
-
-        try:
-            msg = json.loads(msg)
-        except ValueError:
-            print "invalid reply"  # FIXME -- error
-
-        print msg

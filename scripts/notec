@@ -271,8 +271,6 @@ class Runner(object):
         msg = {"type": "Contact", "object": {"noteText": note, "tags": tags}}
         return self.client.Send(msg)
 
-        return
-
     def ToDo(self):
         """
 
