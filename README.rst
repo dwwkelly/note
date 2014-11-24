@@ -21,7 +21,7 @@ note
         :alt: Downloads
 
 .. image:: https://coveralls.io/repos/dwwkelly/note/badge.png
-        :target: https://coveralls.io/repos/dwwkelly/note
+        :target: https://coveralls.io/r/dwwkelly/note
         :alt: Code Coverage
 
 Note is a text-based note taking system that is simple and fast to use.  
