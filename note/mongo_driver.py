@@ -192,6 +192,8 @@ class mongoDB(dbBaseClass):
             self.noteDB['IDs'].update({"unusedIDs": {"$exists": True}},
                                       {"unusedIDs": unusedIDs})
 
+        return itemID
+
     def getDone(self, done):
         """
 

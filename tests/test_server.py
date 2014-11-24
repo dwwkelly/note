@@ -143,3 +143,64 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(reply['status'], 'OK')
         note_count = self.note_server.db.noteDB['notes'].find().count()
         self.assertEquals(note_count, 4)
+
+    def test_Handle_Delete_1(self):
+
+        msg = {"type": "Delete", "object": {"id": 1}}
+
+        reply = self.note_server.Handle_Delete(msg)
+        reply = json.loads(reply)
+
+        self.assertEqual(reply['status'], 'OK')
+        self.assertEqual(reply['type'], 'Delete')
+        self.assertEqual(reply['object'], 1)
+        note_count = self.note_server.db.noteDB['notes'].find().count()
+        self.assertEquals(note_count, 1)
+
+    def test_Handle_Delete_2(self):
+
+        msg = {"type": "Delete", "object": {"id": 1}}
+
+        reply = self.note_server.Handle_Delete(msg)
+        reply = json.loads(reply)
+
+        self.assertEqual(reply['status'], 'OK')
+        self.assertEqual(reply['type'], 'Delete')
+        self.assertEqual(reply['object'], 1)
+        note_count = self.note_server.db.noteDB['notes'].find().count()
+        self.assertEquals(note_count, 1)
+
+        msg = {"type": "Delete", "object": {"id": 2}}
+
+        reply = self.note_server.Handle_Delete(msg)
+        reply = json.loads(reply)
+
+        self.assertEqual(reply['status'], 'OK')
+        self.assertEqual(reply['type'], 'Delete')
+        self.assertEqual(reply['object'], 2)
+        note_count = self.note_server.db.noteDB['notes'].find().count()
+        self.assertEquals(note_count, 0)
+
+    def test_Handle_Delete_3(self):
+
+        note = 'note 3'
+        tags = ['t4', 't5']
+        msg = {"type": "NewNote", "object": {"noteText": note, "tags": tags}}
+
+        self.note_server.Handle_NewNote(msg)
+
+        msg = {"type": "Delete", "object": {"id": 2}}
+
+        reply = self.note_server.Handle_Delete(msg)
+        reply = json.loads(reply)
+
+        query = {'unusedIDs': {'$exists': True}}
+        unusedIDs = self.note_server.db.noteDB['IDs'].find(query)[0]
+        query = {'currentMax': {'$exists': True}}
+        currentMax = self.note_server.db.noteDB['IDs'].find(query)[0]
+
+        self.assertEqual(reply['status'], 'OK')
+        self.assertEqual(reply['type'], 'Delete')
+        self.assertEqual(reply['object'], 2)
+        self.assertEqual(unusedIDs['unusedIDs'], [2])
+        self.assertEqual(currentMax['currentMax'], 3)
