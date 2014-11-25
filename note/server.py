@@ -180,8 +180,14 @@ class Note_Server(object):
         """
 
         ID = msg['object']['id']
-        reply = {"status": "OK",
-                 "type": "Delete",
-                 "object": self.db.deleteItem(ID)}
+        try:
+            reply = {"status": "OK",
+                     "type": "Delete",
+                     "object": self.db.deleteItem(ID)}
+        except ValueError:
+            e_msg = "Object with ID {0} does not exist".format(ID)
+            reply = {"status": "ERROR",
+                     "type": "Delete",
+                     "object": {"message": e_msg}}
 
         return json.dumps(reply)
