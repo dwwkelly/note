@@ -17,18 +17,46 @@ class NoteDBTest(unittest.TestCase):
     def tearDown(self):
         self.db.client.drop_database("noteTest")
 
-    def test_mongodb_create(self):
+    def test_mongodb_create_1(self):
 
         assert self.db.noteDB['IDs'].find({"currentMax": 0}).count() == 1
         assert self.db.noteDB['IDs'].find({"unusedIDs": []}).count() == 1
         assert self.db.noteDB['IDs'].find().count() == 2
 
-    def test_mongodb_addItem(self):
+    def test_mongodb_create_2(self):
+
+        self.db = note.mongoDB('noteTest', "mongodb://localhost:27017")
+        assert self.db.noteDB['IDs'].find({"currentMax": 0}).count() == 1
+        assert self.db.noteDB['IDs'].find({"unusedIDs": []}).count() == 1
+        assert self.db.noteDB['IDs'].find().count() == 2
+
+    def test_mongodb_addItem_1(self):
         self.db.addItem("notes", {"noteText": "this is a test note",
                                   "tags": ["one", "two"]})
 
         result = {"noteText": "this is a test note"}
         assert self.db.noteDB['notes'].find(result).count() == 1
+        assert self.db.noteDB['notes'].find().count() == 1
+
+        assert self.db.noteDB['IDs'].find({"currentMax": 1}).count() == 1
+        assert self.db.noteDB['IDs'].find({"unusedIDs": []}).count() == 1
+        assert self.db.noteDB['IDs'].find().count() == 2
+
+    def test_mongodb_addItem_2(self):
+        self.db.addItem("notes", {"noteText": "this is a test note",
+                                  "tags": ["one", "two"]})
+        result = {"noteText": "this is a test note"}
+        assert self.db.noteDB['notes'].find(result).count() == 1
+        assert self.db.noteDB['notes'].find().count() == 1
+
+        self.db.addItem("notes", {"noteText": "this is a second test note",
+                                  "tags": ["three", "four"]}, 1)
+
+        result = {"noteText": "this is a second test note"}
+        assert self.db.noteDB['notes'].find(result).count() == 1
+        result = {"tags": ["three", "four"]}
+        assert self.db.noteDB['notes'].find(result).count() == 1
+
         assert self.db.noteDB['notes'].find().count() == 1
         assert self.db.noteDB['IDs'].find({"currentMax": 1}).count() == 1
         assert self.db.noteDB['IDs'].find({"unusedIDs": []}).count() == 1
@@ -64,7 +92,7 @@ class NoteDBTest(unittest.TestCase):
         itemType = self.db.getItemType(3)
         assert itemType == "todos"
 
-    def test_mongodb_deleteItem(self):
+    def test_mongodb_deleteItem_1(self):
         self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
         self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
 
@@ -78,6 +106,23 @@ class NoteDBTest(unittest.TestCase):
 
         assert self.db.noteDB['notes'].find().count() == 1
         assert self.db.noteDB['IDs'].find({"currentMax": 1}).count() == 1
+        assert self.db.noteDB['IDs'].find({"unusedIDs": []}).count() == 1
+
+    def test_mongodb_deleteItem_2(self):
+        self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
+        self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
+
+        assert self.db.noteDB['notes'].find({"noteText": "ONE"}).count() == 1
+        assert self.db.noteDB['notes'].find({"noteText": "TWO"}).count() == 1
+
+        with self.assertRaises(ValueError):
+            self.db.deleteItem(100)
+
+        assert self.db.noteDB['notes'].find({"noteText": "ONE"}).count() == 1
+        assert self.db.noteDB['notes'].find({"noteText": "TWO"}).count() == 1
+
+        assert self.db.noteDB['notes'].find().count() == 2
+        assert self.db.noteDB['IDs'].find({"currentMax": 2}).count() == 1
         assert self.db.noteDB['IDs'].find({"unusedIDs": []}).count() == 1
 
     def test_mongodb_getByTime(self):
@@ -130,13 +175,39 @@ class NoteDBTest(unittest.TestCase):
         assert os.path.isfile('/tmp/noteTestBackupFile.zip')
         os.remove('/tmp/noteTestBackupFile.zip')
 
-    def test_mongodb_searchForItem(self):
+    def test_mongodb_searchForItem_1(self):
         self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
         self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
 
         results = self.db.searchForItem("one")
         assert results[0]['obj']['noteText'] == "ONE"
         assert len(results) == 1
+
+    def test_mongodb_searchForItem_2(self):
+        self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
+        self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
+        self.db.addItem("notes", {"noteText": "ONE THREE",
+                                  "tags": ["one", "three"]})
+
+        results = self.db.searchForItem("one", sortBy="date")
+        assert results[0]['obj']['noteText'] == "ONE"
+        assert results[0]['obj']['tags'] == ["one"]
+        assert results[1]['obj']['noteText'] == "ONE THREE"
+        assert results[1]['obj']['tags'] == ["one", "three"]
+        assert len(results) == 2
+
+    def test_mongodb_searchForItem_3(self):
+        self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
+        self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
+        self.db.addItem("notes", {"noteText": "ONE THREE",
+                                  "tags": ["one", "three"]})
+
+        results = self.db.searchForItem("one", sortBy="id")
+        assert results[0]['obj']['noteText'] == "ONE"
+        assert results[0]['obj']['tags'] == ["one"]
+        assert results[1]['obj']['noteText'] == "ONE THREE"
+        assert results[1]['obj']['tags'] == ["one", "three"]
+        assert len(results) == 2
 
     def test_mongodb_verify(self):
         self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
@@ -154,3 +225,21 @@ class NoteDBTest(unittest.TestCase):
         finally:
             sys.stdout = saved_stdout
         self.assertEquals(output, 'Database is valid')
+
+    def test_mongodb_get_by_time_1(self):
+        self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
+        t1 = time.time()
+        self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
+
+        results = self.db.getByTime(startTime=t1)
+        self.assertEqual(results, [2])
+        self.assertEqual(len(results), 1)
+
+    def test_mongodb_get_by_time_2(self):
+        self.db.addItem("notes", {"noteText": "ONE", "tags": ["one"]})
+        t1 = time.time()
+        self.db.addItem("notes", {"noteText": "TWO", "tags": ["two"]})
+
+        results = self.db.getByTime(endTime=t1)
+        self.assertEqual(results, [1])
+        self.assertEqual(len(results), 1)
