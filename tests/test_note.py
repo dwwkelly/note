@@ -45,6 +45,18 @@ class TestNote(unittest.TestCase):
 
         self.assertEqual(13, ID)
 
+    def test_scrub_id_4(self):
+
+        ID = scrubID(13)
+
+        self.assertEqual(13, ID)
+
+    def test_scrub_id_4(self):
+
+        ID = scrubID('asd')
+
+        self.assertEqual(None, ID)
+
     def test_which_1(self):
 
         devnull = open(os.devnull, 'w')
