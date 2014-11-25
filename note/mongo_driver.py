@@ -1,7 +1,6 @@
 from db_api import dbBaseClass
 import pymongo
 import time
-import sys
 import os
 import subprocess as SP
 
@@ -177,8 +176,7 @@ class mongoDB(dbBaseClass):
         unusedIDs = self.noteDB['IDs'].find_one(query)['unusedIDs']
 
         if (itemID > currentMax) or (itemID in unusedIDs):
-            print(u"Item {0} does not exist".format(itemID))
-            sys.exit(1)
+            raise ValueError("ID {0} does not exist".format(itemID))
 
         # Find document with ID
         for coll in collections:
@@ -228,8 +226,10 @@ class mongoDB(dbBaseClass):
         collections.remove(u'system.indexes')
         collections.remove(u'IDs')
 
-        startTime = float(startTime)
-        endTime = float(endTime)
+        if startTime is not None:
+            startTime = float(startTime)
+        if endTime is not None:
+            endTime = float(endTime)
 
         if startTime is not None and endTime is not None:
             timeQuery = {"$and": [{"timestamps": {"$gt": startTime}},
