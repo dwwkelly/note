@@ -1,0 +1,9 @@
+
+
+[run]
+branch = True
+omit = testenv/*
+       note/db_api.py
+       tests/*
+       setup.py
+
