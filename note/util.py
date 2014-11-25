@@ -32,13 +32,14 @@ def scrubID(ID):
         :returns: An integer ID
     """
 
-    if type(ID) == list:
-        return int(ID[0])
-    elif type(ID) == str:
-        return int(ID)
-    elif type(ID) == int:
-        return ID
-    else:
+    try:
+        if type(ID) == list:
+            return int(ID[0])
+        elif type(ID) == str:
+            return int(ID)
+        elif type(ID) == int:
+            return ID
+    except ValueError:
         return None
 
 
