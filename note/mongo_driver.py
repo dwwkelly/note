@@ -165,6 +165,11 @@ class mongoDB(dbBaseClass):
     def deleteItem(self, itemID):
         """
            Deletes item with ID = itemID, takes care of IDs collection
+           :param itemID: The item ID to delete
+           :type itemID: int
+           :raises: ValueError
+           :returns ID: The ID of the deleted item
+           :rval: int
         """
         collections = self.noteDB.collection_names()
         collections.remove(u'system.indexes')
