@@ -91,7 +91,7 @@ class Note_Server(object):
         elif msg['type'] == "Delete":
             reply = self.Handle_Delete(msg)
         else:
-            reply = {"status": "error", "object": {"msg": "unknown command"}}
+            reply = {"status": "ERROR", "object": {"msg": "unknown command"}}
             reply = json.dumps(reply)
 
         return reply
