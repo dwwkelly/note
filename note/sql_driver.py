@@ -1,4 +1,7 @@
-def sqliteDB(dbBaseClass):
+from db_api import dbBaseClass
+
+
+class sqliteDB(dbBaseClass):
 
     def __init__(self):
         """
