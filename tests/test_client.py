@@ -5,7 +5,6 @@ __author__ = "Devin Kelly"
 import unittest
 from note import Note_Server
 from note import Note_Client
-from multiprocessing import Process
 import zmq
 
 
@@ -54,3 +53,9 @@ class Note_Client_Test(unittest.TestCase):
         reply = self.client.Send(msg)
 
         self.assertEqual(reply, expected_reply)
+
+    def test_encrypt_1(self):
+
+        reply = self.client.Encrypt()
+
+        self.assertEqual(reply, None)
