@@ -36,6 +36,7 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7'
     ],
-    install_requires=['pymongo', 'tornado', 'pyzmq', 'markdown', 'flask'],
+    install_requires=['pymongo', 'tornado', 'pyzmq',
+                      'markdown', 'flask', 'mock'],
     test_suite="tests"
 )
