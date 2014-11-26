@@ -11,7 +11,7 @@ import argparse
 import subprocess as SP
 from note import Note_Client
 from note import scrubID
-from note import note_printer
+from note import Note_Printer
 
 
 class Runner(object):
