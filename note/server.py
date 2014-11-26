@@ -144,14 +144,15 @@ class Note_Server(object):
                                       "tags": note_tags},
                             note_id)
         else:
-            self.db.addItem("notes", {"noteText": note_text,
-                                      "tags": note_tags})
+            note_id = self.db.addItem("notes", {"noteText": note_text,
+                                                "tags": note_tags})
 
         reply = {"status": "OK",
                  "type": "NewNote",
                  "object": {
                            "received note": msg['object']['noteText'],
-                           "received tags": msg['object']['tags']}
+                           "received tags": msg['object']['tags'],
+                           "ID": note_id}
                  }
 
         return json.dumps(reply)

@@ -47,7 +47,8 @@ class mongoDB(dbBaseClass):
 
         if itemID is None:
             itemContents['timestamps'] = [time.time()]
-            itemContents["ID"] = self.getNewID()
+            itemID = self.getNewID()
+            itemContents["ID"] = itemID
             collection.insert(itemContents)
         else:
             _id = collection.find_one({"ID": itemID})["_id"]
@@ -56,6 +57,8 @@ class mongoDB(dbBaseClass):
             itemContents["timestamps"] = timestamps
             itemContents["ID"] = itemID
             collection.update({"_id": _id}, itemContents)
+
+        return itemID
 
     def getNewID(self):
         """
