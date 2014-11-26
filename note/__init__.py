@@ -12,8 +12,11 @@ from util import scrubID
 
 from mongo_driver import mongoDB
 
+from note_printer import Note_Printer
+
 assert mongoDB
 assert which
 assert scrubID
 assert Note_Client
 assert Note_Server
+assert Note_Printer
