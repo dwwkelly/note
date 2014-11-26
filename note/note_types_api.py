@@ -1,120 +1,82 @@
-import re
-import sys
-import time
-import copy
-from util import scrubID
-from util import colors
-from note_api import NoteBaseClass
+import os
+import subprocess as SP
+from util import which
+from abc import ABCMeta
+from abc import abstractmethod
 
 
-class Note(NoteBaseClass):
+class NoteBaseClass(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
     def __init__(self, db):
         """
 
         """
-        super(Note, self).__init__(db)
-        self.noteType = u"notes"
-        self.noteTemplate = u"NOTE\n\n\n\nTAGS\n\n\n"
-        self.noteEditTemplate = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
+        self.homeDir = os.path.expanduser('~')
+        self.tmpNote = os.path.join(self.homeDir, '.note.TMP')
+        self.editor = os.getenv('EDITOR')
+        self.possible_editors = ['vim', 'vi', 'nano', 'emacs']
+        self.db = db
 
-    def new(self, dummy=None):
+        if self.editor is None:
+            self.set_editor()
+
+        return
+
+    def set_editor(self):
         """
-
+        Set the text editor to use
         """
-        self.makeTmpFile()
-        self.addByEditor()
+        for editor in self.possible_editors:
+            if which(editor):
+                self.editor = editor
+                break
 
+    @abstractmethod
     def edit(self, ID):
         """
 
         """
-        ID = scrubID(ID)
-        self.makeTmpFile(ID)
-        self.addByEditor(ID)
+        return
 
+    @abstractmethod
     def printItem(self, ID, color=True):
         """
 
         """
-        result = self.db.getItem(ID)
-        noteText = result['noteText']
-        timestamps = result['timestamps']
-        timestamp = time.localtime(max(timestamps))
-        noteDate = time.strftime("%a, %b %d", timestamp)
-        if color:
-            print u"{5}{6} {4}{2}{0}:{3} {1}".format(noteDate,
-                                                     noteText,
-                                                     colors['foreground red'],
-                                                     colors['reset'],
-                                                     colors['hicolor'],
-                                                     colors['foreground blue'],
-                                                     int(ID))
-        else:
-            s = u"{2} {0}: {1}".format(noteDate, noteText, int(ID))
-            s = s.encode('utf-8')
-            print s
+        return
 
-    def processNote(self):
+    @abstractmethod
+    def new(self, dummy=None):
         """
 
         """
+        return
 
+    def delete(self, ID):
+        """
+
+        """
         try:
-            with open(self.tmpNote) as fd:
-                lines = fd.read()
-        except IOError:
-            print("Config file doesn't exist, exiting")
-            sys.exit(-1)
+            ID = int(ID[0])
+        except TypeError:
+            pass
 
-        noteText = lines[lines.index('NOTE') + 4: lines.index('TAGS')]
-        noteText = noteText.split('\n')
-        noteText = map(lambda x: x.rstrip(), noteText)
-        noteText = '\n'.join(noteText)
-        noteText = re.sub(r'^\s*', '', noteText)
-        noteText = re.sub(r'\s*$', '', noteText)
-        self.noteText = noteText
+        self.db.deleteItem(ID)
 
-        tags = lines[lines.index('TAGS') + 4: -1]
-        tags = tags.split(',')
-        tags = filter(lambda x: x != '', tags)
-        tags = map(lambda x: x.rstrip(), tags)
-        tags = map(lambda x: x.lstrip(), tags)
-        self.tags = tags
-
-    def makeTmpFile(self, ID=None):
-        """
-           @todo: Makes the temporary file for a new note or
-           a note that is to be edited.
-
-        :ID: The note ID, if given populates file with note contents,
-             otherwise use template
-        :returns: Nothing
-
+    def startEditor(self, startingLine=1):
         """
 
-        fileText = ""
-        if ID:
-            ID = scrubID(ID)
-            origNote = self.db.getItem(ID)
-            origNotetext = origNote['noteText']
-            origTags = ','.join(origNote['tags'])
-
-            fileText = (self.noteEditTemplate.format(origNotetext, origTags))
-            fileText = fileText.encode('utf-8')
+        """
+        editor_paths = ['/usr/bin/vim', '/usr/local/bin/vim']
+        if any([self.editor in ii for ii in editor_paths]):
+            SP.call([self.editor, "+{0}".format(startingLine),
+                     "-c", "startinsert", self.tmpNote])
+            try:
+                os.remove("{0}.swp".format(self.tmpNote))
+                os.remove("{0}".format(self.tmpNote))
+            except OSError:
+                pass
         else:
-            fileText = self.noteTemplate
-
-        with open(self.tmpNote, 'w') as fd:
-            fd.write(fileText)
-
-    def addByEditor(self, ID=None):
-        """
-
-        """
-        self.startEditor(3)
-        self.processNote()
-
-        if self.noteText:
-            self.db.addItem("notes",
-                            {"noteText": self.noteText, "tags": self.tags},
-                            itemID=ID)
+            SP.call([self.editor, self.tmpNote])

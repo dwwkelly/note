@@ -4,6 +4,7 @@
 branch = True
 omit = testenv/*
        note/db_api.py
+       note/note_types_api.py
        tests/*
        setup.py
 
