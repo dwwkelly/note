@@ -84,7 +84,7 @@ class NotePrinterTest(unittest.TestCase):
     def test_error_1(self):
 
         msg = {"status": "ERROR",
-               "msg": "test message",
+               "object": {"msg": "test message"},
                "type": "search"}
 
         self.printer(json.dumps(msg))
@@ -92,7 +92,7 @@ class NotePrinterTest(unittest.TestCase):
         s = "{0}ERROR: {1}{2}\n"
         s = s.format(colors['foreground red'],
                      colors['foreground black'],
-                     msg['msg'])
+                     msg['object']['msg'])
 
         self.assertEqual(self.output.getvalue(), s)
 
