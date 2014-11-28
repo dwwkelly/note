@@ -95,3 +95,19 @@ class NotePrinterTest(unittest.TestCase):
                      msg['msg'])
 
         self.assertEqual(self.output.getvalue(), s)
+
+    def test_OK_1(self):
+        msg = {"status": "OK",
+               "object": {"received search": "asd",
+                          "results": [{"score": 1.1,
+                                       "obj": {"noteText": "asd",
+                                               "tags": ["123"],
+                                               "ID": 18,
+                                               "timestamps": [1417140705.90]},
+                                       "itemType": "notes"}]},
+               "type": "WRONG"}
+
+        rval = self.printer(json.dumps(msg))
+
+        self.assertEqual(self.output.getvalue(), '')
+        self.assertEqual(rval, None)
