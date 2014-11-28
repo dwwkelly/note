@@ -81,20 +81,14 @@ class Note_Server(object):
         """
 
         msg = self.Check_Message(msg)
+        msg_type = msg['type']
 
-        if msg['type'] == "Search":
-            reply = self.Handle_Search(msg)
-        elif msg['type'] == "NewNote":
-            reply = self.Handle_NewNote(msg)
-        elif msg['type'] == "Get":
-            reply = self.Handle_Get(msg)
-        elif msg['type'] == "Delete":
-            reply = self.Handle_Delete(msg)
-        else:
-            reply = {"status": "ERROR",
-                     "object": {"msg": "unknown command"},
-                     "type": "ERROR MSG"}
-            reply = json.dumps(reply)
+        f_name = "Handle_{0}".format(msg_type)
+        try:
+            f = getattr(self, f_name)
+        except AttributeError:
+            f = self.Handle_ERROR(msg)
+        reply = f(msg)
 
         return reply
 
@@ -194,3 +188,11 @@ class Note_Server(object):
                      "object": {"msg": e_msg}}
 
         return json.dumps(reply)
+
+    def Handle_ERROR(self, msg):
+        reply = {"status": "ERROR",
+                 "object": {"msg": "unknown command"},
+                 "type": "ERROR MSG"}
+        reply = json.dumps(reply)
+
+        return reply
