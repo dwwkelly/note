@@ -2,6 +2,7 @@ from db_api import dbBaseClass
 import pymongo
 import time
 import os
+import sys
 import subprocess as SP
 
 
@@ -13,10 +14,11 @@ class mongoDB(dbBaseClass):
         """
         self.dbName = dbName
 
-        if uri:
+        try:
             self.client = pymongo.MongoClient(uri)
-        else:
-            self.client = pymongo.MongoClient()
+        except pymongo.errors.ConnectionFailure:
+            print 'ERROR: Cannot open connection to database'
+            sys.exit(1)
         adminDB = self.client['admin']
         cmd = {"getParameter": 1, "textSearchEnabled": 1}
         textSearchEnabled = adminDB.command(cmd)['textSearchEnabled']
