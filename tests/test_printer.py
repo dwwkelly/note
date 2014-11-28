@@ -53,25 +53,25 @@ class NotePrinterTest(unittest.TestCase):
                                        "obj": {"noteText": "asd",
                                                "tags": ["123"],
                                                "ID": 18,
-                                               "timestamps": [1417140705.90]},
+                                               "timestamps": [1411105705.9]},
                                        "itemType": "notes"},
                                       {"score": 1.4,
                                       "obj": {"noteText": "asd 2",
                                               "tags": ["123"],
                                               "ID": 1,
-                                              "timestamps": [1417140705.90]},
+                                              "timestamps": [1411105605.9]},
                                        "itemType": "notes"}
                                       ]},
                "type": "search"}
 
         self.printer(json.dumps(msg))
 
-        expected_1 = "{fblue}18 {hicolor}{fred}Thu, Nov 27{reset}: asd\n"
+        expected_1 = "{fblue}18 {hicolor}{fred}Fri, Sep 19{reset}: asd\n"
         expected_1 = expected_1.format(fblue=colors['foreground blue'],
                                        hicolor=colors['hicolor'],
                                        fred=colors['foreground red'],
                                        reset=colors['reset'])
-        expected_2 = "{fblue}1 {hicolor}{fred}Thu, Nov 27{reset}: asd 2\n"
+        expected_2 = "{fblue}1 {hicolor}{fred}Fri, Sep 19{reset}: asd 2\n"
         expected_2 = expected_2.format(fblue=colors['foreground blue'],
                                        hicolor=colors['hicolor'],
                                        fred=colors['foreground red'],
