@@ -10,6 +10,7 @@ script:
 services:
   - mongodb
 before_install:
+  - "export TZ=US/Eastern"
   - "sudo apt-get install coreutils"
 after_success:
   "coveralls"
