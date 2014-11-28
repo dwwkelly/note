@@ -9,6 +9,7 @@ from client import Note_Client
 
 from util import which
 from util import scrubID
+from util import colors
 
 from mongo_driver import mongoDB
 from sql_driver import sqliteDB
@@ -22,3 +23,4 @@ assert scrubID
 assert Note_Client
 assert Note_Server
 assert Note_Printer
+assert colors
