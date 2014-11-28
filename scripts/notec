@@ -82,6 +82,8 @@ class Runner(object):
 
         """
 
+        printer = Note_Printer()
+
         self.client = Note_Client()
         self.commands = dict()
         self.commands['add'] = self.Add
@@ -138,7 +140,7 @@ class Runner(object):
 
             return
 
-        print "{0}".format(reply)
+        printer(reply)
 
     def ProcessFile(self):
         """
