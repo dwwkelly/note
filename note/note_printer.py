@@ -60,20 +60,20 @@ class Note_Printer(object):
         results = self.msg['object']['results']
 
         for res in results:
-            note_text = res['obj']['noteText']
+            note_text = res['obj']['note']
             # tags = res['obj']['tags']
             ID = res['obj']['ID']
             timestamps = res['obj']['timestamps']
             timestamp = time.localtime(max(timestamps))
             noteDate = time.strftime("%a, %b %d", timestamp)
 
-            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: {noteText}'
+            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: {note}'
             s = s.format(fblue=colors['foreground blue'],
                          ID=ID,
                          hicolor=colors['hicolor'],
                          fred=colors['foreground red'],
                          date=noteDate,
                          reset=colors['reset'],
-                         noteText=note_text.encode('UTF-8'))
+                         note=note_text.encode('UTF-8'))
 
             print s

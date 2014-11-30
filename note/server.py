@@ -131,22 +131,22 @@ class Note_Server(object):
         :rtype: str
         """
 
-        note_text = msg['object']['noteText']
+        note_text = msg['object']['note']
         note_tags = msg['object']['tags']
 
         if 'ID' in msg['object']:
             note_id = msg['object']['ID']
-            self.db.addItem("notes", {"noteText": note_text,
+            self.db.addItem("notes", {"note": note_text,
                                       "tags": note_tags},
                             note_id)
         else:
-            note_id = self.db.addItem("notes", {"noteText": note_text,
+            note_id = self.db.addItem("notes", {"note": note_text,
                                                 "tags": note_tags})
 
         reply = {"status": "OK",
                  "type": "Note",
                  "object": {
-                           "received note": msg['object']['noteText'],
+                           "received note": msg['object']['note'],
                            "received tags": msg['object']['tags'],
                            "ID": note_id}
                  }
@@ -201,16 +201,16 @@ class Note_Server(object):
 
         place = msg['object']['placeText']
         address = msg['object']['addressText']
-        note = msg['object']['noteText']
+        note = msg['object']['note']
         tags = msg['object']['tags']
 
         if 'ID' in msg['object']:
             note_id = msg['object']['ID']
-            self.db.addItem("places", {"noteText": note,
+            self.db.addItem("places", {"note": note,
                                        "tags": tags},
                             note_id)
         else:
-            note_id = self.db.addItem("places", {"noteText": note,
+            note_id = self.db.addItem("places", {"note": note,
                                                  "addressText": address,
                                                  "placeText": place,
                                                  "tags": tags})
@@ -218,7 +218,7 @@ class Note_Server(object):
         reply = {"status": "OK",
                  "type": "Place",
                  "object": {
-                           "received note": msg['object']['noteText'],
+                           "received note": msg['object']['note'],
                            "received tags": msg['object']['tags'],
                            "ID": note_id}
                  }

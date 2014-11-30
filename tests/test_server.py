@@ -12,9 +12,9 @@ class Note_Server_Test(unittest.TestCase):
     def setUp(self):
         self.note_server = Note_Server('noteTest')
 
-        note_1 = {"noteText": "note 1",
+        note_1 = {"note": "note 1",
                   "tags": ["t1", "t2"]}
-        note_2 = {"noteText": "note 2",
+        note_2 = {"note": "note 2",
                   "tags": ["t3", "t4"]}
 
         self.note_server.db.addItem('notes', note_1)
@@ -29,7 +29,7 @@ class Note_Server_Test(unittest.TestCase):
         reply = self.note_server.Handle_Get(msg)
         reply = json.loads(reply)
 
-        self.assertEquals(reply['object']['noteText'], 'note 1')
+        self.assertEquals(reply['object']['note'], 'note 1')
         self.assertEquals(reply['object']['tags'], ['t1', 't2'])
         self.assertEquals(reply['type'], 'Get')
         self.assertEquals(reply['status'], 'OK')
@@ -39,7 +39,7 @@ class Note_Server_Test(unittest.TestCase):
         reply = self.note_server.Handle_Get(msg)
         reply = json.loads(reply)
 
-        self.assertEquals(reply['object']['noteText'], 'note 2')
+        self.assertEquals(reply['object']['note'], 'note 2')
         self.assertEquals(reply['object']['tags'], ['t3', 't4'])
         self.assertEquals(reply['type'], 'Get')
         self.assertEquals(reply['status'], 'OK')
@@ -60,7 +60,7 @@ class Note_Server_Test(unittest.TestCase):
         reply = json.loads(reply)
 
         results = reply['object']['results']
-        self.assertEquals(results[0]['obj']['noteText'], 'note 1')
+        self.assertEquals(results[0]['obj']['note'], 'note 1')
         self.assertEquals(results[0]['obj']['ID'], 1)
         self.assertEquals(results[0]['obj']['tags'], ['t1', 't2'])
         self.assertEquals(results[0]['itemType'], 'notes')
@@ -76,7 +76,7 @@ class Note_Server_Test(unittest.TestCase):
         reply = json.loads(reply)
 
         results = reply['object']['results']
-        self.assertEquals(results[0]['obj']['noteText'], 'note 2')
+        self.assertEquals(results[0]['obj']['note'], 'note 2')
         self.assertEquals(results[0]['obj']['ID'], 2)
         self.assertEquals(results[0]['obj']['tags'], ['t3', 't4'])
         self.assertEquals(results[0]['itemType'], 'notes')
@@ -102,7 +102,7 @@ class Note_Server_Test(unittest.TestCase):
 
         note = 'note 3'
         tags = ['t4', 't5']
-        msg = {"type": "Note", "object": {"noteText": note, "tags": tags}}
+        msg = {"type": "Note", "object": {"note": note, "tags": tags}}
 
         reply = self.note_server.Handle_Note(msg)
         reply = json.loads(reply)
@@ -118,7 +118,7 @@ class Note_Server_Test(unittest.TestCase):
 
         note = 'note 3'
         tags = ['t4', 't5']
-        msg = {"type": "Note", "object": {"noteText": note, "tags": tags}}
+        msg = {"type": "Note", "object": {"note": note, "tags": tags}}
 
         reply = self.note_server.Handle_Note(msg)
         reply = json.loads(reply)
@@ -132,7 +132,7 @@ class Note_Server_Test(unittest.TestCase):
 
         note = 'note 4'
         tags = ['t6', 't7']
-        msg = {"type": "Note", "object": {"noteText": note, "tags": tags}}
+        msg = {"type": "Note", "object": {"note": note, "tags": tags}}
 
         reply = self.note_server.Handle_Note(msg)
         reply = json.loads(reply)
@@ -185,7 +185,7 @@ class Note_Server_Test(unittest.TestCase):
 
         note = 'note 3'
         tags = ['t4', 't5']
-        msg = {"type": "Note", "object": {"noteText": note, "tags": tags}}
+        msg = {"type": "Note", "object": {"note": note, "tags": tags}}
 
         self.note_server.Handle_Note(msg)
 

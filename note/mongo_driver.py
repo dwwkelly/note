@@ -97,7 +97,7 @@ class mongoDB(dbBaseClass):
     def getItem(self, itemID):
         """
            :desc: Given an ID return the note JSON object
-                   {u'noteText': u'note8',
+                   {u'note': u'note8',
                     u'ID': 3.0,
                     u'tags': [u'8'],
                     u'timestamps': [1381719620.315899]}
@@ -151,7 +151,7 @@ class mongoDB(dbBaseClass):
                    that term:
 
                    [{u'score': 5.5,
-                     u'obj': {u'noteText': u'note8',
+                     u'obj': {u'note': u'note8',
                               u'ID': 3.0,
                               u'timestamps': [1381719620.315899]}}]
             :param str searchInfo: The search term

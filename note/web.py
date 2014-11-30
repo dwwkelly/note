@@ -112,8 +112,8 @@ def search():
         s = request.form['options']
         results = db.searchForItem(term, sortBy=s)
         for r in results:
-            text = Markup(markdown.markdown(r['obj']['noteText']))
-            r['obj']['noteText'] = text
+            text = Markup(markdown.markdown(r['obj']['note']))
+            r['obj']['note'] = text
         s = render_template('searchResult.html',
                             p=pages,
                             searchResults=results)
@@ -138,8 +138,8 @@ def newPlace():
                  "Place Added"}
         loc = request.form["location"]
         tags = request.form["tags"]
-        noteText = request.form["noteText"]
-        place = {"location": loc, "noteText": noteText, "tags": tags}
+        noteText = request.form["note"]
+        place = {"location": loc, "note": noteText, "tags": tags}
         s = render_template('placeAdded.html', p=pages, placeInfo=place)
     elif request.method == "POST" and request.form["api"] == "true":
         term = request.form["term"]
@@ -204,17 +204,17 @@ def NewNote():
         s = render_template('newNote.html', p=pages)
     elif request.method == "POST" and request.form["api"] == "false":
         tags = request.form["tags"]
-        noteText = request.form["noteText"]
-        db.addItem("notes", {"noteText": noteText, "tags": tags})
+        noteText = request.form["note"]
+        db.addItem("notes", {"note": noteText, "tags": tags})
         s = render_template('noteAdded.html',
                             p=pages,
-                            noteText=noteText,
+                            note=noteText,
                             tags=tags)
     elif request.method == "POST" and request.form["api"] == "true":
-        noteText = request.form["noteText"]
+        noteText = request.form["note"]
         tags = request.form["tags"].split(",")
-        note = {"noteText": noteText, "tags": tags, "timestamp": time.time()}
-        db.addItem("notes", {"noteText": noteText, "tags": tags})
+        note = {"note": noteText, "tags": tags, "timestamp": time.time()}
+        db.addItem("notes", {"note": noteText, "tags": tags})
         s = json.dumps(note)
     return s
 

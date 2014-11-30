@@ -180,7 +180,7 @@ class Runner(object):
         tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-        msg = {"type": "Note", "object": {"noteText": note, "tags": tags}}
+        msg = {"type": "Note", "object": {"note": note, "tags": tags}}
         return self.client.Send(msg)
 
     def GetByID(self, ID):
@@ -198,7 +198,7 @@ class Runner(object):
         note_obj = self.GetByID(self.commandArgs)
         note_obj = json.loads(note_obj)
 
-        note_text = note_obj['object']['noteText']
+        note_text = note_obj['object']['note']
         note_tags = note_obj['object']['tags']
         note_tags = ', '.join(note_tags)
         note_id = note_obj['object']['ID']
@@ -219,7 +219,7 @@ class Runner(object):
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Note",
-               "object": {"noteText": note, "tags": tags, "ID": note_id}}
+               "object": {"note": note, "tags": tags, "ID": note_id}}
 
         return self.client.Send(msg)
 
@@ -256,7 +256,7 @@ class Runner(object):
 
         msg = {"type": "Place", "object": {"placeText": place,
                                            "addressText": address,
-                                           "noteText": note,
+                                           "note": note,
                                            "tags": tags}}
         return self.client.Send(msg)
 
@@ -275,7 +275,7 @@ class Runner(object):
         tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-        msg = {"type": "Contact", "object": {"noteText": note, "tags": tags}}
+        msg = {"type": "Contact", "object": {"note": note, "tags": tags}}
         return self.client.Send(msg)
 
     def ToDo(self):
