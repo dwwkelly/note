@@ -196,3 +196,31 @@ class Note_Server(object):
         reply = json.dumps(reply)
 
         return reply
+
+    def Handle_Place(self, msg):
+
+        place = msg['object']['placeText']
+        address = msg['object']['addressText']
+        note = msg['object']['noteText']
+        tags = msg['object']['tags']
+
+        if 'ID' in msg['object']:
+            note_id = msg['object']['ID']
+            self.db.addItem("places", {"noteText": note,
+                                       "tags": tags},
+                            note_id)
+        else:
+            note_id = self.db.addItem("places", {"noteText": note,
+                                                 "addressText": address,
+                                                 "placeText": place,
+                                                 "tags": tags})
+
+        reply = {"status": "OK",
+                 "type": "Place",
+                 "object": {
+                           "received note": msg['object']['noteText'],
+                           "received tags": msg['object']['tags'],
+                           "ID": note_id}
+                 }
+
+        return json.dumps(reply)
