@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from db_api import dbBaseClass
 import pymongo
 import time
@@ -10,7 +12,9 @@ class mongoDB(dbBaseClass):
 
     def __init__(self, dbName, uri=None):
         """
-
+            :desc: Initialize the database driver
+            :param str dbName: The name of the database in mongo
+            :param str uri: The Mongo URI to use
         """
         self.dbName = dbName
 
@@ -38,7 +42,9 @@ class mongoDB(dbBaseClass):
 
     def addItem(self, itemType, itemContents, itemID=None):
         """
-           itemType really means the collection name or table name
+            :param str itemType: The type of the item, note, place, todo
+            :param dict itemContents: A dictionary of the item contents
+            :param int itemID: When editing a note, send the ID along with it
         """
         collection = self.noteDB[itemType]
         Weights = {ii: 1 for ii in itemContents.keys()}
@@ -64,8 +70,11 @@ class mongoDB(dbBaseClass):
 
     def getNewID(self):
         """
-           Get a new ID by either incrementing the currentMax ID
-           or using an unusedID
+
+            :desc: Get a new ID by either incrementing the currentMax ID
+                   or using an unusedID
+            :returns: A new, valid, ID
+            :rval: int
         """
         idCollection = self.noteDB['IDs']
         query = {"unusedIDs": {"$exists": True}}
@@ -87,13 +96,14 @@ class mongoDB(dbBaseClass):
 
     def getItem(self, itemID):
         """
-           Given an ID return the note JSON object
-
-           {u'noteText': u'note8',
-            u'ID': 3.0,
-            u'tags': [u'8'],
-            u'timestamps': [1381719620.315899]}
-
+           :desc: Given an ID return the note JSON object
+                   {u'noteText': u'note8',
+                    u'ID': 3.0,
+                    u'tags': [u'8'],
+                    u'timestamps': [1381719620.315899]}
+           :param int itemID: The item ID, an integer
+           :returns: The matching note
+           :rval: int
         """
         collections = self.noteDB.collection_names()
         collections.remove(u'system.indexes')
@@ -109,7 +119,9 @@ class mongoDB(dbBaseClass):
 
     def getAllItemTypes(self):
         """
-
+            :desc: Fetches a list of item types
+            :returns: A list of item types:
+            :rval: list
         """
 
         collections = self.noteDB.collection_names()
@@ -119,8 +131,11 @@ class mongoDB(dbBaseClass):
 
     def getItemType(self, itemID):
         """
-           Given an itemID, return the "type" i.e. the collection
-           it belongs to.
+            :desc: Given an itemID, return the "type" i.e. the collection
+                   it belongs to.
+            :param int itemID: The item ID, an integer
+            :returns: The note type
+            :rval: str
         """
 
         collections = self.getAllItemTypes()
@@ -132,13 +147,16 @@ class mongoDB(dbBaseClass):
 
     def searchForItem(self, searchInfo, resultLimit=20, sortBy="relevance"):
         """
-        Given a search term returns a list of results that match that term:
+            :desc: Given a search term returns a list of results that match
+                   that term:
 
-           [{u'score': 5.5,
-             u'obj': {u'noteText': u'note8',
-                      u'ID': 3.0,
-                      u'timestamps': [1381719620.315899]}}]
-
+                   [{u'score': 5.5,
+                     u'obj': {u'noteText': u'note8',
+                              u'ID': 3.0,
+                              u'timestamps': [1381719620.315899]}}]
+            :param str searchInfo: The search term
+            :returns: A list of matching notes
+            :rval: list
         """
 
         searchResults = []
@@ -169,7 +187,7 @@ class mongoDB(dbBaseClass):
 
     def deleteItem(self, itemID):
         """
-           Deletes item with ID = itemID, takes care of IDs collection
+           :desc: Deletes item with ID = itemID, takes care of IDs collection
            :param itemID: The item ID to delete
            :type itemID: int
            :raises: ValueError
@@ -204,7 +222,10 @@ class mongoDB(dbBaseClass):
 
     def getDone(self, done):
         """
-
+            :desc: Fetches a list of all the done ToDs
+            :param bool done: done or undone?
+            :returns: A list of matching IDs
+            :rval: list
         """
 
         doneItems = self.noteDB['todos'] \
@@ -215,7 +236,8 @@ class mongoDB(dbBaseClass):
 
     def makeBackupFile(self, dstPath, fileName):
         """
-
+            :param str dstPath: The destination path of the backup file
+            :param str fileName: The filename to use
         """
 
         with open(os.devnull) as devnull:
@@ -232,6 +254,13 @@ class mongoDB(dbBaseClass):
         SP.call(['rm', '-rf', os.path.join(dstPath, self.dbName)])
 
     def getByTime(self, startTime=None, endTime=None):
+        """
+            :desc: Get all the notes in the given time window
+            :param int startTime: The begining of the window
+            :param int endTime: The end of the window
+            :returns: A list of IDs
+            :ravl: list
+        """
         collections = self.noteDB.collection_names()
         collections.remove(u'system.indexes')
         collections.remove(u'IDs')
@@ -259,6 +288,13 @@ class mongoDB(dbBaseClass):
         return IDs
 
     def verify(self):
+        """
+            :desc: Verifies the integrity of the database, specifically checks
+                   the values for unusedIDs and currentMax
+            :returns: A boolean indicating whether the database is valid or
+                      not
+            :rval: bool
+        """
         collections = self.noteDB.collection_names()
         collections.remove(u'system.indexes')
         collections.remove(u'IDs')
