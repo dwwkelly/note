@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    readme
+   messages
    installation
    usage
    contributing
