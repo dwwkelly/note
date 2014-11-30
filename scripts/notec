@@ -27,7 +27,8 @@ class Runner(object):
         self.note_template = u"NOTE\n\n{0}\n\nTAGS\n\n{1}\n"
         self.place_template = u"PLACE\n\n{0}\n\n" +\
                               u"ADDRESS\n\n{1}\n\n" +\
-                              u"TAGS\n\n{2}\n"
+                              u"NOTE\n\n{2}\n\n" +\
+                              u"TAGS\n\n{3}\n"
         self.todo_template = u"TODO\n\n{0}\n\DONE\n\n{1}\n\n" +\
                              u"DATE\n\n{2}\n\nTAGS\n\n{3}\n"
         self.contact_template = u"NAME\n\n{0}"  # FIXME
@@ -233,7 +234,6 @@ class Runner(object):
         """
 
         """
-        print 'place'
         self.template = self.place_template
 
         s = self.ProcessFile()
@@ -242,18 +242,22 @@ class Runner(object):
         place = place.group(0)
         place = re.sub(r'(^\s+)|(\s+$)', '', place)
 
-        address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=TAGS)", s)
+        address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=NOTE)", s)
         address = address.group(0)
         address = re.sub(r'(^\s+)|(\s+$)', '', address)
+
+        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s)
+        note = note.group(0)
+        note = re.sub(r'(^\s+)|(\s+$)', '', note)
 
         tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
         tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-        msg = {"type": "place", "object": {"place": place,
-                                           "address": address,
+        msg = {"type": "Place", "object": {"placeText": place,
+                                           "addressText": address,
+                                           "noteText": note,
                                            "tags": tags}}
-        print msg
         return self.client.Send(msg)
 
     def Contact(self):
