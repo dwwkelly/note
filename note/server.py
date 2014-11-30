@@ -122,7 +122,7 @@ class Note_Server(object):
 
         return json.dumps(reply)
 
-    def Handle_NewNote(self, msg):
+    def Handle_Note(self, msg):
         """ Handle a new note.
 
         :param msg: the received note
@@ -144,7 +144,7 @@ class Note_Server(object):
                                                 "tags": note_tags})
 
         reply = {"status": "OK",
-                 "type": "NewNote",
+                 "type": "Note",
                  "object": {
                            "received note": msg['object']['noteText'],
                            "received tags": msg['object']['tags'],

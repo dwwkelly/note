@@ -41,10 +41,10 @@ class Note_Client_Test(unittest.TestCase):
 
         note = 'test note'
         tags = ['t1', 't2']
-        msg = {"type": "NewNote", "object": {"noteText": note, "tags": tags}}
+        msg = {"type": "Note", "object": {"noteText": note, "tags": tags}}
 
         expected_reply = {"status": "OK",
-                          "type": "NewNote",
+                          "type": "Note",
                           "object": {
                                     "received note": note,
                                     "received tags": tags}
