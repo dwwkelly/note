@@ -162,9 +162,17 @@ class Note_Server(object):
         """
 
         ID = msg['object']['id']
-        reply = {"status": "OK",
-                 "type": "Get",
-                 "object": self.db.getItem(ID)}
+        item = self.db.getItem(ID)
+
+        if item is None:
+            reply = {"status": "ERROR",
+                     "type": "Get",
+                     "object": {"msg": "Item does not exist",
+                                "ID": ID}}
+        else:
+            reply = {"status": "OK",
+                     "type": "Get",
+                     "object": item}
 
         return json.dumps(reply)
 
