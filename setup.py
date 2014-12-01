@@ -37,6 +37,6 @@ setup(
         'Programming Language :: Python :: 2.7'
     ],
     install_requires=['pymongo', 'tornado', 'pyzmq',
-                      'markdown', 'flask', 'mock'],
+                      'markdown', 'flask', 'mock', 'dateparser'],
     test_suite="tests"
 )

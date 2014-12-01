@@ -12,6 +12,7 @@ import subprocess as SP
 from note import Note_Client
 from note import scrubID
 from note import Note_Printer
+from dateparser.date import DateDataParser
 
 
 class Runner(object):
@@ -283,6 +284,7 @@ class Runner(object):
 
         """
         self.template = self.todo_template
+        ddp = DateDataParser()
 
         s = self.ProcessFile()
 
@@ -291,6 +293,11 @@ class Runner(object):
 
         done = re.search(r"(?<=DONE)" + self.inside + "+(?=DATE)", s).group(0)
         done = re.sub(r'(^\s+)|(\s+$)', '', done)
+
+        date = re.search(r"(?<=DATE)" + self.inside + "+(?=TAGS)", s).group(0)
+        date = re.sub(r'(^\s+)|(\s+$)', '', date)
+        date_obj = ddp.get_date_data(date)['date_obj']
+        date = int(date_obj.strftime('%s'))
 
         tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
         tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
