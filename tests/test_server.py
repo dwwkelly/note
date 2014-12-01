@@ -49,9 +49,10 @@ class Note_Server_Test(unittest.TestCase):
         reply = self.note_server.Handle_Get(msg)
         reply = json.loads(reply)
 
-        self.assertEquals(reply['object'], None)
+        expected = {u'msg': u'Item does not exist', u'ID': 3}
+        self.assertEquals(reply['object'], expected)
         self.assertEquals(reply['type'], 'Get')
-        self.assertEquals(reply['status'], 'OK')
+        self.assertEquals(reply['status'], 'ERROR')
 
     def test_Handle_Search_1(self):
         searchTerm = '"note 1"'
