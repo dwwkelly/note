@@ -232,3 +232,34 @@ class Note_Server(object):
                  }
 
         return json.dumps(reply)
+
+    def Handle_Todo(self, msg):
+
+        todo = msg['object']['todo']
+        done = msg['object']['done']
+        date = msg['object']['date']
+        tags = msg['object']['tags']
+
+        if 'ID' in msg['object']:
+            note_id = msg['object']['ID']
+            self.db.addItem("todos", {"todo": todo,
+                                      "done": done,
+                                      "date": date,
+                                      "tags": tags},
+                            note_id)
+        else:
+            note_id = self.db.addItem("todos", {"todo": todo,
+                                                "done": done,
+                                                "date": date,
+                                                "tags": tags})
+
+        reply = {"status": "OK",
+                 "type": "Todo",
+                 "object": {"todo": todo,
+                            "done": done,
+                            "date": date,
+                            "tags": tags,
+                            "ID": note_id}
+                 }
+
+        return json.dumps(reply)
