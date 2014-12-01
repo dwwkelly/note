@@ -1,5 +1,7 @@
 import json
+import datetime
 import time
+import textwrap
 from util import colors
 
 
@@ -60,10 +62,15 @@ class Note_Printer(object):
         results = self.msg['object']['results']
 
         for res in results:
-            note_text = res['obj']['note']
-            # tags = res['obj']['tags']
-            ID = res['obj']['ID']
-            timestamps = res['obj']['timestamps']
+
+            f = getattr(self, "print_{0}".format(res['itemType']))
+            f(res)
+
+    def print_notes(self, msg):
+
+            note_text = msg['obj']['note']
+            ID = msg['obj']['ID']
+            timestamps = msg['obj']['timestamps']
             timestamp = time.localtime(max(timestamps))
             noteDate = time.strftime("%a, %b %d", timestamp)
 
@@ -76,4 +83,67 @@ class Note_Printer(object):
                          reset=colors['reset'],
                          note=note_text.encode('UTF-8'))
 
-            print s
+            for ii in s.split('\n'):
+                print textwrap.fill(ii, width=80)
+
+    def print_places(self, msg):
+
+            note_text = msg['obj']['note']
+            place_text = msg['obj']['place']
+            address_text = msg['obj']['address']
+            ID = msg['obj']['ID']
+            timestamps = msg['obj']['timestamps']
+            timestamp = time.localtime(max(timestamps))
+            noteDate = time.strftime("%a, %b %d", timestamp)
+
+            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                '{place}, {address}\n{note}'
+            s = s.format(fblue=colors['foreground blue'],
+                         ID=ID,
+                         hicolor=colors['hicolor'],
+                         fred=colors['foreground red'],
+                         date=noteDate,
+                         reset=colors['reset'],
+                         note=note_text.encode('UTF-8'),
+                         address=address_text,
+                         place=place_text)
+
+            for ii in s.split('\n'):
+                print textwrap.fill(ii, width=80)
+
+    def print_todos(self, msg):
+
+            todo_text = msg['obj']['todo']
+            done = msg['obj']['done']
+            todo_date = msg['obj']['date']
+            ID = msg['obj']['ID']
+            timestamps = msg['obj']['timestamps']
+            timestamp = time.localtime(max(timestamps))
+            noteDate = time.strftime("%a, %b %d", timestamp)
+
+            todo_date = datetime.datetime.fromtimestamp(todo_date)
+            todo_date = todo_date.strftime('%Y-%m-%d')
+
+            if done.lower() in ['false', 'no']:
+                done = 'Not Done'
+            elif done.lower() in ['true', 'yes']:
+                done = 'Done'
+
+            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                '{todo_text}\n\n{done} - {todo_date}'
+            s = s.format(fblue=colors['foreground blue'],
+                         ID=ID,
+                         hicolor=colors['hicolor'],
+                         fred=colors['foreground red'],
+                         date=noteDate,
+                         reset=colors['reset'],
+                         todo_text=todo_text.encode('UTF-8'),
+                         todo_date=todo_date,
+                         done=done)
+
+            for ii in s.split('\n'):
+                print textwrap.fill(ii, width=80)
+
+    def print_Get(self):
+
+        print self.msg
