@@ -207,8 +207,8 @@ class Note_Server(object):
 
     def Handle_Place(self, msg):
 
-        place = msg['object']['placeText']
-        address = msg['object']['addressText']
+        place = msg['object']['place']
+        address = msg['object']['address']
         note = msg['object']['note']
         tags = msg['object']['tags']
 
@@ -219,8 +219,8 @@ class Note_Server(object):
                             note_id)
         else:
             note_id = self.db.addItem("places", {"note": note,
-                                                 "addressText": address,
-                                                 "placeText": place,
+                                                 "address": address,
+                                                 "place": place,
                                                  "tags": tags})
 
         reply = {"status": "OK",
