@@ -117,6 +117,7 @@ class mongoDB(dbBaseClass):
             note = self.noteDB[coll].find_one({"ID": itemID})
             if note is not None:
                 del note["_id"]
+                note['type'] = coll
                 break
 
         return note
@@ -177,7 +178,7 @@ class mongoDB(dbBaseClass):
                                       project=proj,
                                       limit=resultLimit)['results']
             for ii in res:
-                ii['itemType'] = coll
+                ii['type'] = coll
             searchResults.extend(res)
 
         if sortBy.lower() == "date":
