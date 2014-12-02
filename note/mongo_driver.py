@@ -228,7 +228,7 @@ class mongoDB(dbBaseClass):
             :rval: list
         """
 
-        doneItems = self.noteDB['todos'] \
+        doneItems = self.noteDB['todo'] \
                         .find({"done": done}) \
                         .sort("date", pymongo.DESCENDING)
         IDs = [ii['ID'] for ii in doneItems]

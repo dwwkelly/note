@@ -17,8 +17,8 @@ class Note_Server_Test(unittest.TestCase):
         note_2 = {"note": "note 2",
                   "tags": ["t3", "t4"]}
 
-        self.note_server.db.addItem('notes', note_1)
-        self.note_server.db.addItem('notes', note_2)
+        self.note_server.db.addItem('note', note_1)
+        self.note_server.db.addItem('note', note_2)
 
     def tearDown(self):
         self.note_server.db.client.drop_database("noteTest")
@@ -64,7 +64,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(results[0]['obj']['note'], 'note 1')
         self.assertEquals(results[0]['obj']['ID'], 1)
         self.assertEquals(results[0]['obj']['tags'], ['t1', 't2'])
-        self.assertEquals(results[0]['itemType'], 'notes')
+        self.assertEquals(results[0]['itemType'], 'note')
         self.assertEquals(reply['object']['received search'], '"note 1"')
         self.assertEquals(reply['type'], 'search')
         self.assertEquals(reply['status'], 'OK')
@@ -80,7 +80,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(results[0]['obj']['note'], 'note 2')
         self.assertEquals(results[0]['obj']['ID'], 2)
         self.assertEquals(results[0]['obj']['tags'], ['t3', 't4'])
-        self.assertEquals(results[0]['itemType'], 'notes')
+        self.assertEquals(results[0]['itemType'], 'note')
         self.assertEquals(reply['object']['received search'], '"note 2"')
         self.assertEquals(reply['type'], 'search')
         self.assertEquals(reply['status'], 'OK')
@@ -112,7 +112,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(reply['object']['received tags'], tags)
         self.assertEquals(reply['type'], 'Note')
         self.assertEquals(reply['status'], 'OK')
-        note_count = self.note_server.db.noteDB['notes'].find().count()
+        note_count = self.note_server.db.noteDB['note'].find().count()
         self.assertEquals(note_count, 3)
 
     def test_Handle_Note_2(self):
@@ -128,7 +128,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(reply['object']['received tags'], tags)
         self.assertEquals(reply['type'], 'Note')
         self.assertEquals(reply['status'], 'OK')
-        note_count = self.note_server.db.noteDB['notes'].find().count()
+        note_count = self.note_server.db.noteDB['note'].find().count()
         self.assertEquals(note_count, 3)
 
         note = 'note 4'
@@ -142,7 +142,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(reply['object']['received tags'], tags)
         self.assertEquals(reply['type'], 'Note')
         self.assertEquals(reply['status'], 'OK')
-        note_count = self.note_server.db.noteDB['notes'].find().count()
+        note_count = self.note_server.db.noteDB['note'].find().count()
         self.assertEquals(note_count, 4)
 
     def test_Handle_Delete_1(self):
@@ -155,7 +155,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEqual(reply['status'], 'OK')
         self.assertEqual(reply['type'], 'Delete')
         self.assertEqual(reply['object'], 1)
-        note_count = self.note_server.db.noteDB['notes'].find().count()
+        note_count = self.note_server.db.noteDB['note'].find().count()
         self.assertEquals(note_count, 1)
 
     def test_Handle_Delete_2(self):
@@ -168,7 +168,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEqual(reply['status'], 'OK')
         self.assertEqual(reply['type'], 'Delete')
         self.assertEqual(reply['object'], 1)
-        note_count = self.note_server.db.noteDB['notes'].find().count()
+        note_count = self.note_server.db.noteDB['note'].find().count()
         self.assertEquals(note_count, 1)
 
         msg = {"type": "Delete", "object": {"id": 2}}
@@ -179,7 +179,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEqual(reply['status'], 'OK')
         self.assertEqual(reply['type'], 'Delete')
         self.assertEqual(reply['object'], 2)
-        note_count = self.note_server.db.noteDB['notes'].find().count()
+        note_count = self.note_server.db.noteDB['note'].find().count()
         self.assertEquals(note_count, 0)
 
     def test_Handle_Delete_3(self):

@@ -136,12 +136,12 @@ class Note_Server(object):
 
         if 'ID' in msg['object']:
             note_id = msg['object']['ID']
-            self.db.addItem("notes", {"note": note_text,
-                                      "tags": note_tags},
+            self.db.addItem("note", {"note": note_text,
+                                     "tags": note_tags},
                             note_id)
         else:
-            note_id = self.db.addItem("notes", {"note": note_text,
-                                                "tags": note_tags})
+            note_id = self.db.addItem("note", {"note": note_text,
+                                               "tags": note_tags})
 
         reply = {"status": "OK",
                  "type": "Note",
@@ -214,14 +214,14 @@ class Note_Server(object):
 
         if 'ID' in msg['object']:
             note_id = msg['object']['ID']
-            self.db.addItem("places", {"note": note,
-                                       "tags": tags},
+            self.db.addItem("place", {"note": note,
+                                      "tags": tags},
                             note_id)
         else:
-            note_id = self.db.addItem("places", {"note": note,
-                                                 "address": address,
-                                                 "place": place,
-                                                 "tags": tags})
+            note_id = self.db.addItem("place", {"note": note,
+                                                "address": address,
+                                                "place": place,
+                                                "tags": tags})
 
         reply = {"status": "OK",
                  "type": "Place",
@@ -242,16 +242,16 @@ class Note_Server(object):
 
         if 'ID' in msg['object']:
             note_id = msg['object']['ID']
-            self.db.addItem("todos", {"todo": todo,
-                                      "done": done,
-                                      "date": date,
-                                      "tags": tags},
+            self.db.addItem("todo", {"todo": todo,
+                                     "done": done,
+                                     "date": date,
+                                     "tags": tags},
                             note_id)
         else:
-            note_id = self.db.addItem("todos", {"todo": todo,
-                                                "done": done,
-                                                "date": date,
-                                                "tags": tags})
+            note_id = self.db.addItem("todo", {"todo": todo,
+                                               "done": done,
+                                               "date": date,
+                                               "tags": tags})
 
         reply = {"status": "OK",
                  "type": "Todo",

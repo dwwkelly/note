@@ -1,7 +1,7 @@
 import subprocess as SP
 import os
 
-itemTypes = ["notes", "todos", "contacts", "places"]
+itemTypes = ["note", "todo", "contact", "place"]
 
 colors = dict()
 colors['reset'] = "\033[0m"         # reset

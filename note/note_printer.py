@@ -66,7 +66,7 @@ class Note_Printer(object):
             f = getattr(self, "print_{0}".format(res['itemType']))
             f(res)
 
-    def print_notes(self, msg):
+    def print_note(self, msg):
 
             note_text = msg['obj']['note']
             ID = msg['obj']['ID']
@@ -86,7 +86,7 @@ class Note_Printer(object):
             for ii in s.split('\n'):
                 print textwrap.fill(ii, width=80)
 
-    def print_places(self, msg):
+    def print_place(self, msg):
 
             note_text = msg['obj']['note']
             place_text = msg['obj']['place']
@@ -111,7 +111,7 @@ class Note_Printer(object):
             for ii in s.split('\n'):
                 print textwrap.fill(ii, width=80)
 
-    def print_todos(self, msg):
+    def print_todo(self, msg):
 
             todo_text = msg['obj']['todo']
             done = msg['obj']['done']

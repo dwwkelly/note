@@ -17,14 +17,14 @@ class NoteSQLDBTest(unittest.TestCase):
         self.assertIsInstance(self.db, note.sqliteDB)
 
     def test_sql_addItem_1(self):
-        self.db.addItem("notes", {"note": "this is a test note",
-                                  "tags": ["one", "two"]})
+        self.db.addItem("note", {"note": "this is a test note",
+                                 "tags": ["one", "two"]})
 
         self.assertIsInstance(self.db, note.sqliteDB)
 
     def test_sql_getItem_1(self):
-        self.db.addItem("notes", {"note": "ONE", "tags": ["one"]})
-        self.db.addItem("notes", {"note": "TWO", "tags": ["two"]})
+        self.db.addItem("note", {"note": "ONE", "tags": ["one"]})
+        self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
 
         itemContents = self.db.getItem(1)
 
@@ -32,8 +32,8 @@ class NoteSQLDBTest(unittest.TestCase):
         self.assertIsInstance(self.db, note.sqliteDB)
 
     def test_sql_searchForItem_1(self):
-        self.db.addItem("notes", {"note": "ONE", "tags": ["one"]})
-        self.db.addItem("notes", {"note": "TWO", "tags": ["two"]})
+        self.db.addItem("note", {"note": "ONE", "tags": ["one"]})
+        self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
 
         results = self.db.searchForItem("one")
 
@@ -41,8 +41,8 @@ class NoteSQLDBTest(unittest.TestCase):
         self.assertIsInstance(self.db, note.sqliteDB)
 
     def test_sql_deleteItem_1(self):
-        self.db.addItem("notes", {"note": "ONE", "tags": ["one"]})
-        self.db.addItem("notes", {"note": "TWO", "tags": ["two"]})
+        self.db.addItem("note", {"note": "ONE", "tags": ["one"]})
+        self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
 
         reply = self.db.deleteItem(1)
 
