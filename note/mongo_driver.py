@@ -23,6 +23,8 @@ class mongoDB(dbBaseClass):
         except pymongo.errors.ConnectionFailure:
             print 'ERROR: Cannot open connection to database'
             sys.exit(1)
+
+        # Make sure that text search is enabled for this database
         adminDB = self.client['admin']
         cmd = {"getParameter": 1, "textSearchEnabled": 1}
         textSearchEnabled = adminDB.command(cmd)['textSearchEnabled']
@@ -30,8 +32,10 @@ class mongoDB(dbBaseClass):
         if not textSearchEnabled:
             adminDB.command({"setParameter": 1, "textSearchEnabled": "true"})
 
+        # Create database
         self.noteDB = self.client[self.dbName]
 
+        # Initialize collections
         query = ({"currentMax": {"$exists": True}})
         if self.noteDB.IDs.find(query).count() == 0:
             self.noteDB['IDs'].insert({"currentMax": 0})
@@ -46,12 +50,12 @@ class mongoDB(dbBaseClass):
             :param dict itemContents: A dictionary of the item contents
             :param int itemID: When editing a note, send the ID along with it
         """
+
+        if itemType not in self.noteDB.collection_names():
+            fields = [(ii, pymongo.TEXT) for ii in itemContents]
+            self.noteDB[itemType].ensure_index(fields)
+
         collection = self.noteDB[itemType]
-        Weights = {ii: 1 for ii in itemContents.keys()}
-        if collection.name not in self.noteDB.collection_names():
-            index_info = [(collection.name, "text"), ("tags", "text")]
-            collection.create_index(index_info,
-                                    weights=Weights)
 
         if itemID is None:
             itemContents['timestamps'] = [time.time()]
