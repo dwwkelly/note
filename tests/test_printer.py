@@ -31,7 +31,7 @@ class NotePrinterTest(unittest.TestCase):
                                                "tags": ["123"],
                                                "ID": 18,
                                                "timestamps": [1417140705.90]},
-                                       "itemType": "note"}]},
+                                       "type": "note"}]},
                "type": "search"}
 
         self.printer(json.dumps(msg))
@@ -54,13 +54,13 @@ class NotePrinterTest(unittest.TestCase):
                                                "tags": ["123"],
                                                "ID": 18,
                                                "timestamps": [1411105705.9]},
-                                       "itemType": "note"},
+                                       "type": "note"},
                                       {"score": 1.4,
                                       "obj": {"note": "asd 2",
                                               "tags": ["123"],
                                               "ID": 1,
                                               "timestamps": [1411105605.9]},
-                                       "itemType": "note"}
+                                       "type": "note"}
                                       ]},
                "type": "search"}
 
@@ -104,7 +104,7 @@ class NotePrinterTest(unittest.TestCase):
                                                "tags": ["123"],
                                                "ID": 18,
                                                "timestamps": [1417140705.90]},
-                                       "itemType": "note"}]},
+                                       "type": "note"}]},
                "type": "WRONG"}
 
         rval = self.printer(json.dumps(msg))
