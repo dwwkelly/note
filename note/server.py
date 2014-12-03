@@ -215,6 +215,8 @@ class Note_Server(object):
         if 'ID' in msg['object']:
             note_id = msg['object']['ID']
             self.db.addItem("place", {"note": note,
+                                      "address": address,
+                                      "place": place,
                                       "tags": tags},
                             note_id)
         else:
