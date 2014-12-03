@@ -14,6 +14,7 @@ testenv
 
 # Packages
 *.egg
+*.eggs
 *.egg-info
 dist
 build
@@ -49,3 +50,4 @@ output/*/index.html
 
 # Sphinx
 docs/_build
+docs/build

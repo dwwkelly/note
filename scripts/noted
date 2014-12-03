@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+__author__ = "Devin Kelly"
+
+from note import Note_Server
+
+
+def main():
+
+    s = Note_Server()
+    s.Run()
+
+    return
+
+if __name__ == "__main__":
+    main()
