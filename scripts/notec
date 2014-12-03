@@ -6,6 +6,7 @@ import re
 import os
 import sys
 import json
+import time
 import string
 import argparse
 import subprocess as SP
@@ -199,6 +200,72 @@ class Runner(object):
         note_obj = self.GetByID(self.commandArgs)
         note_obj = json.loads(note_obj)
 
+        note_type = note_obj['object']['type']
+
+        f_name = 'edit_{0}'.format(note_type)
+        try:
+            f = getattr(self, f_name)
+        except AttributeError:
+            print 'Unknown note type, qutting'
+            sys.exit(1)
+        msg = f(note_obj)
+
+        return self.client.Send(msg)
+
+    def edit_todo(self, note_obj):
+
+        ddp = DateDataParser()
+
+        todo = note_obj['object']['todo']
+        done = note_obj['object']['done']
+        date = note_obj['object']['date']
+        tags = note_obj['object']['tags']
+        tags = ', '.join(tags)
+        note_id = note_obj['object']['ID']
+
+        if date:
+            date_str = time.strftime("%d %b %Y", time.localtime(date))
+        else:
+            date_str = time.strftime("%d %b %Y", time.localtime(time.time()))
+
+        with open(self.tmpNote, 'w') as fd:
+            fd.write(self.todo_template.format(todo, done, date_str, tags))
+
+        self.startEditor(3)
+
+        with open(self.tmpNote) as fd:
+            s = fd.read()
+
+        todo = re.search(r"(?<=TODO)" + self.inside + "+(?=DONE)", s).group(0)
+        todo = re.sub(r'(^\s+)|(\s+$)', '', todo)
+
+        done = re.search(r"(?<=DONE)" + self.inside + "+(?=DATE)", s).group(0)
+        done = re.sub(r'(^\s+)|(\s+$)', '', done)
+
+        date = re.search(r"(?<=DATE)" + self.inside + "+(?=TAGS)", s).group(0)
+        date = re.sub(r'(^\s+)|(\s+$)', '', date)
+        date_obj = ddp.get_date_data(date)['date_obj']
+        date = int(date_obj.strftime('%s'))
+
+        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+
+        msg = {"type": "Todo",
+               "object": {"todo": todo,
+                          "done": done,
+                          "date": date,
+                          "tags": tags,
+                          "ID": note_id}}
+
+        return msg
+
+    def edit_place(self):
+
+        return
+
+    def edit_note(self, note_obj):
+
         note_text = note_obj['object']['note']
         note_tags = note_obj['object']['tags']
         note_tags = ', '.join(note_tags)
@@ -222,7 +289,11 @@ class Runner(object):
         msg = {"type": "Note",
                "object": {"note": note, "tags": tags, "ID": note_id}}
 
-        return self.client.Send(msg)
+        return msg
+
+    def edit_contact(self):
+
+        return
 
     def Search(self):
         """
