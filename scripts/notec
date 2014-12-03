@@ -260,9 +260,46 @@ class Runner(object):
 
         return msg
 
-    def edit_place(self):
+    def edit_place(self, note_obj):
 
-        return
+        place = note_obj['object']['place']
+        address = note_obj['object']['address']
+        note = note_obj['object']['note']
+        tags = note_obj['object']['tags']
+        tags = ', '.join(tags)
+        note_id = note_obj['object']['ID']
+
+        with open(self.tmpNote, 'w') as fd:
+            fd.write(self.place_template.format(place, address, note, tags))
+
+        self.startEditor(3)
+
+        with open(self.tmpNote) as fd:
+            s = fd.read()
+
+        place = re.search(r"(?<=PLACE)" + self.inside + "+(?=ADDRESS)", s)
+        place = place.group(0)
+        place = re.sub(r'(^\s+)|(\s+$)', '', place)
+
+        address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=NOTE)", s)
+        address = address.group(0)
+        address = re.sub(r'(^\s+)|(\s+$)', '', address)
+
+        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
+        note = re.sub(r'(^\s+)|(\s+$)', '', note)
+
+        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
+        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+
+        msg = {"type": "Place",
+               "object": {"place": place,
+                          "address": address,
+                          "note": note,
+                          "tags": tags,
+                          "ID": note_id}}
+
+        return msg
 
     def edit_note(self, note_obj):
 
@@ -326,8 +363,8 @@ class Runner(object):
         tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
-        msg = {"type": "Place", "object": {"placeText": place,
-                                           "addressText": address,
+        msg = {"type": "Place", "object": {"place": place,
+                                           "address": address,
                                            "note": note,
                                            "tags": tags}}
         return self.client.Send(msg)
