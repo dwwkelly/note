@@ -26,7 +26,7 @@ note
 
 Note is a text-based note taking system that is simple and fast to use.  
 
-Documentation: http://note.readthedocs.org.
+Documentation: https://pythonhosted.org/note/
 
 Demos
 -----
