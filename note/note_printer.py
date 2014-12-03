@@ -63,7 +63,7 @@ class Note_Printer(object):
 
         for res in results:
 
-            f = getattr(self, "print_{0}".format(res['itemType']))
+            f = getattr(self, "print_{0}".format(res['type']))
             f(res)
 
     def print_note(self, msg):
