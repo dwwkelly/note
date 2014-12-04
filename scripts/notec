@@ -162,6 +162,7 @@ class Runner(object):
 
         with open(self.tmpNote) as fd:
             s = fd.read()
+        s = unicode(s, encoding='UTF-8')
 
         return s
 
@@ -232,6 +233,7 @@ class Runner(object):
 
         with open(self.tmpNote) as fd:
             s = fd.read()
+        s = unicode(s, encoding='UTF-8')
 
         todo = self.get_note_text('TODO', 'DONE', s)
 
@@ -271,20 +273,9 @@ class Runner(object):
         "Extract this text!"
 
         """
-        begin_re = r"(?<={0})".format(begin)
 
-        if end:
-            end_re = r"+(?={0})".format(end)
-        else:
-            end_re = '+'
-
-        note_text = re.search(begin_re + self.inside + end_re, s)
-
-        try:
-            note_text = note_text.group(0)
-        except AttributeError:
-            return ''
-
+        expr = r"{0}(.+?){1}".format(begin, end)
+        note_text = re.search(expr, s, flags=re.DOTALL).group(1)
         note_text = re.sub(r'(^\s+)|(\s+$)', '', note_text)
 
         return note_text
@@ -305,6 +296,7 @@ class Runner(object):
 
         with open(self.tmpNote) as fd:
             s = fd.read()
+        s = unicode(s, encoding='UTF-8')
 
         place = self.get_note_text('PLACE', 'ADDRESS', s)
 
@@ -338,6 +330,7 @@ class Runner(object):
 
         with open(self.tmpNote) as fd:
             s = fd.read()
+        s = unicode(s, encoding='UTF-8')
 
         note = self.get_note_text('NOTE', 'TAGS', s)
 
