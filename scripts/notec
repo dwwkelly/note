@@ -18,7 +18,6 @@ from dateparser.date import DateDataParser
 
 class Runner(object):
     """
-
     """
 
     def __init__(self):
@@ -175,11 +174,9 @@ class Runner(object):
 
         s = self.ProcessFile()
 
-        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
-        note = re.sub(r'(^\s+)|(\s+$)', '', note)
+        note = self.get_note_text('NOTE', 'TAGS', s)
 
-        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Note", "object": {"note": note, "tags": tags}}
@@ -236,19 +233,16 @@ class Runner(object):
         with open(self.tmpNote) as fd:
             s = fd.read()
 
-        todo = re.search(r"(?<=TODO)" + self.inside + "+(?=DONE)", s).group(0)
-        todo = re.sub(r'(^\s+)|(\s+$)', '', todo)
+        todo = self.get_note_text('TODO', 'DONE', s)
 
-        done = re.search(r"(?<=DONE)" + self.inside + "+(?=DATE)", s).group(0)
-        done = re.sub(r'(^\s+)|(\s+$)', '', done)
+        done = self.get_note_text('DONE', 'DATE', s)
 
-        date = re.search(r"(?<=DATE)" + self.inside + "+(?=TAGS)", s).group(0)
-        date = re.sub(r'(^\s+)|(\s+$)', '', date)
+        date = self.get_note_text('DATE', 'TAGS', s)
         date_obj = ddp.get_date_data(date)['date_obj']
         date = int(date_obj.strftime('%s'))
+        date_obj = ddp.get_date_data(date)['date_obj']
 
-        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        date = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Todo",
@@ -259,6 +253,41 @@ class Runner(object):
                           "ID": note_id}}
 
         return msg
+
+    def get_note_text(self, begin, end, s):
+        """
+        :desc: Given a string s, extract the substring that makes up the
+               text between 'begin' and 'end'.
+        :param str begin: The string after which text will be extracted
+        :param str end: The string that ends the extraction
+        :param str s: The string to extract the substring from
+        :returns: A substring of s
+        :rval: str
+
+        >>> begin = "BEGIN"
+        >>> end = "END"
+        >>> s = "BEGIN extract this text! END"
+        >>> r.get_note_text(begin, end, s)
+        "Extract this text!"
+
+        """
+        begin_re = r"(?<={0})".format(begin)
+
+        if end:
+            end_re = r"+(?={0})".format(end)
+        else:
+            end_re = '+'
+
+        note_text = re.search(begin_re + self.inside + end_re, s)
+
+        try:
+            note_text = note_text.group(0)
+        except AttributeError:
+            return ''
+
+        note_text = re.sub(r'(^\s+)|(\s+$)', '', note_text)
+
+        return note_text
 
     def edit_place(self, note_obj):
 
@@ -277,19 +306,13 @@ class Runner(object):
         with open(self.tmpNote) as fd:
             s = fd.read()
 
-        place = re.search(r"(?<=PLACE)" + self.inside + "+(?=ADDRESS)", s)
-        place = place.group(0)
-        place = re.sub(r'(^\s+)|(\s+$)', '', place)
+        place = self.get_note_text('PLACE', 'ADDRESS', s)
 
-        address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=NOTE)", s)
-        address = address.group(0)
-        address = re.sub(r'(^\s+)|(\s+$)', '', address)
+        address = self.get_note_text('ADDRESS', 'NOTE', s)
 
-        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
-        note = re.sub(r'(^\s+)|(\s+$)', '', note)
+        note = self.get_note_text('NOTE', 'TAGS', s)
 
-        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Place",
@@ -316,11 +339,9 @@ class Runner(object):
         with open(self.tmpNote) as fd:
             s = fd.read()
 
-        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
-        note = re.sub(r'(^\s+)|(\s+$)', '', note)
+        note = self.get_note_text('NOTE', 'TAGS', s)
 
-        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Note",
@@ -347,20 +368,13 @@ class Runner(object):
 
         s = self.ProcessFile()
 
-        place = re.search(r"(?<=PLACE)" + self.inside + "+(?=ADDRESS)", s)
-        place = place.group(0)
-        place = re.sub(r'(^\s+)|(\s+$)', '', place)
+        place = self.get_note_text('PLACE', 'ADDRESS', s)
 
-        address = re.search(r"(?<=ADDRESS)" + self.inside + "+(?=NOTE)", s)
-        address = address.group(0)
-        address = re.sub(r'(^\s+)|(\s+$)', '', address)
+        address = self.get_note_text('ADDRESS', 'NOTE', s)
 
-        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s)
-        note = note.group(0)
-        note = re.sub(r'(^\s+)|(\s+$)', '', note)
+        note = self.get_note_text('NOTE', 'TAGS', s)
 
-        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Place", "object": {"place": place,
@@ -377,11 +391,9 @@ class Runner(object):
 
         s = self.ProcessFile()
 
-        note = re.search(r"(?<=NOTE)" + self.inside + "+(?=TAGS)", s).group(0)
-        note = re.sub(r'(^\s+)|(\s+$)', '', note)
+        note = self.get_note_text('NOTE', 'TAGS', s)
 
-        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Contact", "object": {"note": note, "tags": tags}}
@@ -396,19 +408,15 @@ class Runner(object):
 
         s = self.ProcessFile()
 
-        todo = re.search(r"(?<=TODO)" + self.inside + "+(?=DONE)", s).group(0)
-        todo = re.sub(r'(^\s+)|(\s+$)', '', todo)
+        todo = self.get_note_text('TODO', 'DONE', s)
 
-        done = re.search(r"(?<=DONE)" + self.inside + "+(?=DATE)", s).group(0)
-        done = re.sub(r'(^\s+)|(\s+$)', '', done)
+        done = self.get_note_text('DONE', 'DATE', s)
 
-        date = re.search(r"(?<=DATE)" + self.inside + "+(?=TAGS)", s).group(0)
-        date = re.sub(r'(^\s+)|(\s+$)', '', date)
+        date = self.get_note_text('DATE', 'TAG', s)
         date_obj = ddp.get_date_data(date)['date_obj']
         date = int(date_obj.strftime('%s'))
 
-        tags = re.search(r"(?<=TAGS)" + self.inside + "+", s).group(0)
-        tags = re.sub(r'(^\s+)|(\s+$)', '', tags)
+        tags = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Todo", "object": {"todo": todo,
