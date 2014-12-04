@@ -3,14 +3,14 @@ from db_api import dbBaseClass
 
 class sqliteDB(dbBaseClass):
 
-    def __init__(self):
+    def __init__(self, itemType, itemContents, itemID=None):
         """
 
         """
 
         return
 
-    def addItem(self, itemType, itemContents):
+    def addItem(self, itemType, itemContents, itemID=None):
         """
 
         """
@@ -24,7 +24,7 @@ class sqliteDB(dbBaseClass):
 
         return
 
-    def searchForItem(self, searchInfo):
+    def searchForItem(self, searchInfo, resultLimit=20, sortBy="relevance"):
         """
 
         """
@@ -38,7 +38,7 @@ class sqliteDB(dbBaseClass):
 
         return
 
-    def makeBackupFile(self):
+    def makeBackupFile(self, dstPath, fileName):
         """
 
         """
