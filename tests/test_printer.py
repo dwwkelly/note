@@ -111,3 +111,34 @@ class NotePrinterTest(unittest.TestCase):
 
         self.assertEqual(self.output.getvalue(), '')
         self.assertEqual(rval, None)
+
+    def test_place_1(self):
+        msg = {"status": "OK",
+               "object": {"received search": "asd",
+                          "results": [{"score": 1.1,
+                                       "obj": {"note": "asd",
+                                               "tags": ["123"],
+                                               "place": "somewhere",
+                                               "address": "1 st",
+                                               "ID": 1,
+                                               "timestamps": [1417140705.90]},
+                                       "type": "place"}]},
+               "type": "search"
+               }
+
+        expected = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                   '{place}, {address}\n{note}\n'
+        expected = expected.format(fblue=colors['foreground blue'],
+                                   ID=1,
+                                   hicolor=colors['hicolor'],
+                                   fred=colors['foreground red'],
+                                   date="Thu, Nov 27",
+                                   reset=colors['reset'],
+                                   note="asd".encode('UTF-8'),
+                                   address="1 st",
+                                   place="somewhere")
+
+        self.printer(json.dumps(msg))
+
+        self.assertEqual(self.output.getvalue(), expected)
+        self.assertIsInstance(self.printer, note.Note_Printer)
