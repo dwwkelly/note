@@ -6,6 +6,7 @@ import unittest
 import note
 import sys
 import json
+import datetime
 from StringIO import StringIO
 from note import colors
 
@@ -137,6 +138,76 @@ class NotePrinterTest(unittest.TestCase):
                                    note="asd".encode('UTF-8'),
                                    address="1 st",
                                    place="somewhere")
+
+        self.printer(json.dumps(msg))
+
+        self.assertEqual(self.output.getvalue(), expected)
+        self.assertIsInstance(self.printer, note.Note_Printer)
+
+    def test_todo_1(self):
+
+        msg = {"status": "OK",
+               "object": {"received search": "asd",
+                          "results": [{"score": 1.1,
+                                       "obj": {"todo": "asd",
+                                               "tags": ["123"],
+                                               "done": "no",
+                                               "date": 1417140705.90,
+                                               "ID": 1,
+                                               "timestamps": [1417140705.90]},
+                                       "type": "todo"}]},
+               "type": "search"
+               }
+
+        todo_date = datetime.datetime.fromtimestamp(1417140705.90)
+        todo_date = todo_date.strftime('%Y-%m-%d')
+
+        expected = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+            '{todo_text}\n\n{done} - {todo_date}\n'
+        expected = expected.format(fblue=colors['foreground blue'],
+                                   ID=1,
+                                   hicolor=colors['hicolor'],
+                                   fred=colors['foreground red'],
+                                   date="Thu, Nov 27",
+                                   reset=colors['reset'],
+                                   todo_text=u"asd",
+                                   todo_date=todo_date,
+                                   done='Not Done')
+
+        self.printer(json.dumps(msg))
+
+        self.assertEqual(self.output.getvalue(), expected)
+        self.assertIsInstance(self.printer, note.Note_Printer)
+
+    def test_todo_2(self):
+
+        msg = {"status": "OK",
+               "object": {"received search": "asd",
+                          "results": [{"score": 1.1,
+                                       "obj": {"todo": "asd",
+                                               "tags": ["123"],
+                                               "done": "yes",
+                                               "date": 1417140705.90,
+                                               "ID": 1,
+                                               "timestamps": [1417140705.90]},
+                                       "type": "todo"}]},
+               "type": "search"
+               }
+
+        todo_date = datetime.datetime.fromtimestamp(1417140705.90)
+        todo_date = todo_date.strftime('%Y-%m-%d')
+
+        expected = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                   '{todo_text}\n\n{done} - {todo_date}\n'
+        expected = expected.format(fblue=colors['foreground blue'],
+                                   ID=1,
+                                   hicolor=colors['hicolor'],
+                                   fred=colors['foreground red'],
+                                   date="Thu, Nov 27",
+                                   reset=colors['reset'],
+                                   todo_text=u"asd",
+                                   todo_date=todo_date,
+                                   done='Done')
 
         self.printer(json.dumps(msg))
 
