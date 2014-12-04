@@ -51,6 +51,6 @@ class NoteSQLDBTest(unittest.TestCase):
 
     def test_sql_makeBackupFile_1(self):
 
-        self.db.makeBackupFile()
+        self.db.makeBackupFile('dstPath', 'filename')
 
         self.assertIsInstance(self.db, note.sqliteDB)

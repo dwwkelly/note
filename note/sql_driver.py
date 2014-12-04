@@ -3,7 +3,7 @@ from db_api import dbBaseClass
 
 class sqliteDB(dbBaseClass):
 
-    def __init__(self, itemType, itemContents, itemID=None):
+    def __init__(self):
         """
 
         """
