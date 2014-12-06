@@ -232,7 +232,9 @@ class Runner(object):
             date_str = time.strftime("%d %b %Y", time.localtime(time.time()))
 
         with open(self.tmpNote, 'w') as fd:
-            fd.write(self.todo_template.format(todo, done, date_str, tags))
+            s = self.todo_template.format(todo, done, date_str, tags)
+            s = s.encode('UTF-8')
+            fd.write(s)
 
         self.startEditor(3)
 
@@ -295,7 +297,9 @@ class Runner(object):
         note_id = note_obj['object']['ID']
 
         with open(self.tmpNote, 'w') as fd:
-            fd.write(self.place_template.format(place, address, note, tags))
+            s = self.place_template.format(place, address, note, tags)
+            s = s.encode('UTF-8')
+            fd.write(s)
 
         self.startEditor(3)
 
@@ -329,7 +333,9 @@ class Runner(object):
         note_id = note_obj['object']['ID']
 
         with open(self.tmpNote, 'w') as fd:
-            fd.write(self.note_template.format(note_text, note_tags))
+            s = self.note_template.format(note_text, note_tags)
+            s = s.encode('UTF-8')
+            fd.write(s)
 
         self.startEditor(3)
 
