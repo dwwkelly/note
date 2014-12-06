@@ -128,8 +128,13 @@ class Runner(object):
 
         self.ParseOpts()
 
-        with open(self.configFile, 'r') as fd:
-            self.config = json.loads(fd.read())
+        try:
+            with open(self.configFile, 'r') as fd:
+                self.config = json.loads(fd.read())
+        except IOError:
+            s = 'Cannot find config file at "{0}", exiting'
+            print s.format(self.configFile)
+            sys.exit(1)
 
         if self.command in self.shortcuts:
             self.command = self.shortcuts[self.command]
