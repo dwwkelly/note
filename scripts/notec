@@ -63,7 +63,7 @@ class Runner(object):
 
         defaultConfigPath = os.path.expanduser('~/.config/note.json')
         parser.add_argument('--configFile',
-                            type=str,
+                            type=str
                             help='Path to config file',
                             default=defaultConfigPath)
 
@@ -134,6 +134,10 @@ class Runner(object):
         except IOError:
             s = 'Cannot find config file at "{0}", exiting'
             print s.format(self.configFile)
+            sys.exit(1)
+        except ValueError:
+            s = 'Config file must be valid json'
+            print s
             sys.exit(1)
 
         if self.command in self.shortcuts:
