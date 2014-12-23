@@ -15,6 +15,7 @@ Contents:
    messages
    installation
    usage
+   config_file
    contributing
    authors
    history
