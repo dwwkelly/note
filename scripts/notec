@@ -63,9 +63,14 @@ class Runner(object):
 
         defaultConfigPath = os.path.expanduser('~/.config/note.json')
         parser.add_argument('--configFile',
-                            type=str
+                            type=str,
                             help='Path to config file',
                             default=defaultConfigPath)
+        parser.add_argument('-q',
+                            '--quiet',
+                            help='Print only titles',
+                            action='store_true',
+                            default=False)
 
         commandHelp = 'note: eligible commands are: {0}'
         commandHelp = commandHelp.format(', '.join(self.commands))
@@ -73,6 +78,7 @@ class Runner(object):
                             help=commandHelp)
 
         args = parser.parse_args()
+        self.quiet = args.quiet
 
         self.configFile = args.configFile
         self.command = args.command[0]
@@ -83,8 +89,6 @@ class Runner(object):
         """
 
         """
-
-        printer = Note_Printer()
 
         self.client = Note_Client()
         self.commands = dict()
@@ -127,6 +131,7 @@ class Runner(object):
         self.shortcuts['V'] = 'verify'
 
         self.ParseOpts()
+        printer = Note_Printer(self.quiet)
 
         try:
             with open(self.configFile, 'r') as fd:
