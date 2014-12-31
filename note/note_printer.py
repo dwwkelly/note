@@ -7,10 +7,11 @@ from util import colors
 
 class Note_Printer(object):
 
-    def __init__(self):
+    def __init__(self, quiet=False):
         """
 
         """
+        self.quiet = quiet
 
     def __call__(self, msg):
 
@@ -74,6 +75,9 @@ class Note_Printer(object):
         timestamp = time.localtime(max(timestamps))
         noteDate = time.strftime("%a, %b %d", timestamp)
 
+        if self.quiet:
+            note_text = note_text.split('\n')[0]
+
         s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: {note}'
         s = s.format(fblue=colors['foreground blue'],
                      ID=ID,
@@ -96,17 +100,29 @@ class Note_Printer(object):
         timestamp = time.localtime(max(timestamps))
         noteDate = time.strftime("%a, %b %d", timestamp)
 
-        s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
-            '{place}, {address}\n{note}'
-        s = s.format(fblue=colors['foreground blue'],
-                     ID=ID,
-                     hicolor=colors['hicolor'],
-                     fred=colors['foreground red'],
-                     date=noteDate,
-                     reset=colors['reset'],
-                     note=note_text.encode('UTF-8'),
-                     address=address_text,
-                     place=place_text)
+        if self.quiet:
+            note_text = note_text.split('\n')[0]
+            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                '{place}'
+            s = s.format(fblue=colors['foreground blue'],
+                         ID=ID,
+                         hicolor=colors['hicolor'],
+                         fred=colors['foreground red'],
+                         date=noteDate,
+                         reset=colors['reset'],
+                         place=place_text)
+        else:
+            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                '{place}, {address}\n{note}'
+            s = s.format(fblue=colors['foreground blue'],
+                         ID=ID,
+                         hicolor=colors['hicolor'],
+                         fred=colors['foreground red'],
+                         date=noteDate,
+                         reset=colors['reset'],
+                         note=note_text.encode('UTF-8'),
+                         address=address_text,
+                         place=place_text)
 
         for ii in s.split('\n'):
             print textwrap.fill(ii, width=80)
@@ -129,17 +145,30 @@ class Note_Printer(object):
         elif done.lower() in ['true', 'yes']:
             done = 'Done'
 
-        s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
-            '{todo_text}\n\n{done} - {todo_date}'
-        s = s.format(fblue=colors['foreground blue'],
-                     ID=ID,
-                     hicolor=colors['hicolor'],
-                     fred=colors['foreground red'],
-                     date=noteDate,
-                     reset=colors['reset'],
-                     todo_text=todo_text.encode('UTF-8'),
-                     todo_date=todo_date,
-                     done=done)
+        if self.quiet:
+            todo_text = todo_text.split('\n')[0]
+            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                '{todo_text}, {done}'
+            s = s.format(fblue=colors['foreground blue'],
+                         ID=ID,
+                         hicolor=colors['hicolor'],
+                         fred=colors['foreground red'],
+                         date=noteDate,
+                         reset=colors['reset'],
+                         todo_text=todo_text.encode('UTF-8'),
+                         done=done)
+        else:
+            s = '{fblue}{ID} {hicolor}{fred}{date}{reset}: ' +\
+                '{todo_text}\n\n{done} - {todo_date}'
+            s = s.format(fblue=colors['foreground blue'],
+                         ID=ID,
+                         hicolor=colors['hicolor'],
+                         fred=colors['foreground red'],
+                         date=noteDate,
+                         reset=colors['reset'],
+                         todo_text=todo_text.encode('UTF-8'),
+                         todo_date=todo_date,
+                         done=done)
 
         for ii in s.split('\n'):
             print textwrap.fill(ii, width=80)
