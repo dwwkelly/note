@@ -185,9 +185,9 @@ class Note_Server(object):
         """
 
         done = msg['object']['done']
-        items = self.db.getDone(done)
+        item_ids = self.db.getDone(done)
 
-        if items is []:
+        if item_ids is []:
             if done:
                 e_msg = "Could not find any done itms"
             else:
@@ -197,6 +197,13 @@ class Note_Server(object):
                      "type": "Done",
                      "object": {"msg": e_msg}}
         else:
+            items = []
+            for ii in item_ids:
+                tmp = {}
+                tmp['type'] = 'todo'
+                tmp['obj'] = self.db.getItem(ii)
+                items.append(tmp)
+
             reply = {"status": "OK",
                      "type": "Done",
                      "object": items}
