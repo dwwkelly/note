@@ -259,7 +259,7 @@ class Runner(object):
         date_obj = ddp.get_date_data(date)['date_obj']
         date = int(date_obj.strftime('%s'))
 
-        date = self.get_note_text('TAGS', '', s)
+        tags = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Todo",
