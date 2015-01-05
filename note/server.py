@@ -242,6 +242,11 @@ class Note_Server(object):
         date = msg['object']['date']
         tags = msg['object']['tags']
 
+        if done.lower() == 'no' or done.lower() == 'false':
+            done = False
+        else:
+            done = True
+
         if 'ID' in msg['object']:
             note_id = msg['object']['ID']
             self.db.addItem("todo", {"todo": todo,
