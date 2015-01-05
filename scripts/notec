@@ -258,7 +258,6 @@ class Runner(object):
         date = self.get_note_text('DATE', 'TAGS', s)
         date_obj = ddp.get_date_data(date)['date_obj']
         date = int(date_obj.strftime('%s'))
-        date_obj = ddp.get_date_data(date)['date_obj']
 
         date = self.get_note_text('TAGS', '', s)
         tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
@@ -450,13 +449,18 @@ class Runner(object):
         """
 
         """
-        return
+        done = self.commandArgs
+        msg = {"type": "Done", "object": {"done": True}}
+        return self.client.Send(msg)
 
     def ShowUndone(self):
         """
 
         """
-        return
+
+        done = self.commandArgs
+        msg = {"type": "Done", "object": {"done": False}}
+        return self.client.Send(msg)
 
     def Backup(self):
         """
