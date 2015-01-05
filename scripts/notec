@@ -260,7 +260,7 @@ class Runner(object):
         date = int(date_obj.strftime('%s'))
 
         tags = self.get_note_text('TAGS', '', s)
-        tags = [re.sub(r'(^\s+)|(\s+$)', '', ii) for ii in tags.split(',')]
+        tags = [re.sub(r'(^\n?\s+)|(\n?\s+$)', '', ii) for ii in tags.split(',')]
 
         msg = {"type": "Todo",
                "object": {"todo": todo,
