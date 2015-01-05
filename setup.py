@@ -14,7 +14,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='note',
-    version='0.2',
+    version='0.5',
     description='A command line based note taking application',
     long_description=readme + '\n\n' + history,
     author='Devin Kelly',

@@ -2,7 +2,7 @@
 
 __author__ = 'Devin Kelly'
 __email__ = 'dwwkelly@fastmail.fm'
-__version__ = '0.2'
+__version__ = '0.5'
 
 from server import Note_Server
 from client import Note_Client
