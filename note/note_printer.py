@@ -127,6 +127,11 @@ class Note_Printer(object):
         for ii in s.split('\n'):
             print textwrap.fill(ii, width=80)
 
+    def print_Done(self):
+
+        for ii in self.msg['object']:
+            self.print_todo(ii)
+
     def print_todo(self, msg):
 
         todo_text = msg['obj']['todo']
@@ -140,10 +145,10 @@ class Note_Printer(object):
         todo_date = datetime.datetime.fromtimestamp(todo_date)
         todo_date = todo_date.strftime('%Y-%m-%d')
 
-        if done.lower() in ['false', 'no']:
-            done = 'Not Done'
-        elif done.lower() in ['true', 'yes']:
+        if done:
             done = 'Done'
+        else:
+            done = 'Not Done'
 
         if self.quiet:
             todo_text = todo_text.split('\n')[0]
