@@ -289,8 +289,13 @@ class Runner(object):
 
         """
 
-        expr = r"{0}(.+?){1}".format(begin, end)
-        note_text = re.search(expr, s, flags=re.DOTALL).group(1)
+        if end == '' or end is None:
+            expr = r"(?<={0}).+".format(begin)
+            note_text = re.search(expr, s, flags=re.DOTALL).group(0)
+        else:
+            expr = r"{0}(.+?){1}".format(begin, end)
+            note_text = re.search(expr, s, flags=re.DOTALL).group(1)
+
         note_text = re.sub(r'(^\s+)|(\s+$)', '', note_text)
 
         return note_text
