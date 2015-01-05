@@ -176,6 +176,33 @@ class Note_Server(object):
 
         return json.dumps(reply)
 
+    def Handle_Done(self, msg):
+        """
+
+        :param: msg the JSON message from the client
+        :returns: The reply from the db driver
+        :rvalue: str
+        """
+
+        done = msg['object']['done']
+        items = self.db.getDone(done)
+
+        if items is []:
+            if done:
+                e_msg = "Could not find any done itms"
+            else:
+                e_msg = "Could not find any undone itms"
+
+            reply = {"status": "ERROR",
+                     "type": "Done",
+                     "object": {"msg": e_msg}}
+        else:
+            reply = {"status": "OK",
+                     "type": "Done",
+                     "object": items}
+
+        return json.dumps(reply)
+
     def Handle_Delete(self, msg):
         """
 
