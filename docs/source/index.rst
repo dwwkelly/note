@@ -16,6 +16,8 @@ Contents:
    installation
    usage
    config_file
+   todo
+   changelog
    contributing
    authors
    history
