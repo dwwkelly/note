@@ -25,7 +25,7 @@ class Note_Server_Test(unittest.TestCase):
         self.note_server.context.destroy()
 
     def test_Handle_Get_1(self):
-        msg = {"type": "Get", "object": {"id": 1}}
+        msg = {"type": "Get", "object": {"type": "ID", "id": 1}}
         reply = self.note_server.Handle_Get(msg)
         reply = json.loads(reply)
 
@@ -35,7 +35,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(reply['status'], 'OK')
 
     def test_Handle_Get_2(self):
-        msg = {"type": "Get", "object": {"id": 2}}
+        msg = {"type": "Get", "object": {"type": "ID", "id": 2}}
         reply = self.note_server.Handle_Get(msg)
         reply = json.loads(reply)
 
@@ -45,7 +45,7 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEquals(reply['status'], 'OK')
 
     def test_Handle_Get_3(self):
-        msg = {"type": "Get", "object": {"id": 3}}
+        msg = {"type": "Get", "object": {"type": "ID", "id": 3}}
         reply = self.note_server.Handle_Get(msg)
         reply = json.loads(reply)
 
