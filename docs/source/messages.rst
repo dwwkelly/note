@@ -28,9 +28,25 @@ that will be either ``"OK"`` or ``"ERROR"``.
 Get
 ^^^^
 
+Get showing done To-Dos
+
 .. code-block:: javascript
 
-    {"object": {"id": 1},
+    {"object": {"type": "done", "done": True},
+     "type": "Get"}
+
+Get showing undone To-Dos
+
+.. code-block:: javascript
+
+    {"object": {"type": "done", "done": False},
+     "type": "Get"}
+
+Get by ID
+
+.. code-block:: javascript
+
+    {"object": {"type": "ID", "id": 1},
      "type": "Get"}
 
 Reply - OK
