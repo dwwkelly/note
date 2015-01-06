@@ -154,8 +154,6 @@ class Runner(object):
             print u"{0} does not exist".format(self.command)
             sys.exit(0)
 
-            return
-
         printer(reply)
 
     def ProcessFile(self):
@@ -201,7 +199,7 @@ class Runner(object):
         """
 
         """
-        msg = {"type": "Get", "object": {"type": "id", "id": scrubID(ID)}}
+        msg = {"type": "Get", "object": {"type": "ID", "id": scrubID(ID)}}
         return self.client.Send(msg)
 
     def Edit(self):
@@ -512,23 +510,44 @@ class Runner(object):
         """
         return
 
+    def get_sorted_results(self, comparator):
+
+        msg = {"type": "Search", "object": {"searchTerm": self.commandArgs}}
+        r = self.client.Send(msg)
+        r = json.loads(r)
+        results_sorted = sorted(r['object']['results'], key=comparator)
+        r['object']['results'] = results_sorted
+        return json.dumps(r)
+
     def SID(self):
         """
-
+        :desc: Fetch notes and sort them by ID
         """
-        return
+        def comparator(k):
+            return k['obj']['ID']
+
+        return self.get_sorted_results(comparator)
 
     def SDate(self):
         """
 
+        :desc: Fetch notes and sort them by date last modified
         """
-        return
+
+        def comparator(k):
+            return max(k['obj']['timestamps'])
+
+        return self.get_sorted_results(comparator)
 
     def SRelevance(self):
         """
-
+        :desc: Fetch notes and sort them by search relevance
         """
-        return
+
+        def comparator(k):
+            return k['score']
+
+        return self.get_sorted_results(comparator)
 
 
 def main():
