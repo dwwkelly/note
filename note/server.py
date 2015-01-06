@@ -161,6 +161,21 @@ class Note_Server(object):
         :rvalue: str
         """
 
+        if msg['object']['type'] == 'ID':
+            reply = self.Get_By_ID(msg)
+        elif msg['object']['type'] == 'done':
+            reply = self.Get_Done(msg)
+        else:
+            reply = {"status": "ERROR",
+                     "type": "Get",
+                     "object": {"msg": "Invalid Get"}}
+
+        return json.dumps(reply)
+
+    def Get_By_ID(self, msg):
+        """
+
+        """
         ID = msg['object']['id']
         item = self.db.getItem(ID)
 
@@ -174,9 +189,9 @@ class Note_Server(object):
                      "type": "Get",
                      "object": item}
 
-        return json.dumps(reply)
+        return reply
 
-    def Handle_Done(self, msg):
+    def Get_Done(self, msg):
         """
 
         :param: msg the JSON message from the client
@@ -208,7 +223,7 @@ class Note_Server(object):
                      "type": "Done",
                      "object": items}
 
-        return json.dumps(reply)
+        return reply
 
     def Handle_Delete(self, msg):
         """
