@@ -16,6 +16,8 @@ from sql_driver import sqliteDB
 
 from note_printer import Note_Printer
 
+from web import app as webapp
+
 assert mongoDB
 assert sqliteDB
 assert which
@@ -24,3 +26,4 @@ assert Note_Client
 assert Note_Server
 assert Note_Printer
 assert colors
+assert webapp
