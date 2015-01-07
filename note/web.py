@@ -8,7 +8,6 @@ import time
 import json
 import os
 import sys
-import argparse
 import markdown
 from flask import Flask
 from flask import request
@@ -18,33 +17,17 @@ from flask import Markup
 from functools import wraps
 from mongo_driver import mongoDB
 
-# FIXME - there should be a better way to do this
-with open(os.path.expanduser("~/.note.conf")) as fd:
-    config = json.loads(fd.read())
-
-try:
-    db = mongoDB("note", uri=config['database']['uri'])
-except KeyError:
-    db = mongoDB("note")
-
 app = Flask(__name__)
 app.jinja_env.trim_blocks = True
-
-
-def parseArgs():
-    parser = argparse.ArgumentParser(description='Run Note Web Server')
-    parser.add_argument('--debug', '-d', default=False, action='store_true',
-                        help='Turn on debug mode')
-
-    args = parser.parse_args()
-
-    return args
 
 
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
+
+    with open(os.path.expanduser("~/config/.note.conf")) as fd:
+        config = json.loads(fd.read())
 
     try:
         u = config['server']['login']['username']
@@ -69,6 +52,9 @@ def requires_auth(f):
     """
 
     """
+
+    with open(os.path.expanduser("~/config/.note.conf")) as fd:
+        config = json.loads(fd.read())
 
     try:
         login = config['server']['login']
@@ -98,8 +84,9 @@ def requires_auth(f):
 
 
 @app.route(r'/search', methods=["GET", "POST"])
-@requires_auth
+# @requires_auth
 def search():
+    db = mongoDB("note")
 
     if request.method == "GET":
         pages = {"cmd": {"link": "search", "name": "Search"},
@@ -127,8 +114,10 @@ def search():
 
 
 @app.route(r'/newPlace', methods=["GET", "POST"])
-@requires_auth
+# @requires_auth
 def newPlace():
+    db = mongoDB("note")
+
     if request.method == "GET":
         pages = {"cmd": {"link": "newPlace", "name": "New Place"},
                  "title": "New Place"}
@@ -151,8 +140,9 @@ def newPlace():
 
 
 @app.route('/delete', methods=["GET", "POST"])
-@requires_auth
+# @requires_auth
 def Delete():
+    db = mongoDB("note")
     pages = {"cmd": {"link": "delete", "name": "Delete"}, "title": "Delete"}
     if request.method == "GET":
         s = render_template('delete.html', p=pages)
@@ -172,7 +162,7 @@ def Delete():
 
 
 @app.route('/note', methods=["GET"])
-@requires_auth
+# @requires_auth
 def start():
     pages = {"cmd": {"link": "note", "name": "Note"}, "title": "Note"}
     s = render_template('note.html', p=pages)
@@ -180,7 +170,7 @@ def start():
 
 
 @app.route('/notes', methods=["GET"])
-@requires_auth
+# @requires_auth
 def Notes():
     # FIXME -- this function needs a template
     pages = {"cmd": {"link": "search", "name": "Search Result"},
@@ -195,9 +185,10 @@ def Notes():
 
 
 @app.route('/newNote', methods=["GET", "POST"])
-@requires_auth
+# @requires_auth
 def NewNote():
 
+    db = mongoDB("note")
     pages = {"cmd": {"link": "newNote", "name": "New Note"},
              "title": "New Note"}
     if request.method == "GET":
@@ -220,7 +211,7 @@ def NewNote():
 
 
 @app.route('/newContact', methods=["GET", "POST"])
-@requires_auth
+# @requires_auth
 def NewContact():
     pages = {"cmd": {"link": "newContact", "name": "New Contact"},
              "title": "New Contact"}
@@ -255,8 +246,9 @@ def NewContact():
 
 
 @app.route('/newTodo', methods=["GET", "POST"])
-@requires_auth
+# @requires_auth
 def NewTodo():
+    db = mongoDB("note")
 
     pages = {"cmd": {"link": "newTodo", "name": "New ToDo"},
              "title": "New ToDo"}
@@ -285,18 +277,3 @@ def NewTodo():
                              "date": dateStr})
         s = json.dumps(todo)
     return s
-
-
-def main():
-    try:
-        addr = config['server']['address']
-    except KeyError:
-        addr = "127.0.0.1"
-        print("Address not found using ", addr)
-    args = parseArgs()
-    if args.debug:
-        app.debug = True
-    app.run(host=addr)
-
-if __name__ == "__main__":
-    main()
