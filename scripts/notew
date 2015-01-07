@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+__author__ = "Devin Kelly"
+
+import os
+import json
+import click
+from note import webapp
+
+
+class Config(object):
+    def __init__(self, config_file, address, port, debug):
+        self.config_file = config_file
+        self.address = address
+        self.port = port
+        self.debug = debug
+
+        self.read_config_file()
+
+    def read_config_file(self):
+
+        with open(os.path.expanduser(config)) as fd:
+            config = json.loads(fd.read())
+
+        if self.address is not None:
+            self.address = config['server']['address']
+        if self.port is not None:
+            self.port = config['server']['port']
+        if self.debug is not None:
+            self.debug = config['server']['debug']
+
+
+@click.command()
+@click.option("-d", "--debug", is_flag=True, default=False,
+              help="Start server in debug mode")
+@click.option("-a", "--address", default=None,
+              help="Server listen address")
+@click.option("-p", "--port", default=None,
+              help="Server listen port")
+@click.option("-c", "--config", default="~/.config/note.json",
+              help="Server listen address")
+def main(debug, address, port, config):
+
+    config = Config(config, address, port, debug)
+
+    webapp.debug = config.debug
+    webapp.host = config.host
+    webapp.port = config.port
+    webapp.run()
+
+    return
+
+if __name__ == "__main__":
+    main()
