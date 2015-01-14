@@ -1,5 +1,5 @@
 Deploying the Server
---------------------
+====================
 
 First, decide if you want to run ``noted`` in a virtualenv or not.  If you using 
 a virtualenv, first create it and start the::

@@ -13,9 +13,11 @@ Contents:
 
    readme
    messages
+   specification
    installation
    usage
    config_file
+   deploying
    todo
    changelog
    contributing

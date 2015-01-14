@@ -49,6 +49,13 @@ Get by ID
     {"object": {"type": "ID", "id": 1},
      "type": "Get"}
 
+Get by Label
+
+.. code-block:: javascript
+
+    {"object": {"type": "label", "name": "some label"},
+     "type": "Get"}
+
 Reply - OK
 
 .. code-block:: javascript
@@ -174,6 +181,15 @@ Reply - Error
      "object": {"received search": "original search query",
                 "results": results}
     }
+
+Set Label
+^^^^^^^^^
+
+.. code-block:: javascript
+
+    {"object": {"name": "some label", "id": 23},
+     "type": "label"}
+
 
 
 Server-Server
