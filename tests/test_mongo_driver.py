@@ -80,8 +80,8 @@ class NoteDBTest(unittest.TestCase):
         self.db.addItem("note", {"note": "ONE", "tags": ["one"]})
         self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
         self.db.addItem("todo", {"todoText": "get this done",
-                                  "done": "False",
-                                  "date": "03 24 14"})
+                                 "done": "False",
+                                 "date": "03 24 14"})
 
         itemType = self.db.getItemType(1)
         assert itemType == "note"
@@ -243,3 +243,36 @@ class NoteDBTest(unittest.TestCase):
         results = self.db.getByTime(endTime=t1)
         self.assertEqual(results, [1])
         self.assertEqual(len(results), 1)
+
+    def test_mongodb_add_label_1(self):
+        self.db.addItem("note", {"note": "ONE", "tags": ["one"]})
+        self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
+        self.db.addLabel("testLabel", 1)
+        self.db.addLabel("anothertestLabel", 2)
+
+        results = self.db.getIDBytLabel("testLabel")
+        self.assertEqual(results, 1)
+
+        results = self.db.getIDBytLabel("anothertestLabel")
+        self.assertEqual(results, 2)
+
+    def test_mongodb_add_label_2(self):
+        self.db.addItem("note", {"note": "ONE", "tags": ["one"]})
+        self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
+        self.db.addLabel("testLabel", 1)
+        results = self.db.addLabel("testLabel", 1)
+        self.assertEqual(results, None)
+        results = self.db.addLabel("testLabel", 2)
+        self.assertEqual(results, None)
+
+    def test_mongodb_delete_label(self):
+        self.db.addItem("note", {"note": "ONE", "tags": ["one"]})
+        self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
+        self.db.addLabel("testLabel", 1)
+
+        results = self.db.getIDBytLabel("testLabel")
+        self.assertEqual(results, 1)
+
+        self.db.deleteLabel('testLabel')
+        results = self.db.getIDBytLabel("testLabel")
+        self.assertEqual(results, None)
