@@ -39,6 +39,7 @@ setup(
     ],
     install_requires=['pymongo', 'tornado', 'pyzmq>=14.3.1',
                       'markdown', 'flask', 'mock', 'dateparser',
-                      'click', 'python-daemon', 'lockfile'],
+                      'click', 'python-daemon', 'lockfile',
+                      'docutils'],
     test_suite="tests"
 )
