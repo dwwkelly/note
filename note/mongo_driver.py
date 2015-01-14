@@ -72,6 +72,44 @@ class mongoDB(dbBaseClass):
 
         return itemID
 
+    def addLabel(self, label_name, ID):
+        """
+
+        """
+
+        if self.getIDBytLabel(label_name) is not None:
+            return None
+
+        doc = {"name": label_name, "ID": ID}
+        self.noteDB['label'].insert(doc)
+
+        return doc
+
+    def getIDBytLabel(self, label_name):
+        """
+
+        """
+        doc = {"name": label_name}
+        r = self.noteDB['label'].find_one(doc)
+
+        if r is None:
+            return None
+
+        if 'ID' in r:
+            return r['ID']
+        else:
+            return None
+
+    def deleteLabel(self, label_name):
+        """
+
+        """
+
+        doc = {"name": label_name}
+        self.noteDB['label'].remove(doc)
+
+        return
+
     def getNewID(self):
         """
 
