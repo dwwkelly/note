@@ -113,6 +113,7 @@ class Runner(object):
         self.commands['sdate'] = self.SDate
         self.commands['srelevance'] = self.SRelevance
         self.commands['encrypt'] = self.Encrypt
+        self.commands['label'] = self.Label
 
         # These are shortcuts
         self.shortcuts = {}
@@ -129,6 +130,7 @@ class Runner(object):
         self.shortcuts['E'] = 'encrypt'
         self.shortcuts['i'] = 'info'
         self.shortcuts['V'] = 'verify'
+        self.shortcuts['l'] = 'label'
 
         self.ParseOpts()
         printer = Note_Printer(self.quiet)
@@ -562,6 +564,35 @@ class Runner(object):
             return k['score']
 
         return self.get_sorted_results(comparator)
+
+    def Label(self):
+        """
+        :desc: Add a label to the note db if and ID is given, if no ID
+               is given, attempt to get the a note by label
+        :rval: str
+        :returns: A status json object serialed to a string
+        """
+
+        try:
+            label_name = re.search(r'^\w+', self.commandArgs).group(0)
+        except AttributeError:
+            print 'Incorrect label given'
+            sys.exit(1)
+
+        ID = re.search(r'\d+$', self.commandArgs)
+
+        if ID is None:
+            # Get by label
+            msg = {"object": {"type": "Label", "name": label_name},
+                   "type": "Get"}
+            # FIXME no need for r_val here?
+            r_val = json.loads(self.client.Send(msg))
+            r_val['printer_options'] = 'pretty'
+            return json.dumps(r_val)
+        else:
+            # Set a label to a note by it's ID
+            msg = {"type": "Label", "object": {"name": label_name, "id": ID}}
+            return self.client.Send(msg)
 
 
 def main():
