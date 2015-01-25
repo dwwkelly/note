@@ -147,9 +147,7 @@ class mongoDB(dbBaseClass):
            :returns: The matching note
            :rval: int
         """
-        collections = self.noteDB.collection_names()
-        collections.remove(u'system.indexes')
-        collections.remove(u'IDs')
+        collections = self.get_data_collections()
 
         for coll in collections:
             note = self.noteDB[coll].find_one({"ID": itemID})
@@ -168,8 +166,6 @@ class mongoDB(dbBaseClass):
         """
 
         collections = self.noteDB.collection_names()
-        collections.remove(u'system.indexes')
-        collections.remove(u'IDs')
         return collections
 
     def getItemType(self, itemID):
@@ -204,9 +200,7 @@ class mongoDB(dbBaseClass):
 
         searchResults = []
 
-        colls = self.noteDB.collection_names()
-        colls.remove(u'system.indexes')
-        colls.remove(u'IDs')
+        colls = self.get_data_collections()
 
         proj = {"_id": 0}
         for coll in colls:
@@ -237,9 +231,7 @@ class mongoDB(dbBaseClass):
            :returns ID: The ID of the deleted item
            :rval: int
         """
-        collections = self.noteDB.collection_names()
-        collections.remove(u'system.indexes')
-        collections.remove(u'IDs')
+        collections = self.get_data_collections()
 
         query = {"currentMax": {"$exists": True}}
         currentMax = self.noteDB["IDs"].find_one(query)['currentMax']
@@ -304,9 +296,7 @@ class mongoDB(dbBaseClass):
             :returns: A list of IDs
             :ravl: list
         """
-        collections = self.noteDB.collection_names()
-        collections.remove(u'system.indexes')
-        collections.remove(u'IDs')
+        collections = self.get_data_collections()
 
         if startTime is not None:
             startTime = float(startTime)
@@ -338,9 +328,7 @@ class mongoDB(dbBaseClass):
                       not
             :rval: bool
         """
-        collections = self.noteDB.collection_names()
-        collections.remove(u'system.indexes')
-        collections.remove(u'IDs')
+        collections = self.get_data_collections()
 
         allIDs = []
         for coll in collections:
@@ -372,3 +360,11 @@ class mongoDB(dbBaseClass):
             print "Database not valid, max ID is incorrent"
         elif not unusedIDsMatch:
             print "Database not valid, unusedIDs is incorrent"
+
+    def get_data_collections(self):
+        collections = self.noteDB.collection_names()
+        collections.remove(u'system.indexes')
+        collections.remove(u'IDs')
+        collections.remove(u'label')
+
+        return collections
