@@ -180,9 +180,11 @@ class Note_Printer(object):
 
     def print_Get(self):
 
-        if self.msg['printer_options'] == 'pretty':
-            note_type = self.msg['object']['type']
-            f = getattr(self, 'print_{0}'.format(note_type))
-            f(self.msg['object'])
-        else:
-            print self.msg
+        if 'printer_options' in self.msg:
+            if self.msg['printer_options'] == 'pretty':
+                note_type = self.msg['object']['type']
+                f = getattr(self, 'print_{0}'.format(note_type))
+                f(self.msg['object'])
+                return
+
+        print self.msg
