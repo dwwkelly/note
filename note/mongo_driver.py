@@ -35,7 +35,7 @@ class mongoDB(dbBaseClass):
         # Create database
         self.noteDB = self.client[self.dbName]
 
-        # Initialize collections
+        # Initialize
         query = ({"currentMax": {"$exists": True}})
         if self.noteDB.IDs.find(query).count() == 0:
             self.noteDB['IDs'].insert({"currentMax": 0})
@@ -43,6 +43,9 @@ class mongoDB(dbBaseClass):
         query = {"unusedIDs": {"$exists": True}}
         if self.noteDB.IDs.find(query).count() == 0:
             self.noteDB['IDs'].insert({"unusedIDs": []})
+
+        if 'label' not in self.noteDB.collection_names():
+            self.noteDB.create_collection('label')
 
     def addItem(self, itemType, itemContents, itemID=None):
         """
