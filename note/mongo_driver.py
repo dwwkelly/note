@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from db_api import dbBaseClass
+from util import scrubID
 import pymongo
 import time
 import os
@@ -151,6 +152,8 @@ class mongoDB(dbBaseClass):
            :rval: int
         """
         collections = self.get_data_collections()
+
+        itemID = scrubID(itemID)
 
         for coll in collections:
             note = self.noteDB[coll].find_one({"ID": itemID})
