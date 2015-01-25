@@ -87,6 +87,7 @@ class mongoDB(dbBaseClass):
         doc = {"name": label_name, "ID": ID}
         self.noteDB['label'].insert(doc)
 
+        del doc['_id']
         return doc
 
     def getIDByLabel(self, label_name):
