@@ -165,12 +165,34 @@ class Note_Server(object):
             reply = self.Get_By_ID(msg)
         elif msg['object']['type'] == 'done':
             reply = self.Get_Done(msg)
+        elif msg['object']['type'] == 'Label':
+            reply = self.Get_By_Label(msg)
         else:
             reply = {"status": "ERROR",
                      "type": "Get",
                      "object": {"msg": "Invalid Get"}}
 
         return json.dumps(reply)
+
+    def Get_By_Label(self, msg):
+        """
+
+        """
+        label = msg["object"]["name"]
+        ID = self.db.getIDByLabel(label)
+        item = self.db.getItem(ID)
+
+        if item is None:
+            reply = {"status": "ERROR",
+                     "type": "Get",
+                     "object": {"msg": "Item does not exist",
+                                "ID": ID}}
+        else:
+            reply = {"status": "OK",
+                     "type": "Get",
+                     "object": item}
+
+        return reply
 
     def Get_By_ID(self, msg):
         """
