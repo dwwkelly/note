@@ -39,6 +39,9 @@ def scrubID(ID):
             return int(ID)
         elif type(ID) == int:
             return ID
+        elif type(ID) == unicode:
+            return int(ID)
+
     except ValueError:
         return None
 

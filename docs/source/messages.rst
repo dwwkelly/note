@@ -53,7 +53,7 @@ Get by Label
 
 .. code-block:: javascript
 
-    {"object": {"type": "label", "name": "some label"},
+    {"object": {"type": "Label", "name": "some label"},
      "type": "Get"}
 
 Reply - OK
@@ -185,12 +185,35 @@ Reply - Error
 Set Label
 ^^^^^^^^^
 
+To add a new label:
+
 .. code-block:: javascript
 
-    {"object": {"name": "some label", "id": 23},
-     "type": "label"}
+    {
+     "object": {"name": "some label", 
+                "id": 23},
+     "type": "Label"
+    }
 
+Reply - Bad request error
 
+.. code-block:: javascript
+
+    {
+     "status": "ERROR",
+     "type": "Label",
+     "object": {"msg": "improper request"}
+    }
+
+Reply - Pre-existing label error
+
+.. code-block:: javascript
+
+    {
+     "status": "ERROR",
+     "type": "Label",
+     "object": {"msg": "label already exists"}
+    }
 
 Server-Server
 -------------
