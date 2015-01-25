@@ -319,3 +319,33 @@ class Note_Server(object):
                  }
 
         return json.dumps(reply)
+
+    def Handle_Label(self, msg):
+        """
+            :desc: Set a label
+            :param dict msg: The message received from the client
+            :rval: str
+            :returns: A status message (JSON serialized to a string)
+        """
+
+        obj = msg['object']
+        if 'name' not in obj or 'id' not in obj:
+            r_msg = {'status': 'ERROR',
+                     'type': 'Label',
+                     'object': {'msg': 'improper request'}}
+            return json.dumps(r_msg)
+
+        label_name = obj['name']
+        label_id = obj['id']
+        r_val = self.db.addLabel(label_name, label_id)
+
+        if r_val is None:
+            r_msg = {'status': 'ERROR',
+                     'type': 'Label',
+                     'object': {'msg': 'label already exists'}}
+        else:
+            r_msg = {'status': 'OK',
+                     'type': 'Label',
+                     'object': r_val}
+
+        return json.dumps(r_msg)
