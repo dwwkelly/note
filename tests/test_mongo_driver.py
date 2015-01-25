@@ -250,10 +250,10 @@ class NoteDBTest(unittest.TestCase):
         self.db.addLabel("testLabel", 1)
         self.db.addLabel("anothertestLabel", 2)
 
-        results = self.db.getIDBytLabel("testLabel")
+        results = self.db.getIDByLabel("testLabel")
         self.assertEqual(results, 1)
 
-        results = self.db.getIDBytLabel("anothertestLabel")
+        results = self.db.getIDByLabel("anothertestLabel")
         self.assertEqual(results, 2)
 
     def test_mongodb_add_label_2(self):
@@ -270,9 +270,9 @@ class NoteDBTest(unittest.TestCase):
         self.db.addItem("note", {"note": "TWO", "tags": ["two"]})
         self.db.addLabel("testLabel", 1)
 
-        results = self.db.getIDBytLabel("testLabel")
+        results = self.db.getIDByLabel("testLabel")
         self.assertEqual(results, 1)
 
         self.db.deleteLabel('testLabel')
-        results = self.db.getIDBytLabel("testLabel")
+        results = self.db.getIDByLabel("testLabel")
         self.assertEqual(results, None)

@@ -77,7 +77,7 @@ class mongoDB(dbBaseClass):
 
         """
 
-        if self.getIDBytLabel(label_name) is not None:
+        if self.getIDByLabel(label_name) is not None:
             return None
 
         doc = {"name": label_name, "ID": ID}
@@ -85,7 +85,7 @@ class mongoDB(dbBaseClass):
 
         return doc
 
-    def getIDBytLabel(self, label_name):
+    def getIDByLabel(self, label_name):
         """
 
         """
