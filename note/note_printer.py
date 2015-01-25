@@ -186,7 +186,3 @@ class Note_Printer(object):
             f(self.msg['object'])
         else:
             print self.msg
-
-    def print_label(self):
-
-        return
