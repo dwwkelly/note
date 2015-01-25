@@ -65,13 +65,13 @@ class Note_Printer(object):
         for res in results:
 
             f = getattr(self, "print_{0}".format(res['type']))
-            f(res)
+            f(res['obj'])
 
     def print_note(self, msg):
 
-        note_text = msg['obj']['note']
-        ID = msg['obj']['ID']
-        timestamps = msg['obj']['timestamps']
+        note_text = msg['note']
+        ID = msg['ID']
+        timestamps = msg['timestamps']
         timestamp = time.localtime(max(timestamps))
         noteDate = time.strftime("%a, %b %d", timestamp)
 
@@ -92,11 +92,11 @@ class Note_Printer(object):
 
     def print_place(self, msg):
 
-        note_text = msg['obj']['note']
-        place_text = msg['obj']['place']
-        address_text = msg['obj']['address']
-        ID = msg['obj']['ID']
-        timestamps = msg['obj']['timestamps']
+        note_text = msg['note']
+        place_text = msg['place']
+        address_text = msg['address']
+        ID = msg['ID']
+        timestamps = msg['timestamps']
         timestamp = time.localtime(max(timestamps))
         noteDate = time.strftime("%a, %b %d", timestamp)
 
@@ -134,11 +134,11 @@ class Note_Printer(object):
 
     def print_todo(self, msg):
 
-        todo_text = msg['obj']['todo']
-        done = msg['obj']['done']
-        todo_date = msg['obj']['date']
-        ID = msg['obj']['ID']
-        timestamps = msg['obj']['timestamps']
+        todo_text = msg['todo']
+        done = msg['done']
+        todo_date = msg['date']
+        ID = msg['ID']
+        timestamps = msg['timestamps']
         timestamp = time.localtime(max(timestamps))
         noteDate = time.strftime("%a, %b %d", timestamp)
 
@@ -180,4 +180,13 @@ class Note_Printer(object):
 
     def print_Get(self):
 
-        print self.msg
+        if self.msg['printer_options'] == 'pretty':
+            note_type = self.msg['object']['type']
+            f = getattr(self, 'print_{0}'.format(note_type))
+            f(self.msg['object'])
+        else:
+            print self.msg
+
+    def print_label(self):
+
+        return
