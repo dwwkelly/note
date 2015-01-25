@@ -181,6 +181,7 @@ class Runner(object):
     def Add(self):
         """
 
+        :rval: str
         """
 
         self.template = self.note_template
@@ -198,6 +199,7 @@ class Runner(object):
     def GetByID(self, ID):
         """
 
+        :rval: str
         """
         msg = {"type": "Get", "object": {"type": "ID", "id": scrubID(ID)}}
         return self.client.Send(msg)
@@ -205,6 +207,7 @@ class Runner(object):
     def Edit(self):
         """
 
+        :rval: str
         """
 
         note_obj = self.GetByID(self.commandArgs)
@@ -372,6 +375,7 @@ class Runner(object):
     def Search(self):
         """
 
+        :rval: str
         """
         msg = {"type": "Search", "object": {"searchTerm": self.commandArgs}}
         return self.client.Send(msg)
@@ -379,6 +383,7 @@ class Runner(object):
     def Place(self):
         """
 
+        :rval: str
         """
         self.template = self.place_template
 
@@ -402,6 +407,7 @@ class Runner(object):
     def Contact(self):
         """
 
+        :rval: str
         """
         self.template = self.note_template
 
@@ -418,6 +424,7 @@ class Runner(object):
     def todo(self):
         """
 
+        :rval: str
         """
         self.template = self.todo_template
         ddp = DateDataParser()
@@ -444,6 +451,7 @@ class Runner(object):
     def Delete(self):
         """
 
+        :rval: str
         """
         ID = int(self.commandArgs)
         msg = {"type": "Delete", "object": {"id": ID}}
@@ -452,6 +460,7 @@ class Runner(object):
     def ShowDone(self):
         """
 
+        :rval: str
         """
         done = self.commandArgs
         msg = {"type": "Get", "object": {"type": "done", "done": True}}
@@ -460,6 +469,7 @@ class Runner(object):
     def ShowUndone(self):
         """
 
+        :rval: str
         """
 
         done = self.commandArgs
@@ -499,6 +509,7 @@ class Runner(object):
     def Info(self):
         """
 
+        :rval: str
         """
         ID = int(self.commandArgs)
         msg = {"type": "Get", "object": {"type": "ID", "id": ID}}
@@ -522,6 +533,7 @@ class Runner(object):
     def SID(self):
         """
         :desc: Fetch notes and sort them by ID
+        :rval: str
         """
         def comparator(k):
             return k['obj']['ID']
@@ -532,6 +544,7 @@ class Runner(object):
         """
 
         :desc: Fetch notes and sort them by date last modified
+        :rval: str
         """
 
         def comparator(k):
@@ -542,6 +555,7 @@ class Runner(object):
     def SRelevance(self):
         """
         :desc: Fetch notes and sort them by search relevance
+        :rval: str
         """
 
         def comparator(k):
