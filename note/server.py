@@ -387,6 +387,9 @@ class Note_Server(object):
             r_msg = {'status': 'ERROR',
                      'type': 'Delete_Label',
                      'object': {'msg': 'improper request'}}
-            return r_msg
+            return json.dumps(r_msg)
         else:
-            return self.db.deleteLabel(label_name)
+            r_val = {'status': 'OK',
+                     'type': 'Delete',
+                     'object': self.db.deleteLabel(label_name)}
+            return json.dumps(r_val)
