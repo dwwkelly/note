@@ -371,3 +371,22 @@ class Note_Server(object):
                      'object': r_val}
 
         return json.dumps(r_msg)
+
+    def Handle_Delete_Label(self, msg):
+        """
+            :desc: Deletes a label
+            :param dic msg: The message with the instruction and the label
+                            name to delete
+            :rval: str
+            :returns: The message from the database
+        """
+
+        try:
+            label_name = msg['object']['label']
+        except KeyError:
+            r_msg = {'status': 'ERROR',
+                     'type': 'Delete_Label',
+                     'object': {'msg': 'improper request'}}
+            return r_msg
+        else:
+            return self.db.deleteLabel(label_name)
