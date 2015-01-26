@@ -90,11 +90,11 @@ class NotePrinterTest(unittest.TestCase):
 
         self.printer(json.dumps(msg))
 
-        s = "{0}ERROR: {1}{2}\n"
+        s = "{0}ERROR: {1}{2}{3}\n"
         s = s.format(colors['foreground red'],
                      colors['foreground black'],
-                     msg['object']['msg'])
-
+                     msg['object']['msg'],
+                     colors['reset'])
         self.assertEqual(self.output.getvalue(), s)
 
     def test_OK_1(self):
