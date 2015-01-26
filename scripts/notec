@@ -211,8 +211,19 @@ class Runner(object):
 
         :rval: str
         """
+        search = re.search(r'\d+$', self.commandArgs)
 
-        note_obj = self.GetByID(self.commandArgs)
+        if search is None:
+            # Get by label
+            label_name = self.commandArgs
+            msg = {"object": {"type": "Label", "name": label_name},
+                   "type": "Get"}
+            r_val = json.loads(self.client.Send(msg))
+            ID = r_val['object']['ID']
+        else:
+            ID = search.group(0)
+
+        note_obj = self.GetByID(ID)
         note_obj = json.loads(note_obj)
 
         note_type = note_obj['object']['type']
