@@ -205,3 +205,82 @@ class Note_Server_Test(unittest.TestCase):
         self.assertEqual(reply['object'], 2)
         self.assertEqual(unusedIDs['unusedIDs'], [2])
         self.assertEqual(currentMax['currentMax'], 3)
+
+    def test_Handle_Label_1(self):
+
+        msg = {'type': 'label',
+               'object': {'name': 'test_label', 'id': 1}
+               }
+        self.note_server.Handle_Label(msg)
+
+        query = {'name': 'test_label'}
+        label = self.note_server.db.noteDB['label'].find(query)
+
+        self.assertEqual(label[0]['name'], 'test_label')
+        self.assertEqual(label[0]['ID'], 1)
+
+    def test_Handle_Label_2(self):
+
+        msg = {'type': 'label',
+               'object': {'name': 'test_label_1', 'id': 1}
+               }
+        self.note_server.Handle_Label(msg)
+
+        msg = {'type': 'label',
+               'object': {'name': 'test_label_2', 'id': 2}
+               }
+        self.note_server.Handle_Label(msg)
+
+        query = {'name': 'test_label_1'}
+        label = self.note_server.db.noteDB['label'].find(query)
+
+        self.assertEqual(label[0]['name'], 'test_label_1')
+        self.assertEqual(label[0]['ID'], 1)
+
+        query = {'name': 'test_label_2'}
+        label = self.note_server.db.noteDB['label'].find(query)
+
+        self.assertEqual(label[0]['name'], 'test_label_2')
+        self.assertEqual(label[0]['ID'], 2)
+
+    def test_Handle_Label_3(self):
+
+        msg = {'type': 'label',
+               'object': {'name': 'test_label_1', 'id': 1}
+               }
+        self.note_server.Handle_Label(msg)
+
+        msg = {'type': 'label',
+               'object': {'name': 'test_label_2', 'id': 1}
+               }
+        self.note_server.Handle_Label(msg)
+
+        query = {'name': 'test_label_1'}
+        label = self.note_server.db.noteDB['label'].find(query)
+
+        self.assertEqual(label[0]['name'], 'test_label_1')
+        self.assertEqual(label[0]['ID'], 1)
+
+        query = {'name': 'test_label_2'}
+        label = self.note_server.db.noteDB['label'].find(query)
+
+        self.assertEqual(label[0]['name'], 'test_label_2')
+        self.assertEqual(label[0]['ID'], 1)
+
+    def test_Handle_Label_4(self):
+
+        msg = {'type': 'label',
+               'object': {'name': 'test_label_1', 'id': 1}
+               }
+        self.note_server.Handle_Label(msg)
+
+        msg = {'type': 'label',
+               'object': {'name': 'test_label_1', 'id': 2}
+               }
+        reply = self.note_server.Handle_Label(msg)
+
+        expected = {'status': 'ERROR',
+                    'type': 'Label',
+                    'object': {'msg': 'label already exists'}}
+
+        self.assertEqual(expected, json.loads(reply))
