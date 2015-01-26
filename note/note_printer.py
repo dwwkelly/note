@@ -51,10 +51,11 @@ class Note_Printer(object):
 
         """
 
-        s = "{0}ERROR: {1}{2}"
+        s = "{0}ERROR: {1}{2}{3}"
         s = s.format(colors['foreground red'],
                      colors['foreground black'],
-                     self.msg['object']['msg'])
+                     self.msg['object']['msg'],
+                     colors['reset'])
 
         print s
 
