@@ -452,11 +452,16 @@ class Runner(object):
 
     def Delete(self):
         """
-
+        :desc: Deletes a note (if an ID is given) or a label (if a
+               label is given)
         :rval: str
         """
-        ID = int(self.commandArgs)
-        msg = {"type": "Delete", "object": {"id": ID}}
+        if re.search(r'^\d+$', self.commandArgs):
+            ID = int(self.commandArgs)
+            msg = {"type": "Delete", "object": {"id": ID}}
+        else:
+            msg = {"type": "Delete_Label",
+                   "object": {"label": self.commandArgs}}
         return self.client.Send(msg)
 
     def ShowDone(self):
