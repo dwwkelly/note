@@ -596,6 +596,7 @@ class Runner(object):
             return json.dumps(r_val)
         else:
             # Set a label to a note by it's ID
+            ID = ID.group(0)
             msg = {"type": "Label", "object": {"name": label_name, "id": ID}}
             return self.client.Send(msg)
 
