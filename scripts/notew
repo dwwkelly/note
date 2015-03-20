@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-__author__ = "Devin Kelly"
-
 import os
 import json
 import click
 from note import webapp
+
+__author__ = "Devin Kelly"
 
 
 class Config(object):
@@ -19,15 +19,15 @@ class Config(object):
 
     def read_config_file(self):
 
-        with open(os.path.expanduser(config)) as fd:
+        with open(os.path.expanduser(self.config_file), 'r') as fd:
             config = json.loads(fd.read())
 
-        if self.address is not None:
-            self.address = config['server']['address']
-        if self.port is not None:
-            self.port = config['server']['port']
-        if self.debug is not None:
-            self.debug = config['server']['debug']
+        if self.address is None:
+            self.address = config['webserver']['address']
+        if self.port is None:
+            self.port = config['webserver']['port']
+        if self.debug is None:
+            self.debug = config['webserver']['debug']
 
 
 @click.command()
@@ -44,11 +44,7 @@ def main(debug, address, port, config):
     config = Config(config, address, port, debug)
 
     webapp.debug = config.debug
-    webapp.host = config.host
-    webapp.port = config.port
-    webapp.run()
-
-    return
+    webapp.run(host=config.address, port=config.port)
 
 if __name__ == "__main__":
     main()
