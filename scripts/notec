@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-__author__ = "Devin Kelly"
-
 import re
 import os
 import sys
@@ -14,6 +12,8 @@ from note import Note_Client
 from note import scrubID
 from note import Note_Printer
 from dateparser.date import DateDataParser
+
+__author__ = "Devin Kelly"
 
 
 class Runner(object):
@@ -114,6 +114,7 @@ class Runner(object):
         self.commands['srelevance'] = self.SRelevance
         self.commands['encrypt'] = self.Encrypt
         self.commands['label'] = self.Label
+        self.commands['link'] = self.Link
 
         # These are shortcuts
         self.shortcuts = {}
@@ -131,6 +132,7 @@ class Runner(object):
         self.shortcuts['i'] = 'info'
         self.shortcuts['V'] = 'verify'
         self.shortcuts['l'] = 'label'
+        self.shortcuts['L'] = 'link'
 
         self.ParseOpts()
         printer = Note_Printer(self.quiet)
@@ -156,7 +158,8 @@ class Runner(object):
             print u"{0} does not exist".format(self.command)
             sys.exit(0)
 
-        printer(reply)
+        if reply is not None:
+            printer(reply)
 
     def ProcessFile(self):
         """
@@ -610,6 +613,11 @@ class Runner(object):
             ID = ID.group(0)
             msg = {"type": "Label", "object": {"name": label_name, "id": ID}}
             return self.client.Send(msg)
+
+    def Link(self):
+        p = SP.check_output(['which', 'notec'])
+        p = re.sub(r'\n$', '', p)
+        print 'ln -s {0} /usr/local/bin/n'.format(p)
 
 
 def main():
