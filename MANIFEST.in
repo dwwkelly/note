@@ -3,6 +3,8 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
+recursive-include note/templates *
+recursive-include note/static *
 
 recursive-include tests *
 recursive-exclude * __pycache__
