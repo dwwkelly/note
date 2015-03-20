@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
-__author__ = "Devin Kelly"
-__todo__ = """
-"""
-
 import time
 import json
 import os
 import sys
+import site
+import pkgutil
 import markdown
 from flask import Flask
 from flask import request
@@ -17,7 +15,12 @@ from flask import Markup
 from functools import wraps
 from mongo_driver import mongoDB
 
-app = Flask(__name__)
+__author__ = "Devin Kelly"
+
+tf = os.path.join(site.getsitepackages()[0], 'note', 'templates')
+sf = os.path.join(site.getsitepackages()[0], 'note', 'static')
+
+app = Flask(__name__, template_folder=tf, static_folder=sf)
 app.jinja_env.trim_blocks = True
 
 
