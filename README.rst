@@ -1,7 +1,7 @@
 note
 =====
 
-.. image:: https://pypip.in/v/note/badge.png
+.. image:: https://img.shields.io/pypi/v/note.svg
         :target: https://pypi.python.org/pypi/note
         :alt: Latest Version
 
@@ -16,7 +16,7 @@ note
 .. image:: https://badge.fury.io/py/note.png
         :target: http://badge.fury.io/py/note
 
-.. image:: https://pypip.in/d/note/badge.png
+.. image:: https://img.shields.io/pypi/dm/note.svg
         :target: https://pypi.python.org/pypi/note
         :alt: Downloads
 
